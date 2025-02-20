@@ -31,7 +31,7 @@ cluster = [3, 3, 3, 3, 3, 3, 7]
 m = 2
 esp = 0.01
 maxTest = 200
-centers = []
+centers = np.zeros((6, 3))
 rules = np.zeros((h, w))
 
 
