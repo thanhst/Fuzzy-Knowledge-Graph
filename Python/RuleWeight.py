@@ -25,8 +25,76 @@ def GaussMF(x1, label, MFnumber, sigma, centers):
         return gaussmf(x1, [sigma, centers[int(label) - 1]])
     return 0
 
+# ==================== Exp Membership Function ====================
 
-def RuleWeight(rules, data, cluster, center_vector,center_vector_label):
+
+def exp_mf(x, params):
+    sigma, center = params
+    lambda_ = 1 / sigma
+    return np.exp(-lambda_ * abs(x - center))
+
+def ExpMF(x1, label, MFnumber, sigma, centers):
+    if 1 <= label <= MFnumber:
+        return exp_mf(x1, [sigma, centers[int(label) - 1]])
+    return 0
+
+# ==================== Triangular Membership Function ====================
+
+def triangle_mf(x, params):
+    a, b, c = params
+    if a <= x < b:
+        return (x - a) / (b - a)
+    elif b <= x <= c:
+        return (c - x) / (c - b)
+    return 0
+
+def TriangleMF(x1, label, MFnumber, sigma, centers):
+    if 1 <= label <= MFnumber:
+        center = centers[int(label) - 1]
+        a = center - sigma
+        b = center
+        c = center + sigma
+        return triangle_mf(x1, [a, b, c])
+    return 0
+
+# ==================== Trapezoidal Membership Function ====================
+
+def trapezoid_mf(x, params):
+    a, b, c, d = params
+    if a <= x < b:
+        return (x - a) / (b - a)
+    elif b <= x <= c:
+        return 1
+    elif c < x <= d:
+        return (d - x) / (d - c)
+    return 0
+
+def TrapezoidMF(x1, label, MFnumber, sigma, centers):
+    if 1 <= label <= MFnumber:
+        center = centers[int(label) - 1]
+        a = center - 2 * sigma
+        b = center - sigma
+        c = center + sigma
+        d = center + 2 * sigma
+        return trapezoid_mf(x1, [a, b, c, d])
+    return 0
+
+
+# ==================== Sigmoid Membership Function ====================
+
+def sigmoid_mf(x, params):
+    k, c = params
+    return 1 / (1 + np.exp(-k * (x - c)))
+
+def SigmoidMF(x1, label, MFnumber, sigma, centers):
+    if 1 <= label <= MFnumber:
+        c = centers[int(label) - 1]
+        k = 1 / sigma
+        return sigmoid_mf(x1, [k, c])
+    return 0
+
+
+def RuleWeight(rules, data, cluster, center_vector):
     data_num, attribute_num = data.shape
     sigma = np.zeros(attribute_num)
     t = np.zeros((data_num, attribute_num))
@@ -37,8 +105,5 @@ def RuleWeight(rules, data, cluster, center_vector,center_vector_label):
         sigma[feature_index] = compute_sigma(center_vector[feature_index])
         
         for i in range(data_num):
-            if(feature_index!=attribute_num-1):
-                t[i, feature_index] = GaussMF(feature_data[i], rule_index[i], mf_number, sigma[feature_index], center_vector[feature_index])
-            else:
-                t[i, feature_index] = GaussMF(feature_data[i], rule_index[i], mf_number, sigma[feature_index], center_vector_label)
+                t[i, feature_index] = TriangleMF(feature_data[i], rule_index[i], mf_number, sigma[feature_index], center_vector[feature_index])
     return t, sigma
