@@ -1,6 +1,6 @@
 
 import numpy as np
-from FCM_Function import fcm_function as FCM_Function
+from Python.module.FCM_Function import fcm_function as FCM_Function
 from RuleWeight import RuleWeight
 
 def Rule2(train_data):

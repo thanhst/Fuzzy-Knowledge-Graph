@@ -1,5 +1,5 @@
 import numpy as np
-from FCM_Function import fcm_function as FCM
+from Python.module.FCM_Function import fcm_function as FCM
 from scipy.io import savemat
 import pandas as pd
 
