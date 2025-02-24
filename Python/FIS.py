@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
-from RuleWeight import RuleWeight
+from module.Rules_Function.RuleWeight import RuleWeight
 import seaborn as sns
 import matplotlib.pyplot as plt
-from module.Rules_gen import rule_generate
-from module.Rules_reduce import reduce_rule,remove_rule
+from module.Rules_Function.Rules_gen import rule_generate
+from module.Rules_Function.Rules_reduce import reduce_rule,remove_rule
 df = pd.read_csv('./data/Result_norminal.csv')
 
 # full_data = df.drop(df.columns[0], axis=1

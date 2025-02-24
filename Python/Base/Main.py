@@ -1,8 +1,8 @@
 import numpy as np
-from Rule2 import Rule2
-from TestGraph2 import TestGraph2
+from Python.module.RulesFunction.Rule2 import Rule2
+from Python.Base.TestGraph2 import TestGraph2
 import pandas as pd
-from Run_Train_FIS import run_train_fis as Run_Train_FIS
+from Python.Base.Run_Train_FIS import run_train_fis as Run_Train_FIS
 from MakeRules import MakeRules
 def main(database):
     a, b = database.shape
