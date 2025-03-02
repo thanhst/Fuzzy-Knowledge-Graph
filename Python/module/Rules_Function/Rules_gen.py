@@ -1,6 +1,6 @@
 import numpy as np
-from module.FCM_Function import fcm_function as FCM_Function
-def rule_generate(h,w,train_data,cluster,min_vals,max_vals,m=2,esp=0.1,maxTest=200):
+from module.FCM.FCM_Function import fcm_function as FCM_Function
+def rule_generate(h,w,train_data,cluster,min_vals,max_vals,m=2,esp=1e-5,maxTest=200,threshold =0.5):
     centers = []
     rules = np.zeros((h, w))
     for i in range(w):
@@ -22,6 +22,8 @@ def rule_generate(h,w,train_data,cluster,min_vals,max_vals,m=2,esp=0.1,maxTest=2
         center, U = FCM_Function(feature, cluster[i], V, m, esp, maxTest)
         U = U.T
         centers.append(center.flatten())
+        # for j in range(h):
+        #     rules[j, i] = [idx + 1 for idx in range(cluster[i]) if U[j, idx] > threshold] 
         for j in range(h):
             rules[j, i] = np.argmax(U[j, :]) + 1
     return rules,centers,U

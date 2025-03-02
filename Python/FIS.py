@@ -5,6 +5,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from module.Rules_Function.Rules_gen import rule_generate
 from module.Rules_Function.Rules_reduce import reduce_rule,remove_rule
+import pickle
+
 df = pd.read_csv('./data/Result_norminal.csv')
 
 # full_data = df.drop(df.columns[0], axis=1
@@ -19,8 +21,11 @@ full_data = df
 
 
 df_full_data = pd.DataFrame(full_data)
-train_data = df_full_data.sample(frac=0.8, random_state=42)
+train_data = df_full_data.sample(frac=1, random_state=42)
+train_data.to_csv("./data/train_data.csv")
 train_data = train_data.values
+test_data = df_full_data.sample(frac=0.2, random_state=42)
+
 
 
 full_data = np.array(full_data)
@@ -33,11 +38,11 @@ min_vals_data = pd.DataFrame(min_vals)
 max_vals_data = pd.DataFrame(max_vals)
 min_vals_data.to_csv("./data/min_vals.csv")
 max_vals_data.to_csv("./data/max_vals.csv")
-
+test_data.to_csv("./data/test_data.csv")
 
 h = train_data.shape[0]
 w = train_data.shape[1]
-cluster = [5, 7, 5, 5, 5, 7, 6]
+cluster = [3, 3, 3, 3, 3, 3, 6]
 m = 2
 esp = 0.01
 maxTest = 200
@@ -78,7 +83,12 @@ df_Rule_List = pd.DataFrame(rules)
 df_Rule_List.to_csv("./data/Rule_List_All.csv", index=False)
 
 rules_reduce = reduce_rule(h,col_num,rules)
-ruleList = remove_rule(h,col_num,rules)
+df_Rule_List1 = pd.DataFrame(rules_reduce)
+df_Rule_List1.to_csv("./data/Rule_List1.csv", index=False)
+
+
+ruleList = remove_rule(h,col_num,rules_reduce)
+
 
 df_Rule_List = pd.DataFrame(ruleList)
 df_Rule_List.to_csv("./data/Rule_List.csv", index=False)
@@ -92,12 +102,19 @@ df_Centers.to_csv("./data/Centers.csv", index=False)
 print("ruleList:",ruleList)
 print("sigma_M:", sigma_M)
 print("centers:", centers)
+model_data = {
+    "ruleList": ruleList,
+    "sigma_M": sigma_M,
+    "centers": centers,
+    "min_vals": min_vals,
+    "max_vals": max_vals
+}
 
-# correct_count = 0
-# total_matched = 0  
+with open("./model/fuzzy_model.pkl", "wb") as file:
+    pickle.dump(model_data, file)
 
 # for rule in ruleList:
-#     predicted_label = rule[col_num]  
+#     predicted_label = rule[col_num]
 
 #     idx = np.where((rules[:, :col_num] == rule[:col_num]).all(axis=1))[0]
 

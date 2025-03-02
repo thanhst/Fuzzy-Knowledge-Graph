@@ -30,5 +30,5 @@ def RuleWeight(rules, data, cluster, center_vector):
         sigma[feature_index] = compute_sigma(center_vector[feature_index])
         
         for i in range(data_num):
-                t[i, feature_index] = GaussMF(feature_data[i], rule_index[i], mf_number, sigma[feature_index], center_vector[feature_index])
+            t[i, feature_index] = GaussMF(feature_data[i], rule_index[i], mf_number, sigma[feature_index], center_vector[feature_index])
     return t, sigma

@@ -1,7 +1,7 @@
 
 import numpy as np
-from Python.module.FCM_Function import fcm_function as FCM_Function
-from Python.module.RulesFunction.RuleWeight import RuleWeight
+from module.FCM.FCM_Function import fcm_function as FCM_Function
+from module.Rules_Function.RuleWeight import RuleWeight
 
 def Rule2(train_data):
     data_num, attribute_num = train_data.shape

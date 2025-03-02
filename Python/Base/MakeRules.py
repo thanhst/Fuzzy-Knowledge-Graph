@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.io as sio
-from Python.module.FCM_Function import fcm_function as FCM_Function
-from Python.module.RulesFunction.RuleWeight import RuleWeight
+from Python.module.FCM.FCM_Function import fcm_function as FCM_Function
+from Python.module.Rules_Function.RuleWeight import RuleWeight
 
 def MakeRules(train_dataset, var_data):
     train_data = train_dataset
