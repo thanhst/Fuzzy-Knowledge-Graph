@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from module.Rules_Function.Rules_gen import rule_generate
 from module.Rules_Function.Rules_reduce import reduce_rule,remove_rule
 import pickle
+from module.Convert.var_lang import change_var_lang̣
 
 df = pd.read_csv('./data/Result_norminal.csv')
 
@@ -89,6 +90,11 @@ df_Rule_List1.to_csv("./data/Rule_List1.csv", index=False)
 
 ruleList = remove_rule(h,col_num,rules_reduce)
 
+lang_matrix = [["Low","Medium","High"],["Low","Medium","High"],["Low","Medium","High"],["Low","Medium","High"],["Low","Medium","High"],["Low","Medium","High"]]
+ruleListLang = change_var_lang̣(lang_matrix,ruleList)
+# print(ruleListLang)
+df_rule_lang = pd.DataFrame(ruleListLang)
+df_rule_lang.to_csv("./data/Rule_List_Language.csv",index=False)
 
 df_Rule_List = pd.DataFrame(ruleList)
 df_Rule_List.to_csv("./data/Rule_List.csv", index=False)
