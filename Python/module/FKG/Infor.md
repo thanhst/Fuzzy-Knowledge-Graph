@@ -1,9 +1,9 @@
-Đầu vào của thuật toán FKG : <br>
+Đầu vào của thuật toán FKG <br>
 Test : 30% của bộ luật <br>
 ![alt text](image.png)
 Train : 70% dữ liệu của bộ luật <br>
 ![alt text](image-1.png)
-
+Kết quả của thuật toán FKG <br>
 Thời gian hoàn thành FKG: <br>
 ![alt text](image-2.png)
 
