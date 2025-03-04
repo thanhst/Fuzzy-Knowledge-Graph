@@ -94,16 +94,16 @@ lang_matrix = [["Low","Medium","High"],["Low","Medium","High"],["Low","Medium","
 ruleListLang = change_var_lang̣(lang_matrix,ruleList)
 # print(ruleListLang)
 df_rule_lang = pd.DataFrame(ruleListLang)
-df_rule_lang.to_csv("./data/Rule_List_Language.csv",index=False)
+df_rule_lang.to_csv("./data/FIS/Rule_List_Language.csv",index=False)
 
 df_Rule_List = pd.DataFrame(ruleList)
-df_Rule_List.to_csv("./data/Rule_List.csv", index=False)
+df_Rule_List.to_csv("./data/FIS/Rule_List.csv", index=False)
 
 df_Sigma = pd.DataFrame(sigma_M)
-df_Sigma.to_csv("./data/Sigma_M.csv", index=False)
+df_Sigma.to_csv("./data/FIS/Sigma_M.csv", index=False)
 
 df_Centers = pd.DataFrame(centers)
-df_Centers.to_csv("./data/Centers.csv", index=False)
+df_Centers.to_csv("./data/FIS/Centers.csv", index=False)
 
 print("ruleList:",ruleList)
 print("sigma_M:", sigma_M)
