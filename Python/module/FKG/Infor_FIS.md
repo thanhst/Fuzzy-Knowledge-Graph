@@ -1,4 +1,4 @@
-Đầu vào của thuật toán FKG : 
+Đầu vào của thuật toán FKG với FIS: 
 Test : 30% của bộ luật
 TestTest
 ![alt text](image.png)
@@ -14,7 +14,7 @@ Thời gian hoàn thành FKG:
 Giá trị res:
 ![alt text](image-4.png)
 
-Số lượng bộ train: 
+Số lượng bộ train:
 ![alt text](image-5.png)
 
 Số lượng bộ test:
