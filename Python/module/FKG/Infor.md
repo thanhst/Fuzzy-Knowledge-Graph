@@ -1,6 +1,5 @@
 Đầu vào của thuật toán FKG : 
 Test : 30% của bộ luật
-TestTest
 ![alt text](image.png)
 Train : 70% dữ liệu của bộ luật
 ![alt text](image-1.png)
