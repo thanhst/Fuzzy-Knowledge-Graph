@@ -23,7 +23,7 @@ full_data = df
 
 df_full_data = pd.DataFrame(full_data)
 train_data = df_full_data.sample(frac=1, random_state=42)
-train_data.to_csv("./data/train_data.csv")
+train_data.to_csv("./data/FIS/train_data.csv")
 train_data = train_data.values
 test_data = df_full_data.sample(frac=0.2, random_state=42)
 
@@ -37,9 +37,9 @@ max_vals = np.max(full_data, axis=0)
 
 min_vals_data = pd.DataFrame(min_vals)
 max_vals_data = pd.DataFrame(max_vals)
-min_vals_data.to_csv("./data/min_vals.csv")
-max_vals_data.to_csv("./data/max_vals.csv")
-test_data.to_csv("./data/test_data.csv")
+min_vals_data.to_csv("./data/FIS/min_vals.csv")
+max_vals_data.to_csv("./data/FIS/max_vals.csv")
+test_data.to_csv("./data/FIS/test_data.csv")
 
 h = train_data.shape[0]
 w = train_data.shape[1]
@@ -81,11 +81,11 @@ rules = np.hstack((rules, np.min(t, axis=1, keepdims=True), train_data[:, [col_n
 unique_rules = []
 
 df_Rule_List = pd.DataFrame(rules)
-df_Rule_List.to_csv("./data/Rule_List_All.csv", index=False)
+df_Rule_List.to_csv("./data/FIS/Rule_List_All.csv", index=False)
 
 rules_reduce = reduce_rule(h,col_num,rules)
 df_Rule_List1 = pd.DataFrame(rules_reduce)
-df_Rule_List1.to_csv("./data/Rule_List1.csv", index=False)
+df_Rule_List1.to_csv("./data/FIS/Rule_List_reduce.csv", index=False)
 
 
 ruleList = remove_rule(h,col_num,rules_reduce)
