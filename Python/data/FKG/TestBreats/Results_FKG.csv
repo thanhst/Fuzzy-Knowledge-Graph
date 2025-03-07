@@ -1,0 +1,2 @@
+Total Time,Test Accuracy,Count Train,Count Test,Count List Rank,List Rank Length
+0.06528663635253906,[81.33],"{3: 5, 2: 4, 1: 1}","{1: 4, 3: 3, 2: 3}","{(1.0,): 75}",75

@@ -10,7 +10,7 @@ from sklearn.metrics import f1_score,recall_score,accuracy_score, confusion_matr
 predict_labels = []
 true_labels = []
 
-data = pd.read_csv("../Python/data/test_data.csv")
+data = pd.read_csv("../Python/data/FIS/input/test_data.csv")
 for i,r in data.iterrows():
     true_labels.append(r.values[7])
     sample_input = r.values[1:7]

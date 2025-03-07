@@ -1,5 +1,7 @@
 from module.Convert.var_lang import change_var_lang̣
 import numpy as np
+from module.Module_CPP import fisa_module as fs
+print(dir(fs))
 rules = [1,2,3,1,2,3,5]
 lang_matrix = [["Low","Medium","High"],["Low","Medium","High"],["Low","Medium","High"],["Low","Medium","High"],["Low","Medium","High"],["Low","Medium","High"]]
 rules = np.array(rules)
