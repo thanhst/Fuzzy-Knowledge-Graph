@@ -30,7 +30,7 @@ train_data = df_full_data.sample(frac=1, random_state=42)
 train_data.to_csv("./data/FIS/input/train_data.csv")
 train_data = train_data.values
 test_data = df_full_data.sample(frac=0.2, random_state=42)
-# print(train_data.shape)
+print(train_data.shape)
 
 
 full_data = np.array(full_data)
@@ -48,8 +48,8 @@ test_data.to_csv("./data/FIS/input/test_data.csv")
 h = train_data.shape[0]
 w = train_data.shape[1]
 
-cluster = [2,2,3 , 3, 3, 2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5, 6]
-print(len(cluster))
+cluster = [2,2,3,3,3,2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5,6]
+# print(len(cluster))
 
 lang2 = ["Low","High"]
 lang3 = ["Low","Medium","High"]

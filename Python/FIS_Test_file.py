@@ -11,9 +11,10 @@ predict_labels = []
 true_labels = []
 
 data = pd.read_csv("../Python/data/FIS/input/test_data.csv")
+label_index = data.shape[1]
 for i,r in data.iterrows():
-    true_labels.append(r.values[7])
-    sample_input = r.values[1:7]
+    true_labels.append(r.values[label_index])
+    sample_input = r.values[1:label_index]
     predict_labels.append(test_fis(sample_input))
 true_labels = np.array(true_labels)
 predicted_labels = np.array(predict_labels)
