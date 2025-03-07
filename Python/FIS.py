@@ -47,8 +47,17 @@ test_data.to_csv("./data/FIS/input/test_data.csv")
 
 h = train_data.shape[0]
 w = train_data.shape[1]
+
 cluster = [2,2,3 , 3, 3, 2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5, 6]
 print(len(cluster))
+
+lang2 = ["Low","High"]
+lang3 = ["Low","Medium","High"]
+lang5 = ["Very Low","Low","Medium","High","Very High"]
+# cluster = [2,2,3 , 3, 3, 2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5, 6]
+lang_matrix = [lang2,lang2,lang3,lang3,lang3,lang2,lang2,lang2,lang2,lang2,lang2,lang3,lang3,lang3,lang3,lang2,lang3,lang2,lang3,lang2,lang2,lang2,lang5,lang5,lang5,lang5,lang5,lang5]
+print(len(lang_matrix))
+
 m = 2
 esp = 0.01
 maxTest = 200
@@ -93,12 +102,6 @@ df_Rule_List1 = pd.DataFrame(rules_reduce)
 df_Rule_List1.to_csv("./data/FIS/output/Rule_List_reduce.csv", index=False)
 
 ruleList = remove_rule(h,col_num,rules_reduce)
-lang2 = ["Low","High"]
-lang3 = ["Low","Medium","High"]
-lang5 = ["Very Low","Low","Medium","High","Very High"]
-# cluster = [2,2,3 , 3, 3, 2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5, 6]
-lang_matrix = [lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang5,lang5,lang5,lang5,lang5,lang5]
-print(len(lang_matrix))
 ruleListLang = change_var_lang̣(lang_matrix,ruleList)
 # print(ruleListLang)
 df_rule_lang = pd.DataFrame(ruleListLang)
