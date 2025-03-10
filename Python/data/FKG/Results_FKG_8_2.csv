@@ -1,0 +1,2 @@
+Total Time,Test Accuracy,Test Precision,Test Recall,Count Train,Count Test,Count List Rank,List Rank Length
+489.7530789375305,"[42.22, 42.71]","[100.0, 100.0]","[100.0, 100.0]","{1: 17, 2: 5, 3: 3, 4: 3, 5: 1}","{1: 17, 2: 8, 5: 3, 3: 1}","{(1.0,): 518}",518

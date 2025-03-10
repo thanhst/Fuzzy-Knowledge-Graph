@@ -1,0 +1,43 @@
+id,Modality,Model,Accuracy,F1 Score,Recall
+
+
+0,Raw images,FKG,46.34%,"[46, 0, 0, 0, 0]","[100, 0, 0, 0, 0]"
+0,Raw Image,FIS,30.87%,18.62%,20.12%
+0,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+0,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
+1,Raw images,FKG,26.67%,"[26, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+1,Raw Image,FIS,36.09%,23.84%,23.10%
+1,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+1,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
+2,Raw images,FKG,41.46%,"[41, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+2,Raw Image,FIS,34.78%,19.71%,19.94%
+2,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+2,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
+3,Raw images,FKG,36.59%,"[36, 0, 0, 0, 0]","[100, 0, 0, 0, 0]"
+3,Raw Image,FIS,25.87%,17.04%,19.48%
+3,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+3,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
+4,Raw images,FKG,31.71%,"[31, 0, 0, 0, 0]","[100, 0, 0, 0, 0]"
+4,Raw Image,FIS,32.83%,18.80%,18.34%
+4,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+4,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
+5,Raw images,FKG,26.83%,"[26, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+5,Raw Image,FIS,31.30%,18.23%,19.02%
+5,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+5,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
+6,Raw images,FKG,31.71%,"[31, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+6,Raw Image,FIS,35.87%,21.28%,22.13%
+6,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+6,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
+7,Raw images,FKG,41.30%,"[41, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+7,Raw Image,FIS,31.52%,16.30%,16.29%
+7,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+7,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
+8,Raw images,FKG,37.78%,"[37, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+8,Raw Image,FIS,33.48%,20.66%,21.30%
+8,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+8,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
+9,Raw images,FKG,37.78%,"[37, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+9,Raw Image,FIS,28.04%,16.49%,18.38%
+9,Metadata-Image Fusion,FKG,42.71%,"[42, 0, 0, 0, 0, 0]","[100, 0, 0, 0, 0, 0]"
+9,Metadata-Image Fusion,FIS,89.57%,78.80%,75.22%
