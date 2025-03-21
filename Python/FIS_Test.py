@@ -1,6 +1,6 @@
 import numpy as np
 from module.Membership_Function.GaussMF import GaussMF
-from model.load_model import load_model
+from models.load_model import load_model
 from module.Test.fuzzify_input import fuzzify_input
 from module.Test.match_rule import match_rule
 import pandas as pd

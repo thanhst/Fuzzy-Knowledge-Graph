@@ -31,7 +31,7 @@ def FIS_raw_data(Turn = None):
     train_data.to_csv("./data/FIS/input/train_data.csv")
     train_data = train_data.values
     test_data = df_full_data.sample(frac=0.2, random_state=None)
-    print(train_data.shape)
+    # print(train_data.shape)
 
 
     full_data = np.array(full_data)
@@ -59,7 +59,7 @@ def FIS_raw_data(Turn = None):
     # cluster = [2,2,3 , 3, 3, 2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5, 6]
     # lang_matrix = [lang2,lang2,lang3,lang3,lang3,lang2,lang2,lang2,lang2,lang2,lang2,lang3,lang3,lang3,lang3,lang2,lang3,lang2,lang3,lang2,lang2,lang2,lang5,lang5,lang5,lang5,lang5,lang5]
     lang_matrix = [lang5,lang5,lang5,lang5,lang5,lang5]
-    print(len(lang_matrix))
+    # print(len(lang_matrix))
 
     m = 2
     esp = 0.01
@@ -131,7 +131,7 @@ def FIS_raw_data(Turn = None):
     }
     totalTime = time.time() - start_time
     print("Train finish : ",totalTime)
-    with open("./model/fuzzy_model.pkl", "wb") as file:
+    with open("./models/fuzzy_model.pkl", "wb") as file:
         pickle.dump(model_data, file)
 
     from module.FKG.FKG import FKG

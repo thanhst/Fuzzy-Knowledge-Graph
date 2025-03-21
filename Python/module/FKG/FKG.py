@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from module.Module_CPP import fisa_module as fs
 import csv
+import os
 import json
 
 class FKG:
@@ -23,7 +24,7 @@ class FKG:
         return self.combination(k - 1, n - 1) + self.combination(k, n - 1)
 
 
-    def caculateA(self,base):
+    def calculateA(self,base):
         colum = len(base[0])
         row = len(base)
         A = np.zeros((row, self.combination(4, colum - 1)))
@@ -45,7 +46,7 @@ class FKG:
         return A
 
 
-    def caculateM(self,base):
+    def calculateM(self,base):
         colum = len(base[0])
         row = len(base)
         M = np.zeros((row, colum - 1))
@@ -62,7 +63,7 @@ class FKG:
         return M
 
 
-    def caculateB(self,base, A, M):
+    def calculateB(self,base, A, M):
         colum = len(base[0])
         row = len(base)
         B = np.zeros((row, self.combination(3, colum - 1)))
@@ -78,7 +79,7 @@ class FKG:
         return B
 
 
-    def caculateC(self,base, B):
+    def calculateC(self,base, B):
         colum = len(base[0])
         row = len(base)
         cols = 2 * self.combination(3, colum - 1)
@@ -122,12 +123,12 @@ class FKG:
             return 0, D0/(D0+D1)
         else:
             return 1, D1/(D0+D1)
+        
     def Acc(self,A,B):
         result = 0
         for i in range(len(A)):
             if int(A[i]) - int(float(B[i])) == 0:
                 result += 1
-
         return round(result*100/len(A), 2)
 
 
@@ -135,7 +136,6 @@ class FKG:
         TP = {}
         FP = {}
         unique_labels = set(Act) | set(Pre)
-        # print(Pre, Act)
         for label in unique_labels:
             TP[label] = 0
             FP[label] = 0
@@ -197,8 +197,11 @@ class FKG:
         print("Bắt đầu tính toán FISA")
         for i in range(len(test)):
             # print("Bắt đầu lần chạy thứ ", i)
-            X[i], ddd[i] = fs.computeFISA(base, C, test[i])
-            self.listRank.append(ddd[i])
+            try:
+                X[i], ddd[i] = self.computeFISA(base, C, test[i],6)
+                self.listRank.append(ddd[i])
+            except RuntimeError as e:
+                print("Exception: ",e)
         self.res.append(X)
         self.listAcc.append(self.Acc(X,X_test))
         self.listPre = list(self.Tprecision(X, X_test).values())
@@ -209,13 +212,13 @@ class FKG:
         traindf, testdf = train_test_split(df,test_size=0.30, random_state=17)
         base = traindf.values.tolist()
         test = testdf.values.tolist()
-
+        labels_col = df.shape[1] - 1
         import time
         start = time.time()
-        A = fs.calculateA(base)
-        M = fs.calculateM(base)
-        B = fs.calculateB(base,A,M)
-        C = fs.calculateC(base,B)
+        A = self.calculateA(base)
+        M = self.calculateM(base,labels_col)
+        B = self.calculateB(base,M)
+        C = self.calculateC(base,B,labels_col)
         totalTime = time.time() - start
         print("FKG train finish: ", totalTime)
 
@@ -255,11 +258,77 @@ class FKG:
                     writer.writerow(["id","Modality","Model","Accuracy", "F1 Score", "Recall"])
 
                 writer.writerow([Turn,Modality,"FKG",f"{ self.listAcc[0]/100:.2%}",json.dumps([int(x) for x in self.listPre]),json.dumps([int(x) for x in self.listRe])])
+        
         print("List acc: ", self.listAcc)
-        print("List pre: ", self.listPre)
-        print("List re: ", self.listRe)
-        print("Res value: ",pd.DataFrame ( self.res[0]).value_counts())
-        print("Count train: ",traindf.iloc[-1].value_counts())
-        print("Count test: ",testdf.iloc[-1].value_counts())
-        print("Count List rank: ",pd.DataFrame( self.listRank).value_counts())
-        print("List rank: ",len( self.listRank))
+        # print("List pre: ", self.listPre)
+        # print("List re: ", self.listRe)
+        # print("Res value: ",pd.DataFrame ( self.res[0]).value_counts())
+        # print("Count train: ",traindf.iloc[-1].value_counts())
+        # print("Count test: ",testdf.iloc[-1].value_counts())
+        # print("Count List rank: ",pd.DataFrame( self.listRank).value_counts())
+        # print("List rank: ",len( self.listRank))
+        
+    def FKG_test(self,train,test,Turn = None,Modality = None):
+        from sklearn.model_selection import train_test_split
+        base = np.array(train)
+        test = np.array(test)
+        import time
+        start = time.time()
+        A = self.calculateA(base)
+        M = self.calculateM(base)
+        B = self.calculateB(base,A,M)
+        C = self.calculateC(base,B)
+        totalTime = time.time() - start
+        print("FKG train finish: ", totalTime)
+
+        start = time.time()
+        self.testAccuracy(base,test,C)
+        totalTimeTest = time.time() - start
+        print("FKG test finish: ", totalTimeTest)
+        results = {
+            "Train Time": [totalTime],
+            "Test Time" : [totalTimeTest],
+            "Total Time" : [totalTime + totalTimeTest],
+            "Test Accuracy": [self.listAcc],
+            "Test Precision": [sum(self.listPre) / len(self.listPre) if self.listPre else 0],
+            "Test Recall": [sum(self.listRe) / len(self.listRe) if self.listPre else 0],
+            "Count Train": [base.iloc[-1].value_counts().to_dict()],
+            "Count Test": [test.iloc[-1].value_counts().to_dict()],
+            "Count List Rank": [pd.DataFrame( self.listRank).value_counts().to_dict()],
+            "List Rank Length": [len( self.listRank)],
+            "Label": self.res,
+        }
+        base_dir = os.getcwd()
+        input_dir = os.path.join(base_dir,f"data/FKG/{Modality}/")
+        
+        if not os.path.exists(input_dir):
+            os.makedirs(input_dir)
+            
+        AData = pd.DataFrame(A)
+        AData.to_csv(os.path.join(input_dir,"A.csv"))
+        BData = pd.DataFrame(B)
+        BData.to_csv(os.path.join(input_dir,"B.csv"))
+        CData = pd.DataFrame(C)
+        CData.to_csv(os.path.join(input_dir,"C.csv"))
+        MData = pd.DataFrame(M)
+        MData.to_csv(os.path.join(input_dir,"M.csv"))
+        
+        dfData = pd.DataFrame(results)
+        
+        
+        if not os.path.exists(input_dir):
+            os.makedirs(input_dir)
+        dfData.to_csv(os.path.join(input_dir,f"Results_FKG.csv"), index=False)
+        
+        
+        csv_file = os.path.join(input_dir,f"Test/acc.csv")
+        if(Turn!=None):
+            with open(csv_file, mode="a", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+
+                if file.tell() == 0:
+                    writer.writerow(["id","Modality","Model","Accuracy", "F1 Score", "Recall"])
+
+                writer.writerow([Turn,Modality,"FKG",f"{ self.listAcc[0]/100:.2%}",json.dumps([int(x) for x in self.listPre]),json.dumps([int(x) for x in self.listRe])])
+        
+        print("List acc: ", self.listAcc)
