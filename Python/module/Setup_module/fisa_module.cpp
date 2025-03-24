@@ -213,11 +213,6 @@ pair<int, double> FISA(const vector<vector<int>> &base, const vector<vector<doub
             D[i] = *max_element(C_values[i].begin(), C_values[i].end()) + *min_element(C_values[i].begin(), C_values[i].end());
         }
     }
-    cout << "D = ";
-    for (double x : D) {
-        cout << x << " ";
-    }
-    cout << endl;
 
     int bestIndex = max_element(D.begin(), D.end()) - D.begin();
     double D_sum = accumulate(D.begin(), D.end(), 0.0);
