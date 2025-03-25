@@ -1,0 +1,2 @@
+Train Time,Test Time,Total Time,Test Accuracy,Test Precision,Test Recall,Count Train,Count Test,Count List Rank,List Rank Length,Label
+88.81460189819336,127.68581223487854,216.5004141330719,[33.22],16.61,50.0,"{3: 3, 1: 3, 2: 1, 4: 1, 7: 1}","{1: 6, 2: 2, 8: 1}","{(1.0,): 2337, (0.2,): 977}",3314,[1. 1. 1. ... 1. 1. 1.]
