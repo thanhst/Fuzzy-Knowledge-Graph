@@ -197,7 +197,7 @@ pair<int, double> FISA(const vector<vector<int>> &base, const vector<vector<doub
                     if (base[r][a] == list[a] && base[r][b] == list[b] && base[r][c] == list[c])
                     {
                         int label = base[r][colum - 1]-1;
-                        C_values[label][t] = C[r][t + (label * cols)];
+                        C_values[label][t] += C[r][t + (label * cols)];
                     }
                 }
                 t++;

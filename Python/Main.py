@@ -13,7 +13,7 @@ import pandas as pd
     # cluster = [2,2,3,3,3,2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5,5,5,5,5,6]
 print("Only Image Feature")
 FIS(fileName="Only Image Feature",
-    filePath="D:\Study\InternAIRC\source_code_Tan\source_code_Tan\Python\data\Dataset\OnlyImageFeture.csv",
+    filePath="D:\Study\InternAIRC\source_code_Tan\source_code_Tan\Python\data\Dataset\OnlyImageFeature.csv",
     cluster=[5,5,5,5,5,5,5,5,5,5,6])
 
 # print("Only Table Feature Remove Missing")
@@ -40,22 +40,32 @@ FIS(fileName="Only Image Feature",
 #     cluster = [2,2,3,3,3,2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5,5,5,5,5,6])
 
 
-from module.FKG.FKG import FKG
-# from module.FKG.FKG_model import FKG
-traindf = pd.read_csv('./data/Dataset/OnlyImageFeture.csv')
+# from module.FKG.FKG import FKG
+from module.FKG.FKG_model import FKG
+traindf = pd.read_csv('./data/FIS/output/Only Image Feature/Rule_List.csv')
 # numerical_cols = traindf.select_dtypes(include=['number']).columns
 # for col in numerical_cols:
 #     traindf[col].fillna(traindf[col].median(), inplace=True)
-traindf = traindf.values
-
-base = [[int(float(x)) for x in row] for row in traindf]
+# traindf = traindf.values
+base = [[int(float(x)) for x in row] for row in traindf.values]
 base = pd.DataFrame(base)
 fkg_instance = FKG()
-traindata = pd.read_csv("./data/FIS/output/Test/train.csv")
-testdata = pd.read_csv("./data/FIS/output/Test/test.csv")
-fkg_instance.FKG_test(train=traindata,test=testdata,Turn=None,Modality="Only Image Feature")
-# train=pd.read_csv
-# fkg_instance.FKG_test(train=,test=,Turn=None,Modality="Only Image Feture")
+fkg_instance.FKG(df = base,Turn=None,Modality="Only Image Feature")
+
+# base = [[int(float(x)) for x in row] for row in traindf]
+# base = pd.DataFrame(base)
+# fkg_instance = FKG()
+# fkg_instance.FKG()
+
+# traindata = pd.read_csv("./data/FIS/output/Test/train_int.csv")
+# testdata = pd.read_csv("./data/FIS/output/Test/test_int.csv")
+# traindata = [[int(float(x)) for x in row] for row in traindata.values]
+# traindata = pd.DataFrame(traindata)
+# testdata = [[int(float(x)) for x in row] for row in testdata.values]
+# testdata = pd.DataFrame(testdata)
+# fkg_instance = FKG()
+# fkg_instance.FKG_test(train=traindata,test=testdata,Turn=None,Modality="Only Image Feature")
+
 
 # traindf = pd.read_csv('./data/FIS/output/Only Table Feature Remove Missing/Rule_List.csv')
 # traindf = traindf.values

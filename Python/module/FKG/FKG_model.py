@@ -240,6 +240,8 @@ class FKG:
             except RuntimeError as e:
                 print("Exception: ",e)
         self.res.append(X)
+        print(X)
+        print(X_test)
         self.listAcc.append(self.Acc(X,X_test))
         self.listPre = list(self.Tprecision(X, X_test).values())
         self.listRe = list(self.Trecall(X, X_test).values())
@@ -313,10 +315,8 @@ class FKG:
         
     def FKG_test(self,train,test,Turn = None,Modality = None):
         from sklearn.model_selection import train_test_split
-        traindf, testdf  = train,test
-        base = traindf.values.tolist()
-        test = testdf.values.tolist()
-        labels_col = traindf.shape[1] - 1
+        base = np.array(train)
+        test = np.array(test)
         import time
         start = time.time()
         A = fs.calculateA(base)
@@ -337,8 +337,8 @@ class FKG:
             "Test Accuracy": [self.listAcc],
             "Test Precision": [sum(self.listPre) / len(self.listPre) if self.listPre else 0],
             "Test Recall": [sum(self.listRe) / len(self.listRe) if self.listPre else 0],
-            "Count Train": [traindf.iloc[-1].value_counts().to_dict()],
-            "Count Test": [testdf.iloc[-1].value_counts().to_dict()],
+            # "Count Train": [base.iloc[-1].value_counts().to_dict()],
+            # "Count Test": [test.iloc[-1].value_counts().to_dict()],
             "Count List Rank": [pd.DataFrame( self.listRank).value_counts().to_dict()],
             "List Rank Length": [len( self.listRank)],
             "Label": self.res,

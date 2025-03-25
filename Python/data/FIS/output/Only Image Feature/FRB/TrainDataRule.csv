@@ -1,451 +1,436 @@
 0,1,2,3,4,5,6,7,8,9,10
-Very Low,Low,High,Low,High,Low,Very Low,Very Low,Very Low,Low,2.0
-Very Low,Very Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,High,1.0
-Very Low,Low,High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Low,1.0
-Medium,High,Low,High,Low,Medium,Very Low,Very Low,Very Low,Medium,3.0
-Low,Medium,Medium,Low,Medium,Low,Very Low,Very Low,Very Low,Low,4.0
-Medium,Medium,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,4.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Very Low,Very Low,Very Low,High,1.0
-Very High,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Very High,Medium,Very High,Medium,High,Medium,High,3.0
-Low,Medium,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Very Low,Very High,High,Very Low,Medium,Very Low,Very Low,Very Low,Low,1.0
-Medium,Medium,Medium,Low,Very Low,Very Low,Low,Very Low,Low,High,1.0
-Low,Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Low,High,Very High,Very Low,High,Very Low,Very Low,Very Low,Low,3.0
-Medium,Medium,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Low,Medium,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,4.0
-Very Low,Very Low,High,Medium,High,Low,Very Low,Very Low,Very Low,High,1.0
-Very Low,Very Low,Very High,High,Very High,High,Very Low,Very Low,Very Low,Very Low,5.0
-Low,Low,Medium,Medium,Very Low,Medium,Very Low,Very Low,Very Low,Medium,5.0
-Medium,High,Low,Very Low,Very Low,Very Low,Low,Very Low,Very Low,High,1.0
-Low,Low,High,Low,Very Low,Low,Low,Very Low,Low,Medium,1.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Low,Very Low,Low,High,1.0
-Low,Low,High,Very Low,Very High,Very Low,Medium,Very Low,Low,Very High,1.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Very High,Medium,Very High,Very High,3.0
-Very Low,Very Low,Very High,Medium,High,Medium,Medium,Very Low,Medium,High,3.0
-Very Low,Low,High,Low,High,Low,Medium,Very Low,Medium,Very High,3.0
-Very Low,Very Low,Very High,High,Very High,Medium,High,High,High,Very High,1.0
-Medium,Medium,Low,Low,Very Low,Low,Very Low,Very Low,Very Low,Low,5.0
-Low,Low,High,Medium,Very Low,Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,Very High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
-Very Low,Very Low,Very High,Medium,High,Medium,Very Low,Very Low,Low,Medium,4.0
-Very Low,Very Low,High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Very Low,5.0
-Very Low,Low,High,Medium,Very Low,Medium,Low,Very Low,Low,High,1.0
-Very High,Very High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,5.0
-Very Low,Very Low,High,High,High,Medium,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,Very High,High,High,High,Low,Very Low,Low,Low,5.0
-High,High,Low,Low,Medium,Very Low,Low,Very Low,Very Low,High,1.0
-Low,Medium,Medium,Medium,Very Low,Medium,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Low,High,High,Very Low,High,Very Low,Very Low,Very Low,Very Low,5.0
-Low,Very Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Very Low,High,Low,High,Low,Very Low,Very Low,Very Low,Medium,2.0
-Very Low,Low,High,Low,High,Low,Very Low,Very Low,Very Low,Medium,3.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Low,Very Low,Low,Medium,5.0
-Low,Medium,Medium,Low,High,Low,Low,Very Low,Low,High,2.0
-Low,Low,Medium,High,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,5.0
-Very Low,Very Low,Very High,Medium,High,Low,Low,Very Low,Low,Medium,2.0
-Low,Low,Medium,Medium,Medium,Medium,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Very Low,High,Medium,High,Medium,Low,Very Low,Low,Medium,3.0
-Low,Medium,Medium,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Medium,2.0
-Very Low,Very Low,Very High,Low,Very High,Low,Low,Very Low,Very Low,High,3.0
-Very Low,Very Low,Very High,High,High,High,Medium,Very Low,Low,Very High,5.0
-Very Low,Very Low,Very High,Low,Very High,Low,Medium,Very Low,Low,High,1.0
-Very Low,Very Low,Very High,High,Very Low,High,Very High,Medium,Very High,High,5.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Very High,Low,High,Very High,3.0
-Very Low,Very Low,Very High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,High,3.0
-Low,Medium,Medium,High,Medium,Medium,Very Low,Very Low,Very Low,Low,5.0
-Low,Medium,Low,Low,Very Low,Very Low,Low,Very Low,Low,Very High,2.0
-Low,Low,High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,High,Low,Very High,Low,Low,Very Low,Low,High,1.0
-Very Low,Very Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Low,Medium,Medium,Low,High,Low,Very Low,Very Low,Very Low,Very Low,5.0
-Very Low,Very Low,Very High,High,High,High,Low,Very Low,Low,High,1.0
-Very Low,Low,High,High,Very Low,Medium,Low,Very Low,Low,High,3.0
-Medium,High,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Low,Low,High,Low,Very High,Very Low,Low,Very Low,Low,High,3.0
-Very Low,Very Low,Very High,Very High,High,High,High,High,High,High,1.0
-Low,Medium,Medium,Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,3.0
-Medium,High,Low,Very Low,High,Very Low,Low,Very Low,Low,Very High,3.0
-High,Very High,Very Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,High,3.0
-Very Low,Very Low,Very High,High,Very High,Medium,Low,Very Low,Low,Low,6.0
-Very Low,Very Low,Very High,High,High,Medium,Very Low,Very Low,Very Low,Medium,3.0
-High,Very High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,1.0
-Medium,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,Very High,High,Very High,Medium,Medium,High,Medium,Very High,1.0
-Very Low,Low,High,High,Very High,High,Low,Very Low,Low,Medium,5.0
-Low,Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,High,Very High,High,Medium,High,Medium,High,1.0
-Low,Medium,Medium,High,Medium,Medium,Very Low,Very Low,Very Low,Very Low,4.0
-Very Low,Very Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Low,3.0
-Low,Low,High,Low,High,Low,Very Low,Very Low,Very Low,Low,1.0
-High,Very High,Very Low,Very Low,Very Low,Very Low,Low,Very Low,Very Low,Very High,3.0
-Very Low,Very Low,Very High,Very High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,5.0
-Low,Medium,Medium,Low,High,Very Low,Low,Very Low,Very Low,High,1.0
-High,High,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Low,Low,High,Low,High,Low,Low,Very Low,Low,Medium,4.0
-High,High,Low,Very Low,High,Very Low,Medium,Very Low,Low,Very High,5.0
-Very Low,Low,High,Low,Very High,Very Low,High,High,Medium,Very High,1.0
-Medium,High,Very Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
-Very Low,Very Low,Very High,High,Medium,High,Very Low,Very Low,Very Low,Very Low,5.0
-Very Low,Very Low,High,Medium,High,Medium,Medium,Very Low,Low,Very High,3.0
-Low,Medium,Medium,Very Low,High,Very Low,Low,Very Low,Very Low,High,2.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Low,Low,High,Medium,Very Low,Medium,Very Low,Very Low,Very Low,Low,5.0
-Medium,Medium,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Very Low,Very Low,Low,Medium,3.0
-Low,Medium,Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,Very High,High,Very Low,High,Low,Very Low,Low,Low,1.0
-Very Low,Very Low,Very High,High,Very High,Medium,Very Low,Very Low,Very Low,Medium,4.0
-Medium,Medium,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
-Very Low,Very Low,Very High,Very High,Very High,High,Medium,Low,High,Medium,1.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Medium,Very Low,Low,High,1.0
-Very Low,Very Low,Very High,Medium,High,Medium,High,High,Medium,Very High,3.0
-Very Low,Very Low,Very High,Medium,Very High,Low,High,High,High,Very High,1.0
-Very Low,Very Low,Very High,Low,Very High,Low,Medium,Very Low,Low,Very High,1.0
-Very Low,Low,High,High,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,3.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Medium,High,Medium,Very High,3.0
-Low,Medium,Medium,Medium,Medium,Low,Very Low,Very Low,Very Low,Low,1.0
-Medium,Medium,Low,Low,Medium,Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,Very High,Medium,High,Medium,Medium,Very Low,Medium,Very High,3.0
-Very Low,Very Low,High,Medium,Very High,Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,Very High,High,Medium,High,Very Low,Very Low,Low,Medium,3.0
-Very Low,Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Very Low,5.0
-Low,Medium,Low,Low,Medium,Very Low,Low,Very Low,Low,Very High,3.0
-Very Low,Very Low,Very High,High,Very High,High,Low,Very Low,Low,Medium,1.0
-Very Low,Very Low,High,Medium,High,Medium,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Very High,Low,High,Very High,5.0
-Very High,Very High,Very Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Medium,High,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Medium,3.0
-Very Low,Very Low,High,Very Low,Very High,Very Low,Low,Very Low,Very Low,Medium,4.0
-Very Low,Very Low,Very High,Very High,Very Low,High,Low,Very Low,Low,Medium,3.0
-Very Low,Low,High,High,High,Medium,Very Low,Very Low,Very Low,Very Low,5.0
-Very Low,Very Low,Very High,High,Very High,Medium,Medium,Very Low,Low,Very High,5.0
-Low,Low,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Low,High,High,Very Low,Medium,Low,Very Low,Low,Low,3.0
-Very Low,Very Low,Very High,High,Very High,Medium,Very High,Very High,Very High,Very High,5.0
-Very Low,Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Low,5.0
-Medium,High,Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Medium,High,Medium,High,Very Low,Medium,Very High,1.0
-Medium,Medium,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Low,Medium,Low,Low,Very Low,Low,Low,Very Low,Low,High,5.0
-Very Low,Low,High,Medium,High,Low,Medium,Very Low,Low,Very High,3.0
-Very Low,Low,High,Medium,Very Low,Medium,Very Low,Very Low,Very Low,Low,1.0
-Low,Low,High,Low,Very Low,Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Low,High,Medium,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,3.0
-Low,Low,High,Medium,Very Low,Low,Very Low,Very Low,Very Low,Low,3.0
-Very High,Very High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,5.0
-Very Low,Very Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Very Low,1.0
-High,High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Very Low,Medium,3.0
-Very Low,Low,High,Low,High,Low,Medium,Very Low,Medium,High,3.0
-Very Low,Very Low,Very High,High,Very High,Medium,Very High,Low,High,Very High,5.0
-Low,Low,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
-Very Low,Very Low,High,Medium,High,Medium,Medium,Very Low,Medium,Very High,5.0
-Low,Low,High,Low,High,Low,Very Low,Very Low,Very Low,Very Low,2.0
-Very Low,Very Low,Very High,Low,Very High,Low,High,High,High,Very High,2.0
-Very Low,Low,High,Low,Very High,Low,Medium,Very Low,Medium,Very High,3.0
-Very Low,Low,High,Medium,High,Low,High,High,Medium,Very High,1.0
-Very Low,Very Low,High,Medium,Very High,Low,Very Low,Very Low,Very Low,Very Low,4.0
-Very Low,Low,High,High,Medium,High,Low,Very Low,Low,Medium,5.0
-Low,Low,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,4.0
-Medium,Medium,Low,Low,Very Low,Very Low,Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,Very High,Very High,High,High,Very Low,Very Low,Very Low,Low,5.0
-Low,Low,High,Medium,Medium,Medium,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Low,High,Low,Very High,Low,High,High,High,Very High,3.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Low,Very Low,Low,Very High,1.0
-Very Low,Low,High,Medium,Very Low,Low,Low,Very Low,Low,High,1.0
-Very Low,Very Low,Very High,High,High,Medium,Low,Very Low,Medium,High,1.0
-Very Low,Very Low,Very High,Very High,Very Low,High,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Medium,Very High,Low,High,High,Medium,High,4.0
-Low,Low,Medium,Low,High,Low,Very Low,Very Low,Very Low,Very Low,1.0
-Low,Low,Medium,Very Low,Very High,Very Low,Low,Very Low,Very Low,High,1.0
-Very Low,Very Low,High,High,Very Low,Medium,Medium,High,High,High,1.0
-Very Low,Very Low,Very High,High,High,Medium,Medium,High,Medium,Medium,3.0
-Very Low,Very Low,Very High,Low,Very High,Low,High,High,Medium,Very High,3.0
-Low,Medium,Medium,High,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,High,Medium,Very Low,Medium,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Low,High,High,Very Low,Medium,Low,Very Low,Low,Very High,1.0
-Very Low,Low,High,Low,High,Low,High,High,Medium,Very High,3.0
-Low,Medium,Medium,Medium,Very Low,Low,Low,Very Low,Low,High,3.0
-Very Low,Very Low,High,Low,High,Low,Low,Very Low,Low,Medium,1.0
-Low,Low,High,Low,High,Very Low,Low,Very Low,Low,High,2.0
-Very Low,Very Low,Very High,High,Very Low,High,Very Low,Very Low,Very Low,Very Low,3.0
-Very Low,Very Low,Very High,High,High,Medium,Very Low,Very Low,Very Low,Very Low,5.0
-Medium,High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,1.0
-Medium,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
-Very Low,Low,High,Medium,Very Low,Low,Very Low,Very Low,Very Low,Very Low,3.0
-Very Low,Very Low,Very High,High,Very Low,High,Low,Very Low,Low,Medium,3.0
-Low,Medium,Medium,High,Very Low,High,Very Low,Very Low,Very Low,Very Low,5.0
-Very Low,Very Low,Very High,High,Very High,High,Very Low,Very Low,Low,Low,5.0
-Medium,Medium,Medium,Very Low,High,Very Low,Low,Very Low,Low,Very High,4.0
-Low,Medium,Medium,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
-Low,Medium,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,High,Very High,High,Very Low,Very Low,Low,Medium,5.0
-Very Low,Very Low,Very High,High,High,High,Low,Very Low,Medium,Medium,3.0
-Very Low,Very Low,Very High,Very High,High,Very High,Low,Very Low,Low,Medium,1.0
-Very Low,Very Low,Very High,Medium,Very High,Low,High,High,Medium,Very High,3.0
-Very Low,Low,High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,3.0
-Medium,Medium,Medium,Low,Very Low,Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,Very High,High,High,Medium,Medium,High,Medium,High,3.0
-Very Low,Very Low,Very High,High,Very High,Medium,Very Low,Very Low,Low,Medium,3.0
-Very Low,Very Low,Very High,Low,Very High,Low,Very Low,Very Low,Very Low,Low,1.0
-Medium,Medium,Medium,Medium,Medium,Low,Very Low,Very Low,Very Low,Low,1.0
-High,High,Very Low,Very Low,Medium,Very Low,Low,Very Low,Low,High,3.0
-Very Low,Very Low,Very High,Medium,High,Medium,High,High,High,Very High,3.0
-Low,Low,High,Medium,Very Low,Low,Low,Very Low,Low,High,1.0
-Very Low,Very Low,High,High,Very High,Medium,Very Low,Very Low,Very Low,Low,5.0
-Medium,High,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
-Very Low,Very Low,Very High,High,High,Medium,High,Low,High,Very High,3.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Low,Very Low,Low,Medium,5.0
-Medium,Medium,Medium,Very Low,Very Low,Very Low,Low,Very Low,Very Low,High,3.0
-Low,Medium,Medium,Medium,Very Low,Low,Very Low,Very Low,Very Low,Medium,4.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,High,Low,High,Very High,1.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,4.0
-Low,High,Low,Low,High,Low,Very Low,Very Low,Very Low,Very Low,5.0
-High,Very High,Very Low,Very Low,Medium,Very Low,Low,Very Low,Very Low,High,1.0
-Very Low,Very Low,Very High,High,Very High,Medium,Low,Very Low,Low,High,3.0
-Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Low,Very High,6.0
-Very Low,Very Low,Very High,Very High,Medium,Very High,Very Low,Very Low,Very Low,Low,1.0
-Medium,Medium,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Low,1.0
-High,High,Very Low,Very Low,Very Low,Very Low,Low,Very Low,Very Low,High,3.0
-Very Low,Very Low,Very High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Medium,High,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,4.0
-Medium,Medium,Medium,Low,Medium,Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,Very High,High,High,High,Very Low,Very Low,Low,Low,5.0
-Very Low,Very Low,Very High,High,Very Low,Medium,Very Low,Very Low,Very Low,Medium,4.0
-Very Low,Very Low,Very High,Very High,High,Very High,Very Low,Very Low,Very Low,Very Low,5.0
-Low,Medium,Medium,Very Low,Very High,Very Low,Low,Very Low,Very Low,High,1.0
-Very Low,Very Low,Very High,Very High,Very Low,High,Medium,High,Medium,High,2.0
-Very Low,Very Low,Very High,Very High,High,High,Medium,High,Medium,High,1.0
-Very Low,Very Low,Very High,High,Very High,Medium,High,Low,Very High,Very High,3.0
-Very Low,Very Low,Very High,Low,Very High,Low,Very Low,Very Low,Very Low,Very Low,5.0
-Very Low,Very Low,Very High,High,Very Low,High,Medium,Very Low,Low,High,5.0
-Medium,High,Low,Low,High,Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Low,High,Low,Very High,Low,Low,Very Low,Very Low,High,3.0
-Low,Low,Medium,High,Medium,Medium,Very Low,Very Low,Very Low,Medium,4.0
-High,Very High,Very Low,Very Low,Medium,Very Low,Medium,Very Low,Low,Very High,3.0
-High,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,High,Medium,High,Low,Low,Very Low,Low,High,1.0
-Very Low,Very Low,Very High,High,High,Medium,Very Low,Very Low,Low,Medium,3.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Very High,Medium,Very High,Very High,3.0
-Very Low,Low,High,Low,Very High,Low,Low,Very Low,Very Low,Medium,3.0
-Very Low,Very Low,Very High,Low,Very High,Low,Medium,High,Medium,Very High,1.0
-Very Low,Very Low,Very High,Very High,High,High,Very Low,Very Low,Very Low,Medium,1.0
-Low,Low,Medium,Medium,High,Low,Very Low,Very Low,Very Low,Medium,4.0
-Very Low,Very Low,High,High,Very Low,Medium,High,High,Medium,Very High,3.0
-Very Low,Very Low,Very High,High,High,High,Medium,Very Low,Medium,High,4.0
-Very Low,Low,High,Medium,High,Low,Medium,High,Medium,Very High,3.0
-Very Low,Low,High,High,Very Low,Medium,Very Low,Very Low,Low,Medium,1.0
-High,High,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Medium,5.0
-Very Low,Very Low,Very High,High,High,High,High,Low,High,High,3.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,High,High,Medium,High,3.0
-Low,Medium,Medium,Medium,Medium,Low,Very Low,Very Low,Very Low,Very Low,3.0
-Very High,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Low,High,Medium,High,Low,Low,Very Low,Low,Medium,4.0
-Medium,Medium,Low,Very Low,Very High,Very Low,Medium,Very Low,Low,Very High,3.0
-Low,Medium,Medium,Medium,Medium,Medium,Very Low,Very Low,Very Low,Medium,1.0
-Medium,Medium,Low,Very Low,Very Low,Very Low,Low,Very Low,Low,Very High,3.0
-Very Low,Very Low,Very High,High,High,Medium,High,High,High,High,3.0
-Low,Medium,Medium,Low,High,Low,Very Low,Very Low,Very Low,Low,1.0
-Low,Medium,Medium,Low,High,Very Low,Low,Very Low,Low,Very High,3.0
-Very Low,Low,High,Medium,High,Medium,Very Low,Very Low,Very Low,Very Low,4.0
-Low,Low,High,Low,High,Very Low,Very Low,Very Low,Very Low,Medium,4.0
-Very Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Medium,High,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,High,4.0
-Low,Low,Medium,Low,High,Low,Low,Very Low,Low,Medium,1.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Low,Very Low,Very Low,High,6.0
-Very Low,Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Low,6.0
-Very Low,Very Low,Very High,High,Very High,Medium,Medium,Very Low,Low,High,5.0
-Very Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,3.0
-Low,Low,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Low,High,Low,High,Low,Low,Very Low,Very Low,Medium,5.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,High,High,High,Very High,1.0
-Very Low,Very Low,Very High,Very High,Medium,Very High,Very Low,Very Low,Low,Low,3.0
-Very Low,Very Low,Very High,High,High,Medium,Medium,Very Low,Medium,High,3.0
-Low,Medium,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Medium,3.0
-Low,Medium,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
-High,High,Very Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,5.0
-Medium,Medium,Low,Medium,Medium,Low,Very Low,Very Low,Very Low,Very Low,5.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Medium,Very Low,Medium,High,5.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Medium,Very Low,Low,High,1.0
-Very Low,Low,High,High,Medium,Medium,Very Low,Very Low,Very Low,Very Low,5.0
-Low,Low,Medium,Low,High,Very Low,Low,Very Low,Low,Very High,3.0
-Very Low,Low,High,Very High,High,Very High,Very Low,Very Low,Very Low,Very Low,6.0
-Very Low,Very Low,Very High,Medium,High,Low,Low,Very Low,Low,High,1.0
-Very Low,Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,Very High,High,High,High,High,High,Medium,High,1.0
-High,High,Low,Low,Medium,Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,High,Low,Very High,Very Low,Low,Very Low,Low,High,1.0
-Low,Low,Medium,Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
-Very Low,Very Low,High,Low,Very High,Low,High,High,High,Very High,4.0
-Low,Low,High,Low,Very High,Low,Low,Very Low,Very Low,Medium,1.0
-Very Low,Low,High,Medium,Very High,Low,High,High,High,Very High,3.0
-Very Low,Very Low,Very High,Very Low,Very High,Very Low,High,High,Medium,Very High,6.0
-Very Low,Very Low,Very High,High,Very High,High,Very High,Low,High,Very High,5.0
-Medium,Medium,Medium,Low,Very Low,Very Low,Medium,Very Low,Low,Very High,3.0
-Very Low,Very Low,High,High,High,Medium,Very Low,Very Low,Very Low,Low,5.0
-Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,2.0
-Low,Low,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Low,Medium,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
-Low,Medium,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Medium,3.0
-Low,Low,Medium,Low,Very Low,Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Low,Very Low,Medium,High,3.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Low,Very Low,Very Low,High,4.0
-Very Low,Very Low,Very High,Very High,Very Low,Very High,Low,Very Low,Low,Medium,3.0
-Low,Medium,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
-Low,Medium,Medium,Medium,Medium,Medium,Very Low,Very Low,Very Low,Low,1.0
-Low,Low,High,Medium,Very Low,Low,Low,Very Low,Low,Medium,3.0
-Very Low,Very Low,Very High,Medium,High,Medium,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Very High,Very High,High,Medium,High,Medium,Very High,5.0
-Very Low,Low,High,Medium,High,Medium,Medium,Very Low,Medium,High,2.0
-Very Low,Very Low,Very High,High,Very High,Medium,Medium,High,Medium,High,1.0
-Medium,Medium,Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Low,1.0
-Low,Medium,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-High,Very High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Medium,Medium,Low,Very Low,Very High,Very Low,Low,Very Low,Low,Very High,5.0
-Medium,High,Very Low,Very Low,Medium,Very Low,Low,Very Low,Very Low,High,3.0
-Low,Low,High,Low,High,Very Low,Very Low,Very Low,Very Low,Low,2.0
-Very Low,Very Low,Very High,High,High,High,Low,Very Low,Very Low,Medium,5.0
-Very Low,Very Low,Very High,High,Very High,Medium,Low,Very Low,Low,Medium,4.0
-Low,Low,Medium,Low,Very Low,Low,Very Low,Very Low,Very Low,Medium,3.0
-Very Low,Very Low,Very High,Very High,Very Low,Very High,Medium,Very Low,Medium,High,3.0
-Very Low,Low,High,Medium,Very Low,Low,Medium,Very Low,Medium,Very High,1.0
-Very Low,Low,High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,Very High,High,Very Low,High,Medium,High,Medium,High,1.0
-Very Low,Low,High,Low,High,Very Low,Low,Very Low,Low,High,2.0
-Very Low,Very Low,Very High,Medium,High,Medium,Very Low,Very Low,Very Low,Medium,1.0
-Medium,Medium,Medium,Very Low,High,Very Low,Low,Very Low,Low,High,2.0
-Very Low,Very Low,Very High,Low,Very High,Low,Very High,Medium,Very High,Very High,3.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,High,High,Medium,Very High,6.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Low,Very Low,Very Low,High,4.0
-Low,Medium,Medium,Low,Very Low,Low,Low,Very Low,Low,Medium,1.0
-Low,Medium,Low,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
-Very Low,Low,High,High,High,Medium,Very Low,Very Low,Very Low,Low,3.0
-Medium,High,Low,Low,Low,Low,Very Low,Very Low,Very Low,Very Low,4.0
-Very Low,Very Low,High,Medium,High,Medium,Medium,High,Medium,Very High,1.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Medium,Very Low,Low,Very High,4.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Very Low,5.0
-Low,Low,High,Medium,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,3.0
-Very Low,Very Low,Very High,Very High,Medium,High,Very Low,Very Low,Very Low,Low,1.0
-Medium,High,Low,Low,Low,Very Low,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Low,High,Low,Very High,Low,Low,Very Low,Low,High,1.0
-Very Low,Very Low,Very High,High,Very High,High,High,Low,High,Very High,6.0
-Very Low,Very Low,Very High,Very High,Very Low,Very High,Medium,High,High,High,5.0
-Very Low,Low,High,High,Medium,Medium,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Low,High,Medium,High,Low,Low,Very Low,Low,High,1.0
-Very Low,Very Low,Very High,Low,Very High,Low,Very High,Low,Very High,Very High,3.0
-Low,Low,Medium,Medium,Very Low,Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,High,High,High,High,Very Low,Very Low,Very Low,Low,4.0
-Medium,High,Low,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,Very High,High,Very High,High,Medium,Very Low,Medium,High,6.0
-Low,Medium,Medium,Low,Very Low,Low,Low,Very Low,Low,High,1.0
-Low,Low,High,Low,Very High,Low,Low,Very Low,Low,High,1.0
-Low,Low,Medium,Low,High,Low,Low,Very Low,Low,High,3.0
-Medium,Medium,Low,Low,Very Low,Very Low,Low,Very Low,Low,Very High,3.0
-Low,Medium,Medium,Very Low,Very High,Very Low,Low,Very Low,Very Low,Medium,3.0
-Very Low,Low,High,Low,Very High,Very Low,Low,Very Low,Low,Very High,1.0
-Very Low,Low,High,Medium,High,Medium,Low,Very Low,Low,Medium,2.0
-Very Low,Very Low,High,Medium,High,Medium,Low,Very Low,Low,High,1.0
-Low,Medium,Medium,Low,High,Low,Medium,High,Medium,Very High,1.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Low,Very Low,Very Low,Medium,1.0
-Medium,Medium,Medium,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,5.0
-Medium,High,Very Low,Low,Low,Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Low,High,Very Low,Very High,Very Low,Medium,Very Low,Low,Very High,3.0
-Very Low,Very Low,Very High,Very High,Medium,Very High,Low,Very Low,Low,Medium,1.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Very Low,Very Low,Very Low,High,1.0
-Low,Low,High,Very Low,Very High,Very Low,High,High,Medium,Very High,3.0
-Very Low,Very Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Low,1.0
-Low,Low,High,Medium,High,Low,Low,Very Low,Low,High,3.0
-Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
-High,High,Low,Low,Very Low,Low,Very Low,Very Low,Very Low,Low,1.0
-Low,Medium,Medium,Low,Very Low,Low,Very Low,Very Low,Very Low,Medium,3.0
-Very Low,Very Low,Very High,Very Low,Very High,Very Low,Medium,Very Low,Medium,Very High,4.0
-Very Low,Low,High,Medium,High,Low,Medium,Very Low,Medium,Very High,4.0
-High,High,Low,Very Low,High,Very Low,Very High,High,Medium,Very High,3.0
-High,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Medium,6.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Medium,4.0
-Very Low,Very Low,Very High,Very High,Very High,High,Medium,High,Medium,Medium,4.0
-Very Low,Very Low,Very High,Very High,High,Very High,Very Low,Very Low,Low,Low,5.0
-Medium,High,Low,Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Low,Very Low,Very Low,Medium,5.0
-Very Low,Very Low,Very High,High,High,Medium,Medium,Very Low,Low,High,1.0
-Very Low,Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Medium,High,Medium,High,Low,High,High,3.0
-Low,Medium,Medium,Low,Very Low,Low,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Low,High,Medium,High,Medium,Low,Very Low,Low,High,3.0
-Very Low,Low,High,Low,Very High,Low,Low,Very Low,Low,Very High,3.0
-Very Low,Very Low,High,High,Medium,High,High,High,Medium,Very High,1.0
-High,High,Low,Low,Low,Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Medium,Very Low,Low,Very High,4.0
-Very Low,Very Low,High,Medium,Very High,Low,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Medium,Very Low,Medium,High,3.0
-Very Low,Very Low,Very High,Medium,High,Medium,Medium,High,Medium,High,3.0
-Very Low,Very Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Medium,5.0
+Low,Low,High,Medium,Low,Medium,Very Low,Very Low,Very Low,Low,3.0
 Low,Medium,Medium,Low,High,Low,Very Low,Very Low,Very Low,Medium,3.0
-Very Low,Very Low,Very High,Low,Very High,Very Low,Low,Very Low,Low,Medium,1.0
-Very Low,Very Low,Very High,Medium,High,Low,High,High,Medium,Very High,3.0
-Low,Low,High,Low,Very High,Very Low,Low,Very Low,Very Low,High,3.0
-Medium,Medium,Medium,Low,Medium,Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,Very High,Very High,Very Low,High,Low,Very Low,Low,High,1.0
-Very Low,Low,High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Very Low,5.0
-Medium,Medium,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
+Low,Low,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Low,Low,Medium,Low,High,Low,Low,Very Low,Low,High,2.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Very Low,Very Low,Very Low,Low,6.0
+Very Low,Very Low,High,Medium,High,Low,Low,Very Low,Very Low,Medium,2.0
+Medium,High,Low,Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
+Low,Low,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Very High,High,High,Medium,High,Medium,Medium,1.0
+Very High,Very High,Very Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
+Very Low,Low,High,Very Low,Very High,Very Low,High,High,Medium,Very High,3.0
+Very Low,Very Low,Very High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,6.0
+Very Low,Very Low,Very High,High,High,Medium,Low,Very Low,Low,High,1.0
+Very Low,Very Low,Very High,Very High,Medium,Very High,Medium,Very Low,Medium,High,3.0
+Very Low,Low,High,Low,Very High,Very Low,High,High,Medium,Very High,1.0
+Very Low,Very Low,High,Medium,High,Medium,High,Low,High,Very High,3.0
+High,High,Low,Very Low,Medium,Very Low,Low,Very Low,Low,Very High,1.0
+Medium,Medium,Low,Very Low,High,Very Low,Medium,Very Low,Medium,Very High,3.0
+Low,Low,Medium,Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Very Low,Very High,High,High,Medium,High,High,Medium,High,1.0
+Medium,Medium,Medium,Low,Medium,Very Low,Low,Very Low,Low,High,1.0
+Medium,High,Low,Low,Medium,Very Low,Low,Very Low,Very Low,High,1.0
+Low,Low,Medium,Medium,Medium,Low,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,Medium,Low,Low,Low,Low,Very Low,Very Low,Very Low,Low,1.0
+High,Very High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Medium,1.0
+Low,Medium,Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,High,High,Low,High,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Low,Very High,Low,Very Low,Very Low,Very Low,High,4.0
+Low,Low,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,2.0
+Very Low,Low,High,Very Low,Very High,Very Low,Medium,Very Low,Medium,Very High,3.0
+Low,Low,Medium,Medium,Low,Medium,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,Very High,High,Very High,High,High,Low,High,High,6.0
+Low,Low,Medium,Low,Medium,Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Very High,Low,High,Very High,5.0
+Medium,Medium,Medium,Low,Medium,Low,Very Low,Very Low,Very Low,Medium,4.0
+Low,Low,High,High,Low,Medium,Very Low,Very Low,Very Low,Medium,3.0
+Very Low,Very Low,Very High,Very High,High,Very High,Medium,High,Medium,Medium,4.0
+Low,Medium,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
+Very Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Very Low,Medium,3.0
+Very Low,Very Low,Very High,High,Very High,Medium,High,High,Medium,Very High,1.0
+Very Low,Low,High,Medium,Medium,Medium,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Low,High,Low,Very High,Very Low,Medium,Very Low,Low,Very High,3.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Low,Very Low,Very Low,Medium,4.0
+High,Very High,Very Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
+Low,Medium,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
+Low,Medium,Medium,Medium,Low,Medium,Low,Very Low,Low,Medium,2.0
+Low,Low,High,Low,Medium,Low,Very Low,Very Low,Very Low,Medium,1.0
+Medium,Medium,Low,Low,Low,Low,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,High,Low,Low,Medium,Low,Low,Very Low,Low,High,5.0
+Low,Low,High,Medium,High,Low,Low,Very Low,Low,Medium,3.0
+Medium,Medium,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,4.0
+Very Low,Very Low,High,Medium,High,Low,Medium,Very Low,Low,High,3.0
+Low,Medium,Medium,Low,Medium,Low,Very Low,Very Low,Very Low,Low,3.0
+Medium,Medium,Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,Medium,Low,Low,Low,Very Low,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,High,Medium,Very High,Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Medium,Very Low,Medium,High,5.0
+Very Low,Very Low,Very High,High,High,High,Low,High,Medium,Medium,3.0
+Medium,Medium,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,6.0
+Medium,High,Low,Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,High,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Very Low,High,High,Medium,Medium,High,High,Medium,Very High,3.0
+Very Low,Low,High,Medium,High,Low,Low,Very Low,Low,Medium,3.0
+Very Low,Very Low,Very High,Very Low,Very High,Very Low,Low,Very Low,Low,High,3.0
+Medium,High,Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Medium,4.0
+Very Low,Very Low,High,Medium,High,Medium,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,Very High,Very High,High,High,High,Low,High,High,1.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,High,High,Medium,High,3.0
+Very Low,Very Low,High,Very Low,Very High,Very Low,High,High,Medium,Very High,3.0
+Very Low,Very Low,Very High,High,Very High,Medium,Medium,Very Low,Low,High,5.0
+High,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,Medium,Medium,Very Low,High,Very Low,Low,Very Low,Low,Medium,2.0
+Medium,High,Low,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,5.0
+Very Low,Very Low,Very High,Medium,High,Medium,Low,Very Low,Low,Low,1.0
+Low,Medium,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Medium,Medium,Low,Low,High,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,High,High,Medium,Medium,Very Low,Very Low,Very Low,Low,3.0
+Low,Medium,Low,Very Low,High,Very Low,Low,Very Low,Low,Very High,3.0
+Very Low,Low,High,Low,Very High,Low,Low,Very Low,Very Low,High,1.0
+Very Low,Very Low,Very High,High,Medium,High,Medium,High,Medium,Medium,3.0
+Low,High,Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Low,High,Low,High,Low,Low,Very Low,Low,Medium,1.0
+Medium,Medium,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Medium,4.0
+Very Low,Very Low,Very High,Medium,Very High,Low,High,Low,High,Very High,6.0
+Very Low,Low,High,Very Low,Very High,Very Low,High,Very Low,Medium,Very High,5.0
+Very Low,Very Low,Very High,Low,Very High,Low,Very High,Low,High,Very High,3.0
+Medium,Medium,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,Very High,Very Low,Very High,Very Low,Low,Very Low,Very Low,High,1.0
 Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,High,3.0
-Medium,Medium,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Medium,Medium,Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Very Low,Very Low,Very High,High,Very High,Medium,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Low,High,Low,Very High,Low,Medium,Very Low,Low,Very High,3.0
-Very Low,Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Very Low,5.0
-Low,Low,High,Low,High,Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Low,Very High,2.0
-Very Low,Very Low,Very High,High,Very Low,High,Low,Very Low,Low,High,4.0
-Low,Low,High,Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
-Very Low,Very Low,Very High,High,Very High,Medium,High,Low,High,Very High,1.0
-Very Low,Very Low,Very High,High,Very High,High,Very High,Medium,Very High,Very High,5.0
-Medium,Medium,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
+Low,High,Low,Low,High,Low,Very Low,Very Low,Very Low,Very Low,5.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,Very High,Very Low,Very High,Very Low,Medium,Very Low,Low,Very High,3.0
+Very Low,Very Low,Very High,Very High,Medium,Very High,High,Low,High,Medium,4.0
+Very Low,Low,High,Low,Very High,Low,Low,Very Low,Low,Medium,1.0
+Low,Low,High,Low,Medium,Low,Medium,Very Low,Medium,High,1.0
+Very Low,Low,High,Low,Very High,Very Low,Medium,Very Low,Medium,Very High,3.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,High,Low,High,High,3.0
+High,High,Low,Very Low,High,Very Low,Medium,Very Low,Low,Very High,5.0
+Very Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Low,Very High,4.0
 Very Low,Very Low,Very High,Medium,Very High,Medium,Medium,High,Medium,High,1.0
-Low,Low,Medium,Low,High,Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Low,Very High,Low,Low,Very Low,Low,Medium,3.0
-Very Low,Very Low,Very High,Low,Very High,Low,Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,Very High,High,Very Low,High,High,High,High,Very High,3.0
-Low,Low,High,High,Medium,Medium,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Low,High,Very Low,Very High,Very Low,Medium,Very Low,Medium,Very High,1.0
-High,High,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Very Low,Very Low,Very Low,Low,4.0
-Very Low,Very Low,Very High,Medium,Very High,Medium,Medium,Very Low,Low,High,1.0
-High,High,Very Low,Very Low,Medium,Very Low,Low,Very Low,Very Low,High,5.0
-Low,Low,High,Medium,Very Low,Medium,Very Low,Very Low,Very Low,Medium,2.0
-Very Low,Very Low,Very High,Medium,Very High,Low,Medium,High,Medium,High,4.0
-Very Low,Very Low,Very High,High,Medium,High,Medium,High,Medium,High,3.0
-Low,Medium,Medium,Very Low,High,Very Low,Low,Very Low,Very Low,Medium,2.0
-Low,Low,High,Medium,High,Medium,Very Low,Very Low,Very Low,Low,3.0
-Very Low,Very Low,Very High,High,High,Medium,Very Low,Very Low,Very Low,Low,3.0
-Medium,High,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
-Low,Medium,Medium,Low,High,Very Low,Low,Very Low,Low,Medium,2.0
-Medium,High,Low,Low,Very Low,Very Low,Low,Very Low,Very Low,High,1.0
-Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Low,High,1.0
-Very Low,Low,High,High,Very Low,Medium,Very Low,Very Low,Very Low,Medium,3.0
-Very Low,Low,High,Low,Very High,Very Low,Low,Very Low,Very Low,Medium,3.0
-Medium,High,Low,Low,Medium,Very Low,Low,Very Low,Low,High,2.0
-Low,Medium,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
-High,Very High,Very Low,Low,Low,Very Low,Very Low,Very Low,Very Low,Medium,1.0
-Medium,Medium,Medium,Medium,Medium,Medium,Very Low,Very Low,Very Low,Low,1.0
-Low,Medium,Medium,High,Very High,Medium,Very Low,Very Low,Very Low,Low,5.0
-Low,Medium,Medium,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,Very Low,Very Low,Very Low,High,1.0
+Low,Medium,Medium,Medium,Medium,Medium,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Low,Very High,Low,Very Low,Very Low,Very Low,Very Low,5.0
+Very Low,Very Low,Very High,High,High,Medium,High,Low,High,Very High,3.0
+Low,Medium,Medium,Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
+Very Low,Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Low,3.0
+Low,Low,High,Very Low,Very High,Very Low,Medium,Very Low,Low,Very High,1.0
+Very Low,Very Low,Very High,High,Very High,High,Very Low,Very Low,Very Low,Medium,6.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Medium,Very Low,Medium,Medium,1.0
+Very Low,Very Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,Very High,Very High,High,Very High,Low,Very Low,Low,Medium,1.0
+Very Low,Very Low,Very High,High,Medium,High,Medium,High,Medium,High,1.0
+Low,Medium,Medium,Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,4.0
+Very Low,Very Low,High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
+Low,Medium,Medium,Low,Medium,Low,Very Low,Very Low,Very Low,Very Low,1.0
+Very Low,Very Low,Very High,High,Very High,Medium,High,Low,High,High,3.0
+Low,Medium,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
+Medium,Medium,Medium,Very Low,Medium,Very Low,Low,Very Low,Very Low,High,3.0
+Very Low,Very Low,Very High,Very High,High,High,Very Low,Very Low,Very Low,Low,5.0
+Very Low,Very Low,Very High,High,Very High,Medium,Very High,Very High,Very High,Very High,3.0
+Very Low,Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Medium,3.0
+Very Low,Very Low,Very High,High,High,High,Low,Very Low,Very Low,Medium,5.0
+Very Low,Very Low,Very High,Very High,Very High,Very High,Low,Very Low,Low,Medium,5.0
+Very Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Low,High,1.0
+Very Low,Low,High,Low,High,Low,Low,Very Low,Very Low,Medium,3.0
+Very Low,Very Low,High,Low,Very High,Very Low,Low,Very Low,Very Low,Medium,4.0
+Very Low,Low,High,Medium,High,Low,Low,Very Low,Very Low,Medium,3.0
+Medium,High,Low,Low,Low,Very Low,Very Low,Very Low,Very Low,Low,4.0
+Very Low,Low,High,Low,High,Low,High,High,Medium,High,3.0
+Very Low,Low,High,Very High,Low,High,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,Medium,Low,Medium,Low,Low,Very Low,Very Low,Very Low,Very Low,5.0
+Very Low,Very Low,Very High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,High,3.0
+High,High,Very Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,5.0
+Very Low,Low,High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Very Low,5.0
 Low,Low,High,Low,High,Low,Low,Very Low,Very Low,Medium,1.0
-High,High,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
-Medium,Medium,Medium,Medium,Medium,Low,Very Low,Very Low,Very Low,Very Low,4.0
-Very Low,Very Low,High,Very Low,Very High,Very Low,Medium,Very Low,Low,High,3.0
-Low,Medium,Medium,Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,1.0
-Medium,Medium,Medium,Medium,Medium,Low,Medium,High,Medium,Very High,3.0
-Medium,High,Low,Medium,Low,Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,High,High,Medium,High,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,Low,Very Low,Very Low,Medium,4.0
+Low,Low,High,Low,Very High,Low,Low,Very Low,Very Low,Medium,2.0
+Low,Low,High,Medium,Medium,Medium,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Low,High,Very Low,Very High,Very Low,Medium,High,Medium,Very High,1.0
+Very High,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
+Low,Very Low,Very High,Low,Very High,Low,Very Low,Very Low,Very Low,Low,3.0
+Medium,Medium,Medium,Medium,Low,Medium,Very Low,Very Low,Very Low,Very Low,4.0
+Medium,High,Low,Low,Very Low,Low,Very Low,Very Low,Very Low,Low,3.0
+Low,Medium,Medium,Low,Medium,Low,Low,Very Low,Low,High,1.0
+Very Low,Very Low,Very High,High,High,High,Very Low,Very Low,Very Low,Medium,4.0
+Very High,Very High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Very Low,Very Low,Very High,High,High,High,High,High,Medium,Very High,3.0
+Low,Medium,Medium,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,High,Low,High,Low,Very Low,Low,Medium,3.0
+Very Low,Very Low,Very High,Very Low,Very High,Very Low,Medium,Very Low,Low,High,1.0
+Very Low,Very Low,Very High,High,Medium,High,Very Low,Very Low,Very Low,Very Low,2.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Low,Very Low,Very Low,High,6.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Low,Very Low,Very Low,High,4.0
+Low,Low,Medium,Very Low,Very High,Very Low,High,High,Medium,Very High,1.0
+High,Very High,Very Low,Very Low,Medium,Very Low,Low,Very Low,Very Low,High,1.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Medium,Very Low,Medium,Very High,3.0
+Very Low,Low,High,Very High,Medium,High,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,High,High,High,Very Low,Very Low,Low,Low,1.0
+Very Low,Very Low,Very High,Very High,Medium,Very High,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Low,High,Low,Very High,Low,High,Low,High,High,3.0
+Medium,High,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Very Low,Very High,High,High,High,High,Low,High,High,3.0
+Medium,Medium,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Low,Low,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Low,Low,High,Low,Very High,Very Low,Low,Very Low,Very Low,Medium,1.0
+Medium,Medium,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,Very High,Very High,Very High,High,Low,Very Low,Low,Low,4.0
+Very Low,Very Low,Very High,Medium,High,Low,Medium,High,Medium,High,1.0
+Low,Medium,Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
+Very Low,Very Low,Very High,Very High,High,Very High,High,Low,High,Very High,3.0
+Low,Low,Medium,High,Low,Medium,Very Low,Very Low,Very Low,Medium,4.0
+Low,Medium,Medium,Low,Medium,Low,Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,Very High,High,High,Medium,Medium,High,Medium,High,3.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Medium,Very Low,Low,High,1.0
+Very Low,Very Low,Very High,High,High,Medium,High,Low,High,High,3.0
+Low,Low,High,Low,High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
 Low,Low,High,Low,Very High,Low,Medium,Very Low,Low,High,1.0
-Medium,High,Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
-Medium,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Low,1.0
-Very Low,Very Low,Very High,Very High,High,Very High,Medium,High,Medium,High,4.0
+Low,Medium,Medium,Low,High,Very Low,High,High,Medium,Very High,3.0
+Low,Low,Medium,Low,High,Low,Low,Very Low,Low,Medium,3.0
+Very Low,Very Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Very Low,1.0
+Low,Low,High,High,High,Medium,Low,Very Low,Low,Medium,5.0
+Very Low,Very Low,Very High,Very High,Medium,High,Medium,Low,High,Medium,3.0
+Low,Medium,Medium,Low,High,Low,Medium,High,Medium,Very High,1.0
+Very Low,Very Low,Very High,High,High,High,High,High,High,High,3.0
+Low,Medium,Medium,Medium,Low,Medium,Very Low,Very Low,Very Low,Very Low,5.0
+Medium,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,Very High,Low,High,Very High,3.0
+Low,Low,Medium,Medium,High,Low,Very Low,Very Low,Very Low,Medium,4.0
+Very Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Very Low,Very High,Medium,High,Low,Low,Very Low,Low,Medium,1.0
+Low,Low,High,Low,High,Low,Very Low,Very Low,Very Low,Very Low,2.0
+Very Low,Low,High,Medium,Medium,Low,Low,Very Low,Low,Medium,1.0
+High,Very High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,5.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Low,5.0
+Low,Low,Medium,Low,Very High,Low,Very Low,Very Low,Very Low,Very Low,3.0
 Very Low,Very Low,Very High,Low,Very High,Low,Low,Very Low,Low,Very High,6.0
+Low,Medium,Medium,Medium,Medium,Low,Low,Very Low,Low,High,1.0
+High,High,Low,Low,Low,Very Low,Low,Very Low,Very Low,Medium,1.0
+Very Low,Low,High,Low,Very High,Low,Low,Very Low,Low,High,3.0
+Low,Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Low,1.0
+Medium,Medium,Medium,Low,Medium,Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Low,High,Medium,Medium,Low,Very Low,Very Low,Very Low,Low,1.0
+Medium,Medium,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
+Very Low,Very Low,Very High,Very High,Very High,High,Low,Very Low,Low,Medium,6.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,Medium,High,Medium,Very High,3.0
+Medium,Medium,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
+Very Low,Very Low,High,Low,Very High,Low,Medium,Very Low,Medium,Very High,3.0
+Low,Low,High,Low,Medium,Low,Very Low,Very Low,Very Low,Very Low,1.0
+Very Low,Very Low,High,Medium,High,Medium,Low,Very Low,Low,High,3.0
+Medium,High,Very Low,Very Low,Low,Very Low,Low,Very Low,Very Low,High,3.0
+Low,Medium,Medium,High,Very High,Medium,Very Low,Very Low,Very Low,Low,5.0
+Very Low,Very Low,Very High,Very High,Low,Very High,Medium,High,Medium,High,3.0
+Medium,High,Low,Medium,Low,Low,Very Low,Very Low,Very Low,Low,5.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Low,Very Low,Low,High,5.0
+Very Low,Very Low,Very High,High,Very High,Medium,Very Low,Very Low,Very Low,Low,1.0
+Medium,Medium,Low,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Very Low,5.0
+Very Low,Very Low,Very High,High,High,High,Medium,Very Low,Low,Very High,5.0
+Very Low,Very Low,High,Medium,High,Medium,Low,Very Low,Low,Medium,3.0
+Very Low,Very Low,High,Medium,Very High,Low,Very Low,Very Low,Very Low,Very Low,4.0
+Medium,Medium,Low,Low,Medium,Very Low,Low,Very Low,Low,High,3.0
+Low,Low,Medium,Very Low,Very High,Very Low,Low,Very Low,Very Low,High,6.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,High,High,High,High,3.0
+Very Low,Very Low,High,Low,High,Low,Low,Very Low,Very Low,Medium,3.0
+Very Low,Low,High,Low,Very High,Low,Medium,High,Medium,Very High,3.0
+Low,Low,High,Very Low,Very High,Very Low,Medium,Very Low,Medium,Very High,1.0
+Medium,High,Very Low,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Very Low,Very High,Medium,High,Low,High,High,Medium,Very High,3.0
+High,High,Very Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,Very High,High,Very High,Medium,Low,Very Low,Low,Low,3.0
+High,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
+Medium,High,Low,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
+Very Low,Very Low,Very High,High,High,High,Low,Very Low,Low,High,2.0
+Medium,High,Low,Low,Low,Low,Very Low,Very Low,Very Low,Medium,5.0
+Very Low,Low,High,Low,Very High,Low,Low,Very Low,Very Low,Medium,5.0
+High,High,Very Low,Very Low,Low,Very Low,Low,Very Low,Very Low,High,5.0
+Low,Medium,Medium,Medium,Low,Medium,Very Low,Very Low,Very Low,Low,4.0
+Low,Medium,Medium,Low,High,Low,Very Low,Very Low,Very Low,Very Low,5.0
+Very Low,Low,High,High,Medium,Medium,Low,Very Low,Low,High,3.0
+Very Low,Very Low,Very High,Medium,High,Medium,High,High,Medium,High,1.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Very High,Low,High,Very High,2.0
+Low,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Very Low,Very Low,Very High,High,Very High,Medium,Low,Very Low,Low,Medium,4.0
+Very Low,Very Low,High,Low,Very High,Low,Low,Very Low,Low,Medium,1.0
+Low,Low,Medium,Low,Very High,Very Low,Low,Very Low,Very Low,Medium,1.0
+Medium,Medium,Medium,Low,Medium,Low,Medium,Very Low,Medium,High,3.0
+Very Low,Low,High,Medium,High,Medium,Low,Very Low,Low,Medium,2.0
+Very Low,Very Low,Very High,Medium,High,Medium,Low,Very Low,Low,High,6.0
+Very Low,Low,High,Low,Very High,Very Low,Low,Very Low,Low,High,4.0
+Very Low,Low,High,Low,High,Low,Very Low,Very Low,Very Low,Low,2.0
+Low,Medium,Medium,Very Low,High,Very Low,Medium,Very Low,Low,Very High,3.0
+Very Low,Very Low,Very High,Very High,High,Very High,High,Low,High,High,5.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Medium,High,Medium,Very High,1.0
+Low,Low,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
+Medium,Medium,Medium,Low,Low,Low,Very Low,Very Low,Very Low,Very Low,1.0
+High,Very High,Very Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Medium,Medium,Low,Very Low,Very High,Very Low,Low,Very Low,Low,Very High,5.0
+Low,Medium,Low,Low,Medium,Low,Low,Very Low,Low,High,5.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,Medium,Very Low,Low,High,2.0
+Very Low,Low,High,Medium,High,Medium,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,Very High,High,Medium,High,High,Low,High,High,3.0
+Low,Low,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Low,Medium,Medium,Medium,Medium,Low,Very Low,Very Low,Very Low,Low,1.0
+Low,Medium,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
+Medium,High,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,High,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Low,Medium,Medium,Low,High,Very Low,Low,Very Low,Very Low,High,1.0
+Low,Medium,Medium,Very Low,High,Very Low,Low,Very Low,Very Low,Medium,2.0
+Medium,Medium,Medium,Low,Medium,Very Low,Medium,Very Low,Low,High,3.0
+Very Low,Very Low,Very High,High,High,Medium,Low,Very Low,Medium,High,2.0
+Very Low,Low,High,Low,High,Low,Very Low,Very Low,Very Low,Medium,3.0
+Medium,High,Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
+Medium,High,Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Medium,3.0
+Very Low,Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Medium,1.0
+Low,Medium,Medium,Very Low,Very High,Very Low,Medium,Very Low,Low,Very High,3.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Medium,Very Low,Low,Very High,4.0
+Low,Low,High,Medium,Medium,Medium,Very Low,Very Low,Very Low,Medium,5.0
+Very Low,Very Low,Very High,High,High,High,Medium,High,Medium,High,3.0
+Very Low,Very Low,High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Very Low,5.0
+Low,Medium,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Low,Low,High,Medium,Medium,Medium,Very Low,Very Low,Very Low,Very Low,3.0
+Low,Medium,Medium,Very Low,Very High,Very Low,Low,Very Low,Low,Very High,2.0
+Very Low,Low,High,Low,Very High,Low,Medium,Very Low,Medium,High,3.0
+High,High,Very Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,High,Low,Very Low,High,Very Low,Medium,Very Low,Low,Very High,4.0
+Very Low,Low,High,Medium,Medium,Medium,Very Low,Very Low,Very Low,Low,3.0
+Low,Medium,Medium,Low,High,Very Low,Low,Very Low,Low,High,3.0
+Low,Medium,Medium,Very Low,High,Very Low,Low,Very Low,Very Low,High,3.0
+Very Low,Very Low,High,Low,Very High,Low,Medium,High,Medium,Very High,1.0
+Low,Low,Medium,Low,High,Low,High,Low,High,Very High,1.0
+Very Low,Low,High,High,Medium,Medium,Low,Very Low,Low,Low,3.0
+Low,Low,High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Very Low,Very High,Low,Very High,Low,High,High,High,Very High,2.0
+Low,Low,High,Low,High,Low,Low,Very Low,Low,High,3.0
+Very Low,Very Low,Very High,High,Very High,Medium,Very Low,Very Low,Very Low,Medium,4.0
+Medium,Medium,Low,Very Low,Medium,Very Low,Low,Very Low,Low,High,3.0
+High,Very High,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,Very High,High,Medium,High,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Low,High,High,Medium,High,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Very High,Very High,Very High,Very Low,Very Low,Very Low,Low,5.0
+High,High,Very Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Very Low,Very Low,Very High,Very High,High,Very High,Very Low,Very Low,Low,Low,5.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,Low,Very Low,Low,Medium,1.0
+Very Low,Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Very Low,4.0
+Low,Low,High,Low,Very High,Very Low,Low,Very Low,Low,High,3.0
+Low,Low,High,Medium,Medium,Low,Low,Very Low,Low,Medium,3.0
+Very Low,Low,High,Low,High,Low,Medium,High,Medium,Very High,1.0
+Very Low,Very Low,Very High,Low,Very High,Low,Low,Very Low,Low,Medium,1.0
+Very Low,Very Low,Very High,Very High,Low,High,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,Very High,Very High,Very High,High,Medium,Low,High,Medium,1.0
+Very Low,Very Low,Very High,High,Medium,High,Medium,Very Low,Low,High,5.0
+Very Low,Very Low,Very High,Low,Very High,Low,Very Low,Very Low,Very Low,Medium,3.0
+Very Low,Low,High,High,Very High,High,Low,Very Low,Low,Medium,5.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,Very Low,Very Low,Low,Low,1.0
+Very Low,Very Low,Very High,Medium,High,Medium,Low,Very Low,Low,Medium,3.0
+Very Low,Low,High,High,High,Medium,Very Low,Very Low,Very Low,Very Low,5.0
+Low,Low,High,Medium,High,Low,Low,Very Low,Low,High,3.0
+Very Low,Low,High,Low,High,Low,Low,Very Low,Low,High,3.0
+Very Low,Low,High,Medium,High,Low,Low,Very Low,Low,High,2.0
+Very Low,Very Low,Very High,High,High,High,Very Low,Very Low,Very Low,Low,1.0
+Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Low,High,1.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,Low,Very Low,Low,High,4.0
+Very Low,Very Low,Very High,High,Very High,Medium,Low,Very Low,Low,High,5.0
+Very Low,Low,High,Low,High,Low,Medium,High,Medium,High,3.0
+Low,Low,High,Low,Very High,Low,Low,Very Low,Low,High,5.0
+Low,Medium,Medium,Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Low,Low,High,Medium,Very High,Medium,Very Low,Very Low,Very Low,Low,1.0
+Medium,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,Very High,High,Very High,High,Medium,High,Medium,High,1.0
+Very Low,Very Low,Very High,Low,Very High,Low,Medium,High,Medium,High,1.0
+Low,Medium,Medium,Medium,Medium,Low,Low,Very Low,Low,Medium,3.0
+Medium,High,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,High,Very Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
+Low,Medium,Medium,High,Medium,Medium,Very Low,Very Low,Very Low,Very Low,1.0
+Low,Medium,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,1.0
+Medium,Medium,Low,Low,Low,Low,Very Low,Very Low,Very Low,Medium,4.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Very Low,Very Low,Very Low,Very Low,5.0
+Very Low,Very Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
+Very Low,Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,High,4.0
+Medium,Medium,Low,Very Low,Medium,Very Low,Low,Very Low,Very Low,High,3.0
+Very Low,Very Low,Very High,High,High,Medium,Very Low,Very Low,Very Low,Medium,3.0
+Very Low,Very Low,High,Very Low,Very High,Very Low,Low,Very Low,Low,High,3.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Medium,High,Medium,High,4.0
+Very Low,Very Low,Very High,Very High,Very High,Very High,Low,Very Low,Medium,Medium,5.0
+Very Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Very Low,High,3.0
+Medium,Medium,Medium,Low,Low,Low,Medium,High,Medium,High,3.0
+High,High,Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Low,High,High,High,Medium,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Very High,High,Very High,Low,Very Low,Low,Low,3.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,High,Low,High,Very High,1.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Low,Very Low,Low,High,3.0
+Low,Medium,Medium,Medium,Low,Low,Low,Very Low,Low,Medium,2.0
+Very Low,Very Low,Very High,Low,Very High,Low,Low,Very Low,Very Low,Medium,1.0
+Very Low,Low,High,High,Medium,Medium,Very Low,Very Low,Low,Medium,3.0
+Very Low,Very Low,High,Medium,High,Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Low,Very High,Low,Very Low,Very Low,Very Low,Low,5.0
+Very Low,Very Low,Very High,High,Medium,Medium,Very Low,Very Low,Very Low,Medium,4.0
+Very Low,Low,High,Low,Very High,Low,Low,Very Low,Low,Very High,1.0
+Low,Medium,Medium,Medium,Low,Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Low,Very High,Low,High,High,Medium,Very High,1.0
+Low,Medium,Medium,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,2.0
+Low,Low,High,Medium,Medium,Medium,Low,Very Low,Low,High,1.0
+Medium,Medium,Medium,Medium,Low,Low,Medium,High,Medium,High,3.0
+Low,Low,High,Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,4.0
+Low,Low,Medium,Very Low,Very High,Very Low,Medium,Very Low,Low,Very High,1.0
+Medium,High,Low,Very Low,Medium,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Low,Medium,Medium,Low,Medium,Low,High,Low,High,Very High,3.0
+High,High,Very Low,Very Low,Medium,Very Low,Low,Very Low,Very Low,High,1.0
+High,High,Low,Very Low,High,Very Low,Very High,High,Medium,Very High,3.0
+Low,Medium,Medium,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Low,Very High,Low,Medium,Very Low,Medium,High,3.0
+Low,Low,Medium,Low,High,Very Low,Low,Very Low,Very Low,Medium,3.0
+Very Low,Very Low,Very High,Medium,Very High,Low,Medium,Very Low,Low,Medium,3.0
+Very Low,Very Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,Low,Very High,Low,Very High,Medium,Very High,Very High,3.0
+Very Low,Very Low,Very High,Very High,High,Very High,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Low,High,Low,Very High,Very Low,Low,Very Low,Very Low,Medium,3.0
+Very Low,Low,High,Medium,High,Low,Medium,Very Low,Medium,High,1.0
+High,High,Low,Low,Medium,Very Low,Very Low,Very Low,Very Low,Medium,2.0
+Very Low,Very Low,Very High,High,Medium,High,Very Low,Very Low,Very Low,Medium,2.0
+Very Low,Very Low,Very High,Very High,High,High,Very Low,Very Low,Very Low,Very Low,5.0
+Medium,Medium,Medium,Low,Low,Low,Very Low,Very Low,Very Low,Medium,1.0
+Medium,High,Low,Very Low,Medium,Very Low,Low,Very Low,Low,High,1.0
+Very Low,Low,High,Low,Very High,Low,Medium,Very Low,Low,Very High,1.0
+Very Low,Low,High,Medium,Very High,Low,Very Low,Very Low,Very Low,Low,1.0
+Low,Medium,Medium,Very Low,Very High,Very Low,Low,Very Low,Low,High,3.0
+Low,Low,High,Very Low,Very High,Very Low,Low,Very Low,Low,Very High,6.0
+Very Low,Very Low,High,Low,Very High,Low,High,High,High,Very High,4.0
+Very Low,Very Low,Very High,High,Very High,High,High,High,High,Very High,1.0
+Very Low,Very Low,Very High,Low,Very High,Low,Medium,Very Low,Low,Very High,6.0
+Very Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,High,3.0
+Low,Medium,Medium,Low,Low,Low,Very Low,Very Low,Very Low,Very Low,3.0
+Medium,High,Low,Low,Medium,Low,Very Low,Very Low,Very Low,Low,4.0
+Low,Low,High,Medium,Low,Medium,Low,Very Low,Low,Medium,3.0
+Low,Medium,Medium,Medium,Very Low,Low,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Low,High,Low,Very High,Low,Medium,Very Low,Low,High,3.0
+Very Low,Very Low,High,Medium,Very High,Low,Low,Very Low,Low,Medium,2.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,3.0
+Low,Low,High,Low,High,Low,Low,Very Low,Low,Medium,3.0
+Very Low,Low,High,Low,Very High,Very Low,Low,Very Low,Very Low,High,3.0
+Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Very Low,Very High,Low,Very High,Low,High,High,Medium,High,3.0
+Low,Low,High,Very Low,Very High,Very Low,Very Low,Very Low,Very Low,Medium,2.0
+Medium,High,Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Low,3.0
+Low,Medium,Medium,Low,High,Very Low,Very Low,Very Low,Very Low,Low,1.0
+Very Low,Low,High,Very Low,Very High,Very Low,Medium,Very Low,Low,High,1.0
+Very Low,Low,High,Low,Very High,Very Low,Very Low,Very Low,Very Low,Low,3.0
+High,Very High,Very Low,Very Low,Medium,Very Low,Low,Very Low,Very Low,Very High,3.0
+High,Very High,Very Low,Very Low,Low,Very Low,Very Low,Very Low,Very Low,Medium,1.0
+Low,Medium,Medium,Low,High,Very Low,Low,Very Low,Low,Medium,2.0
+Very Low,Very Low,High,High,Medium,Medium,Low,Very Low,Low,Medium,2.0
+Low,Medium,Medium,High,Low,Medium,Very Low,Very Low,Very Low,Low,5.0
+Very Low,Very Low,Very High,High,High,Medium,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Very Low,Very High,High,Very High,Medium,Medium,High,Medium,High,1.0
+Medium,High,Low,Very Low,Medium,Very Low,Low,Very Low,Very Low,Medium,3.0
+Low,Medium,Low,Very Low,High,Very Low,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Low,High,High,High,Medium,Low,Very Low,Low,Medium,5.0
+Very Low,Very Low,Very High,Medium,Very High,Medium,High,High,High,Very High,3.0
+Very Low,Low,High,Low,Very High,Low,Very Low,Very Low,Very Low,Low,3.0
+Very Low,Low,High,Medium,Very High,Low,Very Low,Very Low,Very Low,High,6.0
+Medium,Medium,Low,Medium,Medium,Medium,Low,Very Low,Low,Medium,5.0
+Very Low,Low,High,Medium,Medium,Medium,Very Low,Very Low,Very Low,Medium,1.0
+Low,Low,Medium,Medium,Medium,Low,Low,Very Low,Low,Very High,6.0
+Very Low,Very Low,Very High,Medium,High,Low,Medium,Very Low,Low,High,4.0
+Very Low,Very Low,Very High,Low,Very High,Very Low,Low,Very Low,Low,Very High,4.0
+Very Low,Very Low,Very High,Medium,High,Medium,Very Low,Very Low,Very Low,Medium,1.0
+Very Low,Low,High,Medium,High,Low,Medium,High,Medium,High,2.0
+Very Low,Very Low,Very High,High,Medium,Medium,Very Low,Very Low,Very Low,Low,1.0
+Medium,High,Low,Low,Low,Low,Very Low,Very Low,Very Low,Very Low,3.0
+Very Low,Very Low,Very High,High,High,High,Low,Very Low,Low,Low,5.0
+Very Low,Low,High,Medium,High,Medium,Medium,High,Medium,High,2.0
+Very Low,Very Low,Very High,Medium,Very High,Low,High,High,High,Very High,3.0
