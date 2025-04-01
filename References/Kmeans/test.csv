@@ -1,0 +1,6 @@
+Contrast Feature,Dissimilarity Feature,Homogeneity Feature,Energy Feature,Correlation Feature,ASM Feature,diagnostic
+High,High,High,Medium,Medium,High,5
+Medium,Medium,Medium,High,Medium,Low,1
+Low,Low,High,Medium,High,High,5
+High,High,High,High,Low,Medium,1
+Low,Low,High,Medium,High,Medium,5

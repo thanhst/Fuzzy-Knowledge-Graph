@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.10)
+project(FisaModule)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Tuỳ chọn build (Static hoặc Shared)
+option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so)" ON)
+
+# Đặt tên file output cho từng hệ điều hành
+if(WIN32)
+    set(LIB_NAME fisa_module)
+else()
+    set(LIB_NAME fisa_module)
+endif()
+
+add_library(${LIB_NAME} fisa_module.cpp)
+
+set_target_properties(${LIB_NAME} PROPERTIES OUTPUT_NAME ${LIB_NAME})
