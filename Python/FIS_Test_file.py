@@ -14,14 +14,20 @@ def FIS_Test_file(Modality=None,Turn =None,fileName=None):
     startTime = time.time()
     predict_labels = []
     true_labels = []
-
+    rules =[]
+    
     data = pd.read_csv(os.path.join(base_dir,f"data/FIS/input/{fileName}/test_data.csv"))
-    print(os.path.join(base_dir,f"data/FIS/input/{fileName}/test_data.csv"))
+    # print(os.path.join(base_dir,f"data/FIS/input/{fileName}/test_data.csv"))
     label_index = data.shape[1]-1
     for i,r in data.iterrows():
         true_labels.append(r.values[label_index])
         sample_input = r.values[1:label_index]
-        predict_labels.append(test_fis(sample_input,fileName))
+        label,rule = test_fis(sample_input,fileName)
+        predict_labels.append(label)
+        rule = np.append(rule, r.values[label_index])
+        rules.append(rule)
+    # df_rule_test = pd.DataFrame(rules)
+    # df_rule_test.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/TestDataRule.csv"),index=False)
     true_labels = np.array(true_labels)
     predicted_labels = np.array(predict_labels)
     

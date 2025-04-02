@@ -1,0 +1,10 @@
+^D:\STUDY\INTERNAIRC\SOURCE_CODE_TAN\SOURCE_CODE_TAN\PYTHON\MODULE\SETUP_MODULE\CMAKE\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/Study/InternAIRC/source_code_Tan/source_code_Tan/Python/module/Setup_module/CMAKE -BD:/Study/InternAIRC/source_code_Tan/source_code_Tan/Python/module/Setup_module/CMAKE/build --check-stamp-file D:/Study/InternAIRC/source_code_Tan/source_code_Tan/Python/module/Setup_module/CMAKE/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

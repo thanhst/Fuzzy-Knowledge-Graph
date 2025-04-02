@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -flto -shared  -o fisa_module.so CMakeFiles/fisa_module.dir/fisa_module.cpp.o 

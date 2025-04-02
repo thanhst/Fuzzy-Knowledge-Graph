@@ -246,11 +246,10 @@ class FKG:
         self.listPre = list(self.Tprecision(X, X_test).values())
         self.listRe = list(self.Trecall(X, X_test).values())
         
-    def FKG(self,df,Turn = None,Modality = None):
+    def FKG(self,df,testdf,Turn = None,Modality = None):
         from sklearn.model_selection import train_test_split
-        traindf, testdf = train_test_split(df,test_size=0.30, random_state=None)
         base = df.values.tolist()
-        test = testdf.values.tolist()
+        test = testdf
         labels_col = df.shape[1] - 1
         import time
         start = time.time()
@@ -258,11 +257,12 @@ class FKG:
         M = fs.calculateM(base)
         B = fs.calculateB(base,A,M)
         C = fs.calculateC(base,B)
+        C_norm = min_max_normalize(C)
         totalTime = time.time() - start
         print("FKG train finish: ", totalTime)
 
         start = time.time()
-        self.testAccuracy(base,test,C)
+        self.testAccuracy(base,test,C_norm)
         totalTimeTest = time.time() - start
         print("FKG test finish: ", totalTimeTest)
         results = {
@@ -272,8 +272,8 @@ class FKG:
             "Test Accuracy": [self.listAcc],
             "Test Precision": [sum(self.listPre) / len(self.listPre) if self.listPre else 0],
             "Test Recall": [sum(self.listRe) / len(self.listRe) if self.listPre else 0],
-            "Count Train": [traindf.iloc[-1].value_counts().to_dict()],
-            "Count Test": [testdf.iloc[-1].value_counts().to_dict()],
+            # "Count Train": [traindf.iloc[-1].value_counts().to_dict()],
+            # "Count Test": [testdf.iloc[-1].value_counts().to_dict()],
             "Count List Rank": [pd.DataFrame( self.listRank).value_counts().to_dict()],
             "List Rank Length": [len( self.listRank)],
             "Label": self.res,
@@ -312,6 +312,8 @@ class FKG:
                 writer.writerow([Turn,Modality,"FKG",f"{ self.listAcc[0]/100:.2%}",json.dumps([int(x) for x in self.listPre]),json.dumps([int(x) for x in self.listRe])])
         
         print("List acc: ", self.listAcc)
+        print("List Pre: ", sum(self.listPre) / len(self.listPre) if self.listPre else 0)
+        print("List Re: ", sum(self.listRe) / len(self.listRe) if self.listRe else 0)
         
     def FKG_test(self,train,test,Turn = None,Modality = None):
         from sklearn.model_selection import train_test_split
@@ -377,3 +379,15 @@ class FKG:
                 writer.writerow([Turn,Modality,"FKG",f"{ self.listAcc[0]/100:.2%}",json.dumps([int(x) for x in self.listPre]),json.dumps([int(x) for x in self.listRe])])
         
         print("List acc: ", self.listAcc)
+        
+
+def gaussian_normalize(C):
+    C_mean = np.mean(C, axis=0)
+    C_std = np.std(C, axis=0)
+    C_normalized = (C - C_mean) / C_std
+    return C_normalized
+def min_max_normalize(C):
+    C_min = np.min(C, axis=0)
+    C_max = np.max(C, axis=0)
+    C_normalized = (C - C_min) / (C_max - C_min)
+    return C_normalized
