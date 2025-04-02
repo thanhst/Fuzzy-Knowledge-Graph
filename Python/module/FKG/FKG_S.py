@@ -4,9 +4,11 @@ import csv
 import json
 from module.Module_CPP import fisa_module as fs
 import os
+import random
+import time
 
-class FKG:
-    print("FKG LQT run")
+class FKGS:
+    print("FKGS run")
     def __init__(self):
         self.listAcc = []
         self.listPre = []
@@ -22,6 +24,48 @@ class FKG:
         if k == 1:
             return n
         return self.combination(k - 1, n - 1) + self.combination(k, n - 1)
+
+    def diff(self,Rule1, Rule2):
+        if Rule1[-1] != Rule2[-1]:
+            return -1
+        m = len(Rule1)
+        count = 0
+        for i in range(m-1):
+            if Rule1[i] == Rule2[i]:
+                count += 1
+        return count/m
+    
+    def sampling(self,base, ran, e, k = 2):
+        num = len(base)
+        R = []
+        list_index = []
+        while (len(R)<num*ran/100):
+            index = random.randrange(num)
+            while (index in list_index):
+                index = random.randrange(num)
+            T = []
+            T.append(index)
+            for i in range(index-k,index+k+1):
+                if i < num:
+                    if i in list_index:
+                        continue
+                    else:
+                        if self.diff(base[i],base[index]) < 1 - e:
+                            T.append(i)
+            for i in T:
+                temp = 0
+                for j in range(len(R)):
+                    if self.diff(base[i],R[j]) < 1 - e:
+                        continue
+                    else:
+                        temp = 1
+                if temp:
+                    T.remove(i)
+            for i in T:
+                R.append(base[i])
+                list_index.append(i)
+
+        return R
 
 
     # def calculateA(self,base,k):
@@ -192,7 +236,6 @@ class FKG:
                 label_precision[label] = round(100 * TP[label] / (TP[label] + FP[label]), 2)
             else:
                 label_precision[label] = 0
-        print(label_precision)
         return label_precision
 
 
@@ -233,154 +276,103 @@ class FKG:
         X_test = np.array(test).T[-1]
         print("Bắt đầu tính toán FISA")
         for i in range(len(test)):
-            # print("Bắt đầu lần chạy thứ "a, i)
             try:
-                X[i], ddd[i] =fs.FISA(base, C, test[i])
+                X[i], ddd[i] = fs.FISA(base, C, test[i])
                 self.listRank.append(ddd[i])
             except RuntimeError as e:
                 print("Exception: ",e)
         self.res.append(X)
-        print(X)
-        print(X_test)
+        # print(X)
+        # print(X_test)
         self.listAcc.append(self.Acc(X,X_test))
         self.listPre = list(self.Tprecision(X, X_test).values())
         self.listRe = list(self.Trecall(X, X_test).values())
         
-    def FKG(self,df,testdf,Turn = None,Modality = None):
+    def FKGS(self,df,testdf,Turn = None,Modality = None,ran = None, e = None):
         from sklearn.model_selection import train_test_split
-        base = df.values.tolist()
+        # traindf, testdf = train_test_split(df,test_size=0.30, random_state=None)
+        basedf = df.values.tolist()
+        traindf = [row[:] for row in basedf]
         test = testdf
-        labels_col = df.shape[1] - 1
-        import time
-        start = time.time()
-        A = fs.calculateA(base)
-        M = fs.calculateM(base)
-        B = fs.calculateB(base,A,M)
-        C = fs.calculateC(base,B)
-        C_norm = min_max_normalize(C)
-        totalTime = time.time() - start
-        print("FKG train finish: ", totalTime)
+        sampling_time = []
+        train_time = []
+        test_time = []
+        accuracy = []
+        for i in range(5):
+            print(f"--------------------------------------Turn {i}---------------------------------")
+            start = time.time()
+            base = self.sampling(ran=ran, base=traindf, e=e)
+            totalTime = time.time() - start
+            sampling_time.append(totalTime)
+            print(f'len base {i}:', len(base))
 
-        start = time.time()
-        self.testAccuracy(base,test,C_norm)
-        totalTimeTest = time.time() - start
-        print("FKG test finish: ", totalTimeTest)
-        results = {
-            "Train Time": [totalTime],
-            "Test Time" : [totalTimeTest],
-            "Total Time" : [totalTime + totalTimeTest],
-            "Test Accuracy": [self.listAcc],
-            "Test Precision": [sum(self.listPre) / len(self.listPre) if self.listPre else 0],
-            "Test Recall": [sum(self.listRe) / len(self.listRe) if self.listPre else 0],
-            # "Count Train": [traindf.iloc[-1].value_counts().to_dict()],
-            # "Count Test": [testdf.iloc[-1].value_counts().to_dict()],
-            "Count List Rank": [pd.DataFrame( self.listRank).value_counts().to_dict()],
-            "List Rank Length": [len( self.listRank)],
-            "Label": self.res,
-        }
-        base_dir = os.getcwd()
-        input_dir = os.path.join(base_dir,f"data/FKG/{Modality}/")
-        
-        if not os.path.exists(input_dir):
-            os.makedirs(input_dir)
+
+            start = time.time()
+            A = fs.calculateA(base)
+            M = fs.calculateM(base)
+            B = fs.calculateB(base,A,M)
+            C = fs.calculateC(base,B)
+            C_normal = min_max_normalize(C)
+            totalTime = time.time() - start
+            train_time.append(totalTime)
+
+
+            start = time.time()
+            self.testAccuracy(base,test,C_normal)
+            totalTime = time.time() - start
+            test_time.append(totalTime)
             
-        AData = pd.DataFrame(A)
-        AData.to_csv(os.path.join(input_dir,"A.csv"))
-        BData = pd.DataFrame(B)
-        BData.to_csv(os.path.join(input_dir,"B.csv"))
-        CData = pd.DataFrame(C)
-        CData.to_csv(os.path.join(input_dir,"C.csv"))
-        MData = pd.DataFrame(M)
-        MData.to_csv(os.path.join(input_dir,"M.csv"))
-        
-        dfData = pd.DataFrame(results)
-        
-        
-        if not os.path.exists(input_dir):
-            os.makedirs(input_dir)
-        dfData.to_csv(os.path.join(input_dir,f"Results_FKG.csv"), index=False)
-        
-        
-        csv_file = os.path.join(input_dir,f"Test/acc.csv")
-        if(Turn!=None):
-            with open(csv_file, mode="a", newline="", encoding="utf-8") as file:
-                writer = csv.writer(file)
+        print('sampling_time:', sampling_time)
+        print('train_time:', train_time)
+        print('test_time:', test_time)
+        print('accuracy:', self.listAcc)
+        print('precision:',sum(self.listPre) / len(self.listPre) if self.listPre else 0)
+        print('recall:',sum(self.listRe) / len(self.listRe) if self.listRe else 0)
 
-                if file.tell() == 0:
-                    writer.writerow(["id","Modality","Model","Accuracy", "F1 Score", "Recall"])
+        
+    
+    def scenario_random(self,df,Turn = None,Modality = None,ran = None):
 
-                writer.writerow([Turn,Modality,"FKG",f"{ self.listAcc[0]/100:.2%}",json.dumps([int(x) for x in self.listPre]),json.dumps([int(x) for x in self.listRe])])
-        
-        print("List acc: ", self.listAcc)
-        print("List Pre: ", sum(self.listPre) / len(self.listPre) if self.listPre else 0)
-        print("List Re: ", sum(self.listRe) / len(self.listRe) if self.listRe else 0)
-        
-    def FKG_test(self,train,test,Turn = None,Modality = None):
         from sklearn.model_selection import train_test_split
-        base = np.array(train)
-        test = np.array(test)
-        import time
-        start = time.time()
-        A = fs.calculateA(base)
-        M = fs.calculateM(base)
-        B = fs.calculateB(base,A,M)
-        C = fs.calculateC(base,B)
-        totalTime = time.time() - start
-        print("FKG train finish: ", totalTime)
+        traindf, testdf = train_test_split(df,test_size=0.30, random_state=None)
+        base = df.values.tolist()
+        test = testdf.values.tolist()
 
-        start = time.time()
-        self.testAccuracy(base,test,C)
-        totalTimeTest = time.time() - start
-        print("FKG test finish: ", totalTimeTest)
-        results = {
-            "Train Time": [totalTime],
-            "Test Time" : [totalTimeTest],
-            "Total Time" : [totalTime + totalTimeTest],
-            "Test Accuracy": [self.listAcc],
-            "Test Precision": [sum(self.listPre) / len(self.listPre) if self.listPre else 0],
-            "Test Recall": [sum(self.listRe) / len(self.listRe) if self.listPre else 0],
-            # "Count Train": [base.iloc[-1].value_counts().to_dict()],
-            # "Count Test": [test.iloc[-1].value_counts().to_dict()],
-            "Count List Rank": [pd.DataFrame( self.listRank).value_counts().to_dict()],
-            "List Rank Length": [len( self.listRank)],
-            "Label": self.res,
-        }
-        base_dir = os.getcwd()
-        input_dir = os.path.join(base_dir,f"data/FKG/{Modality}/")
-        
-        if not os.path.exists(input_dir):
-            os.makedirs(input_dir)
+        sampling_time = []
+        train_time = []
+        test_time = []
+        accuracy = []
+        for i in range(10):
             
-        AData = pd.DataFrame(A)
-        AData.to_csv(os.path.join(input_dir,"A.csv"))
-        BData = pd.DataFrame(B)
-        BData.to_csv(os.path.join(input_dir,"B.csv"))
-        CData = pd.DataFrame(C)
-        CData.to_csv(os.path.join(input_dir,"C.csv"))
-        MData = pd.DataFrame(M)
-        MData.to_csv(os.path.join(input_dir,"M.csv"))
-        
-        dfData = pd.DataFrame(results)
-        
-        
-        if not os.path.exists(input_dir):
-            os.makedirs(input_dir)
-        dfData.to_csv(os.path.join(input_dir,f"Results_FKG.csv"), index=False)
-        
-        
-        csv_file = os.path.join(input_dir,f"Test/acc.csv")
-        if(Turn!=None):
-            with open(csv_file, mode="a", newline="", encoding="utf-8") as file:
-                writer = csv.writer(file)
+            start = time.time()
+            train = traindf.sample(n=int(len(traindf)*ran/100))
+            base = train.values.tolist()
+            totalTime = time.time() - start
+            sampling_time.append(totalTime)
+            print(f'len base {i}:', len(base))
 
-                if file.tell() == 0:
-                    writer.writerow(["id","Modality","Model","Accuracy", "F1 Score", "Recall"])
 
-                writer.writerow([Turn,Modality,"FKG",f"{ self.listAcc[0]/100:.2%}",json.dumps([int(x) for x in self.listPre]),json.dumps([int(x) for x in self.listRe])])
-        
-        print("List acc: ", self.listAcc)
-        
+            start = time.time()
+            A = fs.caculateA(base)
+            M = fs.caculateM(base)
+            B = fs.caculateB(base,A,M)
+            C = fs.caculateC(base,B)
+            totalTime = time.time() - start
+            train_time.append(totalTime)
 
+
+            start = time.time()
+            acc = self.testAccuracy(base,test,C)
+            totalTime = time.time() - start
+            accuracy.append(acc)
+            test_time.append(totalTime)
+
+        print('sampling_time:', sampling_time)
+        print('train_time:', train_time)
+        print('test_time:', test_time)
+        print('accuracy:', accuracy)
+
+    
 def gaussian_normalize(C):
     C_mean = np.mean(C, axis=0)
     C_std = np.std(C, axis=0)

@@ -42,11 +42,11 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
 
 
     df_full_data = pd.DataFrame(full_data)
-    train_data = df_full_data.sample(frac=0.8, random_state=None)
+    train_data = df_full_data.sample(frac=0.7, random_state=None)
     # print(train_data)
     train_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/train_data.csv'))
     train_data = train_data.values
-    test_data = df_full_data.sample(frac=0.2, random_state=None)
+    test_data = df_full_data.sample(frac=0.3, random_state=None)
     # print(train_data.shape)
 
 
@@ -99,12 +99,12 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     sigma_M = sigma_M[:-1, :]
 
     sigma_M = np.hstack((sigma_M[:, [0]], sigma_M[:, [0]], sigma_M[:, [0]]))
-
-    rules = np.hstack((rules, np.min(t, axis=1, keepdims=True), train_data[:, [col_num]]))
-
+    
     df_Rule_List = pd.DataFrame(rules)
     df_Rule_List.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List_All.csv"), index=False)
-
+    
+    rules = np.hstack((rules, np.min(t, axis=1, keepdims=True), train_data[:, [col_num]]))
+    
     rules_reduce = reduce_rule(h,col_num,rules)
     df_Rule_List1 = pd.DataFrame(rules_reduce)
     df_Rule_List1.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List_reduce.csv"), index=False)
@@ -115,14 +115,14 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     df_rule_lang = pd.DataFrame(ruleListLang)
     df_rule_lang.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List_Language.csv"),index=False)
     df_rule_lang.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB.csv"),index=False)
-    
-    df_rule_30 = df_rule_lang.sample(frac=0.3,random_state=42)
-    df_rule_70 = df_rule_lang.sample(frac=0.7,random_state=42)
-    df_rule_30.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TestDataRule.csv"),index=False)
-    df_rule_70.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TrainDataRule.csv"),index=False)
-    
+        
     df_Rule_List = pd.DataFrame(ruleList)
     df_Rule_List.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List.csv"), index=False)
+
+    df_rule_30 = df_Rule_List.sample(frac=0.3,random_state=None)
+    df_rule_70 = df_Rule_List.sample(frac=0.7,random_state=None)
+    df_rule_30.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TestDataRule.csv"),index=False)
+    df_rule_70.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TrainDataRule.csv"),index=False)
 
     df_Sigma = pd.DataFrame(sigma_M)
     df_Sigma.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Sigma_M.csv"), index=False)
