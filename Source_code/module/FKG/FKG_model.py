@@ -23,27 +23,6 @@ class FKG:
             return n
         return self.combination(k - 1, n - 1) + self.combination(k, n - 1)
 
-
-    # def calculateA(self,base,k):
-    #     colum = len(base[0])
-    #     row = len(base)
-    #     A = np.zeros((row, self.combination(k, colum - 1)))
-
-    #     for r1 in range(row):
-    #         k = [0] * self.combination(k, colum - 1)
-    #         temp = 0
-    #         for a in range(0, colum - 4):
-    #             for b in range(a + 1, colum - 3):
-    #                 for c in range(b + 1, colum - 2):
-    #                     for d in range(c + 1, colum - 1):
-    #                         for r2 in range(row):
-    #                             if base[r1][a] == base[r2][a] and base[r1][b] == base[r2][b] and base[r1][c] == base[r2][c] and base[r1][d] == base[r2][d]:
-    #                                 k[temp] += 1
-
-    #                         A[r1][temp] = k[temp] / row
-    #                         temp += 1
-    #     print("done A")
-    #     return A
     
     def calculateA(self,base):
         colum = len(base[0])
@@ -233,7 +212,6 @@ class FKG:
         X_test = np.array(test).T[-1]
         print("Bắt đầu tính toán FISA")
         for i in range(len(test)):
-            # print("Bắt đầu lần chạy thứ "a, i)
             try:
                 X[i], ddd[i] =fs.FISA(base, C, test[i])
                 self.listRank.append(ddd[i])
@@ -272,8 +250,6 @@ class FKG:
             "Test Accuracy": [self.listAcc],
             "Test Precision": [sum(self.listPre) / len(self.listPre) if self.listPre else 0],
             "Test Recall": [sum(self.listRe) / len(self.listRe) if self.listPre else 0],
-            # "Count Train": [traindf.iloc[-1].value_counts().to_dict()],
-            # "Count Test": [testdf.iloc[-1].value_counts().to_dict()],
             "Count List Rank": [pd.DataFrame( self.listRank).value_counts().to_dict()],
             "List Rank Length": [len( self.listRank)],
             "Label": self.res,
@@ -311,9 +287,17 @@ class FKG:
 
                 writer.writerow([Turn,Modality,"FKG",f"{ self.listAcc[0]/100:.2%}",json.dumps([int(x) for x in self.listPre]),json.dumps([int(x) for x in self.listRe])])
         
-        print("List acc: ", self.listAcc)
-        print("List Pre: ", sum(self.listPre) / len(self.listPre) if self.listPre else 0)
-        print("List Re: ", sum(self.listRe) / len(self.listRe) if self.listRe else 0)
+        print("="*30)
+        print("| {:<15} | {:>10} |".format("Name", "Value"))
+        print("="*30)
+        print("| {:<15} | {:>10.2f} s |".format("Train Time", totalTime))
+        print("| {:<15} | {:>10.2f} s |".format("Test Time", totalTimeTest))
+        print("| {:<15} | {:>10.2f} s |".format("Total Time", totalTime+totalTimeTest))
+        print("="*30)
+        print("| {:<15} | {:>10.2f} % |".format("Accuracy", self.listAcc[0]))
+        print("| {:<15} | {:>10.2f} % |".format("Precision", sum(self.listPre) / len(self.listPre) if self.listPre else 0))
+        print("| {:<15} | {:>10.2f} % |".format("Recall", sum(self.listRe) / len(self.listRe) if self.listRe else 0))
+        print("="*30)
         
     def FKG_test(self,train,test,Turn = None,Modality = None):
         from sklearn.model_selection import train_test_split

@@ -149,7 +149,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
         pickle.dump(model_data, file)
 
     #Test file
-    from FIS_Test_file import FIS_Test_file
+    from module.Test.FIS_Test_file import FIS_Test_file
     FIS_Test_file(Modality = "Metadata-Image Fusion",Turn = Turn,fileName=fileName)
 
     # from module.FKG.FKG import FKG
