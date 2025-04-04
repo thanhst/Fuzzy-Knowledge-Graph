@@ -6,7 +6,7 @@ from module.Module_CPP import fisa_module as fs
 import os
 
 class FKG:
-    print("FKG LQT run")
+    print("FKG LQT is running")
     def __init__(self):
         self.listAcc = []
         self.listPre = []
@@ -171,7 +171,6 @@ class FKG:
                 label_precision[label] = round(100 * TP[label] / (TP[label] + FP[label]), 2)
             else:
                 label_precision[label] = 0
-        print(label_precision)
         return label_precision
 
 
@@ -218,13 +217,14 @@ class FKG:
             except RuntimeError as e:
                 print("Exception: ",e)
         self.res.append(X)
-        print(X)
-        print(X_test)
+        print("Predict labels: \n",pd.DataFrame(X))
+        print("True labels: \n",pd.DataFrame(X_test))
         self.listAcc.append(self.Acc(X,X_test))
         self.listPre = list(self.Tprecision(X, X_test).values())
         self.listRe = list(self.Trecall(X, X_test).values())
         
     def FKG(self,df,testdf,Turn = None,Modality = None):
+        print("\n---Start---\n")
         from sklearn.model_selection import train_test_split
         base = df.values.tolist()
         test = testdf
@@ -286,7 +286,8 @@ class FKG:
                     writer.writerow(["id","Modality","Model","Accuracy", "F1 Score", "Recall"])
 
                 writer.writerow([Turn,Modality,"FKG",f"{ self.listAcc[0]/100:.2%}",json.dumps([int(x) for x in self.listPre]),json.dumps([int(x) for x in self.listRe])])
-        
+        print("\n---Finish---\n")
+
         print("="*30)
         print("| {:<15} | {:>10} |".format("Name", "Value"))
         print("="*30)
@@ -323,8 +324,6 @@ class FKG:
             "Test Accuracy": [self.listAcc],
             "Test Precision": [sum(self.listPre) / len(self.listPre) if self.listPre else 0],
             "Test Recall": [sum(self.listRe) / len(self.listRe) if self.listPre else 0],
-            # "Count Train": [base.iloc[-1].value_counts().to_dict()],
-            # "Count Test": [test.iloc[-1].value_counts().to_dict()],
             "Count List Rank": [pd.DataFrame( self.listRank).value_counts().to_dict()],
             "List Rank Length": [len( self.listRank)],
             "Label": self.res,

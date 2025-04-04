@@ -198,7 +198,7 @@ class FKG:
         for i in range(len(test)):
             # print("Bắt đầu lần chạy thứ ", i)
             try:
-                X[i], ddd[i] = self.computeFISA(base, C, test[i],6)
+                X[i], ddd[i] = self.FISA(base, C, test[i],6)
                 self.listRank.append(ddd[i])
             except RuntimeError as e:
                 print("Exception: ",e)
@@ -260,13 +260,7 @@ class FKG:
                 writer.writerow([Turn,Modality,"FKG",f"{ self.listAcc[0]/100:.2%}",json.dumps([int(x) for x in self.listPre]),json.dumps([int(x) for x in self.listRe])])
         
         print("List acc: ", self.listAcc)
-        # print("List pre: ", self.listPre)
-        # print("List re: ", self.listRe)
-        # print("Res value: ",pd.DataFrame ( self.res[0]).value_counts())
-        # print("Count train: ",traindf.iloc[-1].value_counts())
-        # print("Count test: ",testdf.iloc[-1].value_counts())
-        # print("Count List rank: ",pd.DataFrame( self.listRank).value_counts())
-        # print("List rank: ",len( self.listRank))
+
         
     def FKG_test(self,train,test,Turn = None,Modality = None):
         from sklearn.model_selection import train_test_split

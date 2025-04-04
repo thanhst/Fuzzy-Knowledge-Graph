@@ -12,7 +12,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     import time
     import os
     
-    base_dir = os.path.abspath(os.path.dirname(__file__))
+    base_dir = os.getcwd()
     
     input_dir = os.path.join(base_dir,f"data/FIS/input/{fileName}/")
     output_dir = os.path.join(base_dir,f"data/FIS/output/{fileName}/")
@@ -29,25 +29,12 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
 
         
     df = pd.read_csv(filePath)
-
-    # full_data = df.drop(df.columns[0], axis=1
-
-    # labelR = df.iloc[:, 0].values.reshape(-1, 1)
     full_data = df
-    # full_data = df.drop(df.columns[0], axis=1)
-
-    # full_data,mean_vals,std_vals = standardize_data_columnwise(full_data)
-
-    # full_data = np.hstack((full_data, labelR))
-
-
     df_full_data = pd.DataFrame(full_data)
     train_data = df_full_data.sample(frac=0.7, random_state=None)
-    # print(train_data)
     train_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/train_data.csv'))
     train_data = train_data.values
     test_data = df_full_data.sample(frac=0.3, random_state=None)
-    # print(train_data.shape)
 
 
     full_data = np.array(full_data)
@@ -64,25 +51,11 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
 
     h = train_data.shape[0]
     w = train_data.shape[1]
-    # cluster= cluster
-    # cluster = [2,2,3,3,3,2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5,5,5,5,5,6]
-    # cluster = [2,2,3,3,3,2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5,6]
-    # cluster = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,6]
-    # cluster = [5,5,5,5,5,5,5,5,5,5,6]
-    # cluster = [3,3,3,3,3,3,3,3,3,2]
-    # print(len(cluster))
-    # cluster = [5,3,2,3,2,3,2,2,2,5,5,5,5,5,5,6]
     
     lang2 = ["Low","High"]
     lang3 = ["Low","Medium","High"]
     lang5 = ["Very Low","Low","Medium","High","Very High"]
-    # cluster = [2,2,3 , 3, 3, 2,2,2,2,2,2,3,3,3,3,2,3,2,3,2,2,2,5,5,5,5,5,5, 6]
-    # lang_matrix = [lang2,lang2,lang3,lang3,lang3,lang2,lang2,lang2,lang2,lang2,lang2,lang3,lang3,lang3,lang3,lang2,lang3,lang2,lang3,lang2,lang2,lang2,lang5,lang5,lang5,lang5,lang5,lang5,lang5,lang5,lang5,lang5]
-    # lang_matrix = [lang2,lang2,lang3,lang3,lang3,lang2,lang2,lang2,lang2,lang2,lang2,lang3,lang3,lang3,lang3,lang2,lang3,lang2,lang3,lang2,lang2,lang2,lang5,lang5,lang5,lang5,lang5,lang5]
-    # lang_matrix = [lang5,lang5,lang5,lang5,lang5,lang5,lang5,lang5,lang5,lang5]
-    # lang_matrix = [lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3]
-    # lang_matrix = [lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3,lang3]
-    # print(len(lang_matrix))
+
 
     m = 2
     esp = 0.01
@@ -129,10 +102,16 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
 
     df_Centers = pd.DataFrame(centers)
     df_Centers.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Centers.csv"), index=False)
-
-    print("ruleList:",ruleList)
-    print("sigma_M:", sigma_M)
-    print("centers:", centers)
+    
+    print("\n")
+    print("*"*100)
+    print("ruleList: \n",pd.DataFrame(ruleList))
+    print("\n")
+    print("*"*100)
+    print("sigma_M: \n", pd.DataFrame(sigma_M))
+    print("\n")
+    print("*"*100)
+    print("centers: \n", pd.DataFrame(centers))
     model_data = {
         "ruleList": ruleList,
         "sigma_M": sigma_M,
@@ -140,8 +119,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
         "min_vals": min_vals,
         "max_vals": max_vals
     }
-    totalTime = time.time() - start_time
-    print("Train finish : ",totalTime)
+    trainTime = time.time() - start_time
     
     if not os.path.exists(os.path.join(base_dir,f"models/{fileName}/")):
         os.makedirs(os.path.join(base_dir,f"models/{fileName}/"))
@@ -149,29 +127,20 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
         pickle.dump(model_data, file)
 
     #Test file
+    
+    testStart = time.time()
     from module.Test.FIS_Test_file import FIS_Test_file
     FIS_Test_file(Modality = "Metadata-Image Fusion",Turn = Turn,fileName=fileName)
-
-    # from module.FKG.FKG import FKG
-    # from module.FKG.FKGLQT import FKG
-    # base = [[int(float(x)) for x in row] for row in ruleList]
-    # base = pd.DataFrame(base)
-    # fkg_instance = FKG()
-    # fkg_instance.FKG(df = base,Turn=Turn,Modality="Metadata-Image Fusion")
+    testTime = time.time() - testStart
     totalTime = time.time() - start_time
-    print("All finish : ",totalTime)
-    # for rule in ruleList:
-    #     predicted_label = rule[col_num]
-
-    #     idx = np.where((rules[:, :col_num] == rule[:col_num]).all(axis=1))[0]
-
-    #     if len(idx) > 0:
-    #         total_matched += len(idx)
-    #         actual_labels = train_data[idx, col_num]
-    #         correct_count += np.sum(actual_labels == predicted_label) 
-
-    # accuracy = correct_count / total_matched if total_matched > 0 else 0
-    # print(f"Độ chính xác của luật: {accuracy * 100:.2f}%")
+    
+    
+    print("="*30)
+    print("| {:<15} | {:>10.2f} s |".format("Train Time", trainTime))
+    print("| {:<15} | {:>10.2f} s |".format("Test Time", testTime))
+    print("| {:<15} | {:>10.2f} s |".format("Total Time", totalTime))
+    print("="*30)
+    
 
 
 

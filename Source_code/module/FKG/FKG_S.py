@@ -8,7 +8,7 @@ import random
 import time
 
 class FKGS:
-    print("FKGS run")
+    print("FKGS is running")
     def __init__(self):
         self.listAcc = []
         self.listPre = []
@@ -289,8 +289,6 @@ class FKGS:
         self.listRe = list(self.Trecall(X, X_test).values())
         
     def FKGS(self,df,testdf,Turn = None,Modality = None,ran = None, e = None):
-        from sklearn.model_selection import train_test_split
-        # traindf, testdf = train_test_split(df,test_size=0.30, random_state=None)
         basedf = df.values.tolist()
         traindf = [row[:] for row in basedf]
         test = testdf
@@ -298,15 +296,15 @@ class FKGS:
         train_time = []
         test_time = []
         accuracy = []
-        for i in range(5):
+        for i in range(1,11):
             print(f"--------------------------------------Turn {i}---------------------------------")
             start = time.time()
             base = self.sampling(ran=ran, base=traindf, e=e)
             totalTime = time.time() - start
             sampling_time.append(totalTime)
             print(f'len base {i}:', len(base))
-
-
+            
+            print("\n---Start---")
             start = time.time()
             A = fs.calculateA(base)
             M = fs.calculateM(base)
@@ -321,7 +319,8 @@ class FKGS:
             self.testAccuracy(base,test,C_normal)
             totalTime = time.time() - start
             test_time.append(totalTime)
-            
+            print("---Finish---\n")
+        print(":"*100)
         print('sampling_time:', sampling_time)
         print('train_time:', train_time)
         print('test_time:', test_time)

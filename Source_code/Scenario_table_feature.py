@@ -3,8 +3,9 @@ from module.FKG.FKG_model import FKG
 import pandas as pd
 from module.FKG.FKG_S import FKGS
 
-
 print("Only Table Feature Remove Missing")
+print("__________Running Processing___________")
+from module.Processing_Data import Metadata_processing
 
 print("__________Running FIS___________")
 FIS(fileName="Only Table Feature Remove Missing",
@@ -30,4 +31,4 @@ base = pd.DataFrame(base)
 test = [[int(float(x)) for x in row] for row in testdf.values]
 fkg_instance = FKGS()
 fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Only Table Feature Remove Missing",ran=10,e=0.2)
-print("--------------------------------")
+print("-"*100)
