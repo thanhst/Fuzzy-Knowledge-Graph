@@ -122,7 +122,7 @@ mapping = {'BCC': 1, 'SCC': 2, 'ACK': 3, 'SEK' : 4, 'NEV': 5, 'MEL':6}
 dfMerge['diagnostic']=dfMerge['diagnostic'].replace(mapping)
 dfMerge = dfMerge.drop(['img_id'],axis=1)
 dfMerge = dfMerge.drop(columns=['Unnamed: 0'], errors='ignore')
-columns_to_normalize = ["Variance Feature", "Standard Deviation Feature", "RMS Feature"]
+columns_to_normalize = ["Variance Feature", "Standard Deviation Feature", "RMS Feature","Mean Feature"]
 
 for col in columns_to_normalize:
     if col in dfMerge.columns:
