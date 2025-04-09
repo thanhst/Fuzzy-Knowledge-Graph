@@ -61,6 +61,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     esp = 0.01
     maxTest = 200
 
+    #phan cụm mờ / 
     rules,centers,U = rule_generate(h,w,train_data,cluster,min_vals,max_vals,m,esp,maxTest)
 
     col_num = train_data.shape[1] -1
