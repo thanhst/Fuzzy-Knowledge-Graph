@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import csv
 import json
-from module.Module_CPP import fisa_module as fs
+import fisa_module as fs
 import os
 import random
 import time
