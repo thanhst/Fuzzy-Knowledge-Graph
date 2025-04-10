@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(FisaModule)
+list(APPEND CMAKE_PREFIX_PATH "${Python3_SITEARCH}/pybind11/share/cmake/pybind11")
 
 # Đảm bảo dùng đúng compiler và tiêu chuẩn C++
 set(CMAKE_CXX_STANDARD 20)
@@ -16,7 +17,7 @@ execute_process(COMMAND ${Python3_EXECUTABLE} -c
     OUTPUT_VARIABLE PYTHON_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # 🔹 Nếu lỗi vẫn xảy ra, thử **tắt** Py_LIMITED_API để đảm bảo tương thích
-# add_definitions(-DPy_LIMITED_API=0x03060000)
+add_definitions(-DPy_LIMITED_API=0x03060000)
 
 # Tạo module Python
 pybind11_add_module(fisa_module fisa_module.cpp)

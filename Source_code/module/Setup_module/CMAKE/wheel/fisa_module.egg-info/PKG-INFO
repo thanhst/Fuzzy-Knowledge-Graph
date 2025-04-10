@@ -1,0 +1,5 @@
+Metadata-Version: 2.1
+Name: fisa-module
+Version: 0.1.0
+Summary: A test module built with pybind11
+Author: Your Name

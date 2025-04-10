@@ -1,0 +1,10 @@
+^D:\STUDY\INTERNAIRC\SOURCE_CODE_TAN\SOURCE_CODE_TAN\SOURCE_CODE\MODULE\SETUP_MODULE\CMAKE\BUILD\TEMP.WIN32-3.6\RELEASE\CMAKEFILES\277D33398B13D7A7BB5472D0DFEF9B15\GENERATE.STAMP.RULE
+setlocal
+C:\Users\Admin\AppData\Local\Temp\pip-build-env-eoiycr9o\overlay\Lib\site-packages\cmake\data\bin\cmake.exe -SD:/Study/InternAIRC/source_code_Tan/source_code_Tan/Source_code/module/Setup_module/CMAKE -BD:/Study/InternAIRC/source_code_Tan/source_code_Tan/Source_code/module/Setup_module/CMAKE/build/temp.win32-3.6/Release --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/Study/InternAIRC/source_code_Tan/source_code_Tan/Source_code/module/Setup_module/CMAKE/build/temp.win32-3.6/Release/FisaModule.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

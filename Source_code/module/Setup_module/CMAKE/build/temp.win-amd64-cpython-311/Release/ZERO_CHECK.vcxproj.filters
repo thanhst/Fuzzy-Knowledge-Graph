@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Study\InternAIRC\source_code_Tan\source_code_Tan\Source_code\module\Setup_module\CMAKE\build\temp.win-amd64-cpython-311\Release\CMakeFiles\9f0c483f695c2d865db60b88308d6844\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{0C610EF6-714D-3EB7-BA21-5D0BDB85DF3A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

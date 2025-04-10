@@ -23,7 +23,7 @@ matrix1 = []
 list_of_images = []
 name_of_images = []
 for i in range(1,4):
-    path_of_images = f"D:/Study/InternAIRC/source_code_Tan/source_code_Tan/ImageData/imgs_part_{i}"
+    path_of_images =os.path.join( base_path,f"data/Image/imgs_part_{i}")
     images = os.listdir(path_of_images)
     name_of_images.extend(images)
     list_of_images.extend([os.path.join(path_of_images, img) for img in images])

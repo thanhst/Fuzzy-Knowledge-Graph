@@ -1,0 +1,10 @@
+^D:\STUDY\INTERNAIRC\SOURCE_CODE_TAN\SOURCE_CODE_TAN\SOURCE_CODE\MODULE\SETUP_MODULE\CMAKE\CMAKELISTS.TXT
+setlocal
+C:\Users\Admin\AppData\Local\Temp\pip-build-env-eoiycr9o\overlay\Lib\site-packages\cmake\data\bin\cmake.exe -SD:/Study/InternAIRC/source_code_Tan/source_code_Tan/Source_code/module/Setup_module/CMAKE -BD:/Study/InternAIRC/source_code_Tan/source_code_Tan/Source_code/module/Setup_module/CMAKE/build/temp.win32-3.6/Release --check-stamp-file D:/Study/InternAIRC/source_code_Tan/source_code_Tan/Source_code/module/Setup_module/CMAKE/build/temp.win32-3.6/Release/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
