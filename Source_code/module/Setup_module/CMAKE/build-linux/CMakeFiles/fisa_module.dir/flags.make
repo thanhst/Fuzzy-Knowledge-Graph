@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -Dfisa_module_EXPORTS
 
-CXX_INCLUDES = -isystem /usr/include/python3.10 -isystem /home/thanhxk2003/.local/lib/python3.10/site-packages/pybind11/include
+CXX_INCLUDES = -isystem /usr/include/python3.10
 
 CXX_FLAGS = -fPIC -fvisibility=hidden -flto -fno-fat-lto-objects -std=gnu++20
 

@@ -130,7 +130,7 @@ vector<vector<double>> calculateB(const vector<vector<int>> &base, const vector<
     return B;
 }
 
-vector<vector<double>> calculateC(const vector<vector<int>> &base, const vector<vector<double>> &B)
+vector<vector<double>> calculateC(const vector<vector<int>> &base, const vector<vector<double>> &B, int n_class)
 {
     int row = base.size();
     if (row == 0)
@@ -138,14 +138,14 @@ vector<vector<double>> calculateC(const vector<vector<int>> &base, const vector<
 
     int colum = base[0].size();
     int comb_size = combination(3, colum - 1);
-    int cols = 6 * comb_size;
+    int cols = n_class * comb_size;
 
     vector<vector<double>> C(row, vector<double>(cols, 0.0));
 
     for (int r1 = 0; r1 < row; ++r1)
     {
         int temp = 0;
-        for (int i = 1; i <= 6; ++i)
+        for (int i = 1; i <= n_class; ++i)
         {
             for (int a = 0; a < colum - 3; ++a)
             {
@@ -174,7 +174,7 @@ vector<vector<double>> calculateC(const vector<vector<int>> &base, const vector<
     return C;
 }
 
-pair<int, double> FISA(const vector<vector<int>> &base, const vector<vector<double>> &C, const vector<int> &list)
+pair<int, double> FISA(const vector<vector<int>> &base, const vector<vector<double>> &C, const vector<int> &list,int n_classes)
 {
     int row = base.size();
     if (row == 0)
@@ -183,7 +183,7 @@ pair<int, double> FISA(const vector<vector<int>> &base, const vector<vector<doub
     int colum = base[0].size();
     int cols = combination(3, colum - 1);
 
-    vector<vector<double>> C_values(6, vector<double>(cols, 0.0));
+    vector<vector<double>> C_values(n_classes, vector<double>(cols, 0.0));
 
     int t = 0;
     for (int a = 0; a < colum - 3; ++a)
@@ -205,8 +205,8 @@ pair<int, double> FISA(const vector<vector<int>> &base, const vector<vector<doub
         }
     }
 
-    vector<double> D(6, 0.0);
-    for (int i = 0; i < 6; ++i)
+    vector<double> D(n_classes, 0.0);
+    for (int i = 0; i < n_classes; ++i)
     {
         if (!C_values[i].empty())
         {

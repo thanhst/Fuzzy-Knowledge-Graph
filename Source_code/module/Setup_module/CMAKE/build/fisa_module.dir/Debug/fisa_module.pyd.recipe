@@ -2,10 +2,10 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\Study\InternAIRC\source_code_Tan\source_code_Tan\Python\module\Setup_module\CMAKE\build\x64\Debug\ZERO_CHECK</FullPath>
+      <FullPath>D:\Study\InternAIRC\source_code_Tan\source_code_Tan\Source_code\module\Setup_module\CMAKE\build\x64\Debug\ZERO_CHECK</FullPath>
     </ProjectOutput>
     <ProjectOutput>
-      <FullPath>D:\Study\InternAIRC\source_code_Tan\source_code_Tan\Python\module\Setup_module\CMAKE\build\Debug\fisa_module.pyd</FullPath>
+      <FullPath>D:\Study\InternAIRC\source_code_Tan\source_code_Tan\Source_code\module\Setup_module\CMAKE\build\Debug\fisa_module.pyd</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

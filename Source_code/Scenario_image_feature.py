@@ -1,5 +1,5 @@
 from module.FIS.FIS import FIS
-from module.FKG.FKG_model import FKG
+from module.FKG.FKG_general import FKG
 from module.FKG.FKG_S import FKGS
 import pandas as pd
 

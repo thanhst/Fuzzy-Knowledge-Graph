@@ -268,7 +268,7 @@ class FKGS:
 
     
 
-    def testAccuracy(self,base,Te,C):
+    def testAccuracy(self,base,Te,C,n_classes):
         print("Bắt đầu test")
         test = Te
         X = np.zeros(len(test))
@@ -277,7 +277,7 @@ class FKGS:
         print("Bắt đầu tính toán FISA")
         for i in range(len(test)):
             try:
-                X[i], ddd[i] = fs.FISA(base, C, test[i])
+                X[i], ddd[i] = fs.FISA(base, C, test[i],n_classes)
                 self.listRank.append(ddd[i])
             except RuntimeError as e:
                 print("Exception: ",e)
@@ -296,7 +296,14 @@ class FKGS:
         train_time = []
         test_time = []
         accuracy = []
-        for i in range(1,11):
+        train_labels = df.iloc[:, -1]
+        test_labels = pd.DataFrame(testdf).iloc[:, -1]
+        all_labels = pd.concat([train_labels, test_labels], axis=0)
+        unique_labels = sorted(all_labels.unique())
+        
+        n_classes = len(unique_labels)
+        
+        for i in range(1,6):
             print(f"--------------------------------------Turn {i}---------------------------------")
             start = time.time()
             base = self.sampling(ran=ran, base=traindf, e=e)
@@ -309,14 +316,14 @@ class FKGS:
             A = fs.calculateA(base)
             M = fs.calculateM(base)
             B = fs.calculateB(base,A,M)
-            C = fs.calculateC(base,B)
+            C = fs.calculateC(base,B,n_classes)
             C_normal = min_max_normalize(C)
             totalTime = time.time() - start
             train_time.append(totalTime)
 
 
             start = time.time()
-            self.testAccuracy(base,test,C_normal)
+            self.testAccuracy(base,test,C_normal,n_classes)
             totalTime = time.time() - start
             test_time.append(totalTime)
             print("---Finish---\n")

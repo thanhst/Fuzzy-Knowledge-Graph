@@ -1,4 +1,4 @@
-# Install script for directory: /mnt/d/Study/InternAIRC/source_code_Tan/source_code_Tan/Python/module/Setup_module/CMAKE
+# Install script for directory: /mnt/d/Study/InternAIRC/source_code_Tan/source_code_Tan/Source_code/module/Setup_module/CMAKE
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/mnt/d/Study/InternAIRC/source_code_Tan/source_code_Tan/Python/module/Setup_module/CMAKE/build-linux/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/mnt/d/Study/InternAIRC/source_code_Tan/source_code_Tan/Source_code/module/Setup_module/CMAKE/build-linux/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

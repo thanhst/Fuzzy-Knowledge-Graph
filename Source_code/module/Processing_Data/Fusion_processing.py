@@ -193,6 +193,7 @@ boolean_mapping = {
     False: 0,
     True: 1
 }
+
 dfMerge['biopsed'] = dfMetaData['biopsed'].replace(boolean_mapping)
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset/FusionFeatureRemoveMissing.csv"), index=False)
 
