@@ -4,6 +4,40 @@ from skimage.feature import graycomatrix, graycoprops
 from skimage import io, color, img_as_ubyte
 import os
 import cv2
+
+#Làm rõ vùng tối/sáng, giúp mạch máu và tổn thương dễ nhận diện hơn.
+def apply_clahe(image):
+    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+    cl = clahe.apply(l)
+    enhanced_img = cv2.merge((cl,a,b))
+    return cv2.cvtColor(enhanced_img, cv2.COLOR_LAB2BGR)
+
+#Giúp ảnh rõ ràng hơn bằng cách tăng độ sắc nét cạnh.
+def apply_unsharp_mask(image, amount=1.5, threshold=0):
+    blurred = cv2.GaussianBlur(image, (0, 0), sigmaX=3)
+    sharpened = cv2.addWeighted(image, 1 + amount, blurred, -amount, 0)
+    return sharpened
+#Làm sáng các vùng mờ nhạt, điều chỉnh range pixel:
+def linear_contrast_stretch(image):
+    min_val = np.percentile(image, 2)
+    max_val = np.percentile(image, 98)
+    stretched = np.clip((image - min_val) * 255.0 / (max_val - min_val), 0, 255).astype(np.uint8)
+    return stretched
+
+def preprocess_fundus_image(image):
+
+    # Làm nét
+    sharpened = apply_unsharp_mask(image)
+
+    # Cải thiện độ tương phản bằng CLAHE
+    clahe_img = apply_clahe(sharpened)
+    # Stretch nhẹ để làm sáng
+    final = linear_contrast_stretch(clahe_img)
+
+    return final
+
 base_path = os.getcwd()
 df = pd.DataFrame(
     columns=[
@@ -30,6 +64,7 @@ for i in range(1,4):
     
 for image in list_of_images:
     img = cv2.imread(image)
+    img = preprocess_fundus_image(img)
     gray = color.rgb2gray(img)
     image = img_as_ubyte(gray) 
 
@@ -197,12 +232,14 @@ boolean_mapping = {
 dfMerge['biopsed'] = dfMetaData['biopsed'].replace(boolean_mapping)
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset/FusionFeatureRemoveMissing.csv"), index=False)
 
+
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 corr_matrix = dfMerge.corr()
 dfMerge = pd.DataFrame(corr_matrix)
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset/Fusion_remove_missing/correlation_matrix.csv"), index=False)
-plt.figure(figsize=(10, 8))
-sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-plt.title("Ma trận tương quan của các đặc trưng ảnh")
-plt.show()
+# plt.figure(figsize=(10, 8))
+# sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+# plt.title("Ma trận tương quan của các đặc trưng ảnh")
+# plt.show()

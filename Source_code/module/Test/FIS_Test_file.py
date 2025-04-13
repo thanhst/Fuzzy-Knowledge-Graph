@@ -35,7 +35,7 @@ def FIS_Test_file(Modality=None,Turn =None,fileName=None):
     recall = recall_score(true_labels, predicted_labels,average='macro',zero_division=0)
     conf_matrix = confusion_matrix(true_labels, predicted_labels)
     
-    
+
     csv_file = os.path.join(base_dir,f"data/Test/{fileName}/acc.csv")
     if(Turn!=None):
         with open(csv_file, mode="a", newline="", encoding="utf-8") as file:
