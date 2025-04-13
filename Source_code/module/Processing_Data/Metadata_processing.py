@@ -6,9 +6,12 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
-import os
-base_path = os.getcwd()
-dfMetaData = pd.read_csv(os.path.join("data/Dataset/metadata.csv"))
+import os,sys
+from pathlib import Path
+
+base_path = Path(__file__).resolve().parents[2]
+
+dfMetaData = pd.read_csv(os.path.join(base_path ,"data/Dataset/metadata.csv"))
 
 dfDiagnostic = dfMetaData['diagnostic']
 

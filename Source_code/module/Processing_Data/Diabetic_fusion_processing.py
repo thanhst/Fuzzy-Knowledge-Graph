@@ -6,7 +6,8 @@ import os
 import cv2
 from imblearn.over_sampling import BorderlineSMOTE
 from sklearn.utils import shuffle
-
+from pathlib import Path
+base_path = Path(__file__).resolve().parents[2]
 #Làm rõ vùng tối/sáng, giúp mạch máu và tổn thương dễ nhận diện hơn.
 def apply_clahe(image):
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
@@ -28,6 +29,23 @@ def linear_contrast_stretch(image):
     stretched = np.clip((image - min_val) * 255.0 / (max_val - min_val), 0, 255).astype(np.uint8)
     return stretched
 
+#segment kmeans
+def segment_by_kmeans(image, k=2):
+    Z = image.reshape((-1, 3))
+    Z = np.float32(Z)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    ret, label, center = cv2.kmeans(Z, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    center = np.uint8(center)
+    res = center[label.flatten()]
+    segmented_image = res.reshape((image.shape))
+
+    # Lấy mask của cluster tối nhất (vì tổn thương hay mảng da bất thường thường có màu sẫm)
+    darkest_cluster_idx = np.argmin(np.sum(center, axis=1))  # Tổng RGB thấp nhất
+    mask = (label.flatten() == darkest_cluster_idx).astype(np.uint8)
+    mask = mask.reshape((image.shape[0], image.shape[1]))
+
+    return segmented_image, mask
+
 def preprocess_fundus_image(image):
 
     # Làm nét
@@ -38,10 +56,11 @@ def preprocess_fundus_image(image):
     # Stretch nhẹ để làm sáng
     final = linear_contrast_stretch(clahe_img)
 
-    return final
+    _, lesion_mask = segment_by_kmeans(final)
+    
+    return final,lesion_mask
 
 
-base_path = os.getcwd()
 df = pd.DataFrame(
     columns=[
         "Contrast Feature",
@@ -66,15 +85,16 @@ list_of_images.extend([os.path.join(path_of_images, img) for img in images])
     
 for image in list_of_images:
     img = cv2.imread(image)
-    img = preprocess_fundus_image(img)
+    img, mask = preprocess_fundus_image(img)
     gray = color.rgb2gray(img)
     image = img_as_ubyte(gray)
-
+    gray_masked = gray.copy()
+    gray_masked[mask == 0] = 0
     bins = np.array(
         [0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 255]
-    )
+    )  # 16-bit
     inds = np.digitize(
-        image, bins
+        gray_masked, bins
     )
 
     max_value = inds.max() + 1

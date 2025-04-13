@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
 import os
-base_path = os.getcwd()
+
+from pathlib import Path
+base_path = Path(__file__).resolve().parents[2]
+
 dfMerge = pd.read_csv(os.path.join(base_path,"data/Dataset_diabetic/labels_brset.csv"))
 from imblearn.over_sampling import BorderlineSMOTE
 from sklearn.utils import shuffle
