@@ -15,7 +15,7 @@ rem --- Hiển thị thông báo trước khi chạy script
 echo [INFO] --- Running the Python script...
 
 rem --- Chạy Python script với module
-python -m main.diabetic_retinopathy.Scenario_diabetic_retinopathy_image_feature
+python -m main.diabetic_retinopathy.Scenario_diabetic_retinopathy_fusion_feature
 
 rem --- Kiểm tra nếu lệnh python chạy thành công
 if %errorlevel% neq 0 (

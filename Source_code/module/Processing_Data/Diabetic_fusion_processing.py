@@ -8,6 +8,7 @@ from imblearn.over_sampling import BorderlineSMOTE
 from sklearn.utils import shuffle
 from pathlib import Path
 base_path = Path(__file__).resolve().parents[2]
+
 #Làm rõ vùng tối/sáng, giúp mạch máu và tổn thương dễ nhận diện hơn.
 def apply_clahe(image):
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
@@ -241,6 +242,7 @@ dfMerge = dfMerge[[col for col in dfMerge.columns if col != 'diabetic_retinopath
 X = dfMerge.drop('diabetic_retinopathy', axis=1)
 y = dfMerge['diabetic_retinopathy']
 # Áp dụng BorderlineSMOTE
+# Xử lý dữ liệu mất cân bằng
 border_smote = BorderlineSMOTE(random_state=42, sampling_strategy='auto', k_neighbors=5)
 X_resampled, y_resampled = border_smote.fit_resample(X, y)
 # Gộp lại thành DataFrame mới

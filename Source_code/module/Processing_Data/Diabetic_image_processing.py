@@ -196,6 +196,7 @@ dfMerge['diabetic_retinopathy'] = dfMerge['diabetic_retinopathy'].replace(labels
 X = dfMerge.drop('diabetic_retinopathy', axis=1)
 y = dfMerge['diabetic_retinopathy']
 # Áp dụng BorderlineSMOTE
+# Xử lý dữ liệu mất cân bằng
 border_smote = BorderlineSMOTE(random_state=42, sampling_strategy='auto', k_neighbors=5)
 X_resampled, y_resampled = border_smote.fit_resample(X, y)
 # Gộp lại thành DataFrame mới
