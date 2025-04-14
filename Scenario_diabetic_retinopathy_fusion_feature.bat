@@ -5,7 +5,7 @@ rem --- Ghi lại thời gian bắt đầu để dễ dàng kiểm tra
 echo [INFO] --- Script started at: %date% %time%
 
 rem --- Đặt thư mục làm việc
-cd /d Source_code
+cd Source_code
 
 rem --- install code FKG
 pip install --find-links=module/Setup_module/CMAKE/wheel/wheelhouse/window fisa_module
