@@ -9,9 +9,9 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 import pandas as pd
-from Source_code.module.FIS.FIS import FIS
-from Source_code.module.FKG.FKG_general import FKG
-from Source_code.module.FKG.FKG_S import FKGS
+from module.FIS.FIS import FIS
+from module.FKG.FKG_general import FKG
+from module.FKG.FKG_S import FKGS
 
 
 print("Diabetic Retinopathy Fusion Feature")
