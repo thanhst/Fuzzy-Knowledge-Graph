@@ -17,7 +17,7 @@ import pandas as pd
 print("Fusion Feature Remove Missing")
 
 print("__________Running Processing___________")
-from module.Processing_Data import Fusion_processing
+# from module.Processing_Data import Fusion_processing
 
 print("__________Running FIS___________")
 FIS(fileName="Fusion Feature Remove Missing",

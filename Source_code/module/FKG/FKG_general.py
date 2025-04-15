@@ -232,10 +232,9 @@ class FKG:
         M = fs.calculateM(base)
         B = fs.calculateB(base,A,M)
         C = fs.calculateC(base,B,n_classes)
-        C_norm = min_max_normalize(C)
         totalTime = time.time() - start
         print("FKG train finish: ", totalTime)
-
+        C_norm = min_max_normalize(C)
         start = time.time()
         self.testAccuracy(base,test,C_norm,n_classes)
         totalTimeTest = time.time() - start

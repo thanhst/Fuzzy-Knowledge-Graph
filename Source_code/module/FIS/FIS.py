@@ -39,7 +39,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
 
     full_data = np.array(full_data)
     train_data = np.array(train_data)
-
+    
     min_vals = np.min(full_data, axis=0)
     max_vals = np.max(full_data, axis=0)
 

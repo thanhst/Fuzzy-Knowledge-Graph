@@ -15,7 +15,7 @@ import pandas as pd
 
 print("Only Image Feature")
 print("__________Running Processing___________")
-from module.Processing_Data import Image_Processing
+# from module.Processing_Data import Image_Processing
 
 
 print("__________Running FIS___________")

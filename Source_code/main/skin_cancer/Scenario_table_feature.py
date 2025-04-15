@@ -8,7 +8,7 @@ from module.FKG.FKG_S import FKGS
 
 print("Only Table Feature Remove Missing")
 print("__________Running Processing___________")
-from module.Processing_Data import Metadata_processing
+# from module.Processing_Data import Metadata_processing
 
 print("__________Running FIS___________")
 FIS(fileName="Only Table Feature Remove Missing",
