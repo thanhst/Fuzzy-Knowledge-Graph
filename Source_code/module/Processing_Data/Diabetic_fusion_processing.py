@@ -47,6 +47,11 @@ def segment_by_kmeans(image, k=2):
 
     return segmented_image, mask
 
+def segment_by_otsu(gray_image):
+    blur = cv2.GaussianBlur(gray_image, (5, 5), 0)
+    _, binary_mask = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    return binary_mask
+
 def preprocess_fundus_image(image):
 
     # Làm nét
@@ -253,8 +258,16 @@ dfBalanced = pd.concat([
 
 # Shuffle lại dữ liệu để tránh bias
 dfBalanced = shuffle(dfBalanced, random_state=42)
-dfMerge = pd.DataFrame(dfBalanced)
 
+#Lọc đặc trưng bằng corr
+corr_with_label = dfBalanced.corr()['diabetic_retinopathy'].abs().sort_values(ascending=False)
+selected_features = corr_with_label[corr_with_label > 0.02].index.tolist()
+
+if 'diabetic_retinopathy' not in selected_features:
+    selected_features.append('diabetic_retinopathy')
+df_selected = dfBalanced[selected_features]
+
+dfMerge = pd.DataFrame(df_selected)
 os.makedirs(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature"), exist_ok=True)
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/data_process.csv"),index=False)
 
@@ -263,7 +276,3 @@ import seaborn as sns
 corr_matrix = dfMerge.corr()
 dfMerge = pd.DataFrame(corr_matrix)
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/correlation_matrix.csv"), index=False)
-# plt.figure(figsize=(10, 8))
-# sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-# plt.title("Ma trận tương quan của các đặc trưng ảnh")
-# plt.show()

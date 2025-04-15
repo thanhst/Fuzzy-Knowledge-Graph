@@ -1,57 +1,54 @@
 0,1,2,3,4,5,6,7,8,9,10,11,12,13
 Medium,Low,High,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
-High,High,Medium,High,High,Low,Low,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,Low,Low,Low,High,Low,Low,Low,High,2.0
 Low,High,Medium,Low,Low,Low,Low,Low,High,Low,Low,Low,High,1.0
-High,High,Low,Low,High,High,High,Low,Low,Low,Low,Low,Low,1.0
 Medium,High,Medium,Low,Low,High,High,Low,High,High,Low,Low,Low,1.0
 High,High,Medium,Low,Low,High,Low,High,High,High,Low,Low,Low,1.0
 High,High,Low,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,High,Low,Low,High,Low,High,High,High,Low,Low,Low,High,1.0
 High,Low,Medium,Low,Low,High,High,High,High,Low,Low,Low,High,1.0
 Medium,High,Low,Low,High,Low,High,Low,Low,Low,Low,High,Low,1.0
+High,High,Very High,Low,High,High,Low,Low,Low,High,Low,High,Low,1.0
 High,High,Medium,Low,Low,High,Low,High,High,Low,Low,Low,High,1.0
 High,Low,Medium,Low,High,High,High,High,High,Low,Low,Low,High,1.0
 Low,Low,Medium,Low,Low,Low,Low,Low,Low,Low,High,High,Low,1.0
-High,High,High,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,High,Low,Low,Low,High,Low,Low,High,Low,2.0
 Medium,High,Very High,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Low,High,Medium,Low,Low,Low,High,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Low,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
 High,Low,Medium,Low,Low,Low,High,Low,Low,Low,Low,Low,High,1.0
-Medium,Low,High,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,Low,High,Low,Low,High,Low,High,Low,1.0
 Medium,High,Low,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 High,High,Very High,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,High,1.0
+High,Low,Very High,High,High,Low,Low,Low,High,Low,Low,High,Low,2.0
 High,High,Low,Low,High,High,Low,Low,High,Low,Low,High,Low,1.0
-Medium,High,Medium,Low,High,High,High,Low,High,Low,Low,Low,High,1.0
+High,High,Medium,Low,High,High,Low,High,Low,Low,Low,Low,High,2.0
 Low,Low,Medium,Low,Low,High,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,Low,Medium,Low,High,Low,High,Low,High,Low,Low,Low,Low,2.0
 Medium,High,High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,Low,2.0
-High,Low,Medium,Low,High,Low,Low,Low,High,High,Low,Low,Low,2.0
 Low,Low,Medium,Low,Low,Low,High,Low,Low,Low,Low,Low,High,1.0
-Low,High,Low,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
-Medium,High,Medium,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
+High,Low,High,High,High,Low,Low,High,Low,Low,Low,Low,High,1.0
+High,Low,Very High,Low,High,High,High,Low,High,Low,Low,Low,High,1.0
 High,High,Very High,Low,High,Low,Low,Low,Low,Low,Low,High,Low,1.0
 High,Low,Medium,Low,Low,Low,Low,Low,Low,Low,Low,Low,High,1.0
 Low,Low,Medium,Low,High,Low,Low,Low,Low,Low,Low,Low,Low,2.0
 Medium,Low,High,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
+Low,High,Medium,Low,Low,High,Low,Low,Low,Low,High,High,Low,1.0
 High,High,Very High,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,Low,Low,Low,Low,Low,Low,High,Low,1.0
 Low,High,Medium,Low,Low,High,Low,Low,High,Low,High,Low,Low,1.0
-Low,Low,Low,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
 Low,High,Medium,Low,Low,Low,Low,Low,High,High,Low,Low,Low,1.0
 Medium,Low,High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 High,High,Medium,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
 Medium,Low,Medium,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 High,High,Low,Low,High,Low,High,High,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,Low,Low,High,High,Low,Low,High,Low,1.0
-High,High,Medium,Low,Low,High,High,High,Low,High,Low,Low,Low,1.0
 Medium,High,Low,Low,High,High,Low,High,Low,Low,Low,Low,High,1.0
 High,High,Very High,High,High,Low,High,Low,High,Low,Low,Low,High,1.0
-Medium,High,Very High,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
 Medium,Low,High,Low,High,High,Low,Low,Low,Low,Low,Low,High,2.0
+Medium,High,Very High,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,High,High,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
 High,Low,High,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
@@ -63,13 +60,14 @@ Low,High,Medium,Low,Low,Low,Low,Low,Low,Low,Low,High,Low,1.0
 Medium,High,Medium,Low,Low,High,Low,Low,Low,Low,High,High,Low,1.0
 Medium,High,Medium,Low,High,Low,Low,Low,Low,Low,Low,High,Low,1.0
 Low,Low,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,1.0
+Medium,Low,Medium,Low,High,High,Low,Low,High,High,High,Low,Low,2.0
 High,High,High,Low,High,Low,Low,Low,High,Low,Low,Low,High,1.0
 Low,High,Medium,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
-Medium,High,Medium,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
-Medium,Low,Medium,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,High,Medium,Low,High,Low,Low,High,High,High,Low,High,Low,2.0
 Low,High,Low,High,High,Low,Low,Low,High,Low,Low,Low,High,1.0
-Medium,Low,Medium,Low,High,High,Low,Low,Low,High,Low,Low,Low,1.0
+Medium,Low,Medium,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,High,Medium,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,Low,Low,Low,High,High,Low,High,Low,1.0
 High,Low,High,High,High,High,High,Low,High,Low,Low,Low,High,1.0
 High,High,Low,Low,High,Low,High,High,High,Low,Low,Low,High,1.0
@@ -79,50 +77,49 @@ Medium,High,Medium,Low,Low,Low,High,Low,Low,Low,Low,Low,Low,2.0
 High,Low,High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,Low,Low,High,High,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,High,Low,High,Low,High,Low,Low,Low,1.0
-High,High,Very High,High,High,High,High,Low,High,Low,Low,High,Low,1.0
 Medium,High,Low,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
 Low,Low,Medium,High,High,Low,Low,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
 High,Low,Medium,Low,Low,High,Low,Low,Low,Low,Low,High,Low,1.0
 High,High,Very High,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,Low,Low,High,High,Low,High,Low,Low,Low,Low,High,1.0
-Low,Low,Very High,High,High,High,Low,Low,Low,High,Low,High,Low,1.0
+High,High,Very High,Low,High,High,Low,High,High,Low,Low,Low,High,2.0
+Low,High,Low,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,High,Low,High,Low,Low,Low,High,Low,1.0
-High,High,Medium,Low,High,High,Low,High,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,High,Low,Low,High,High,Low,Low,Low,1.0
-Medium,Low,Very High,Low,High,Low,High,Low,Low,Low,Low,Low,High,2.0
 High,High,Very High,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
-Medium,High,Medium,Low,High,High,Low,Low,Low,Low,Low,Low,Low,2.0
 Low,High,Very High,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
+Medium,High,Medium,Low,High,High,Low,Low,Low,Low,Low,Low,Low,2.0
 Medium,High,Medium,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Medium,High,High,Low,Low,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,Low,Low,High,Low,Low,Low,High,Low,1.0
+High,High,Low,Low,High,High,High,Low,Low,Low,Low,High,Low,1.0
 Medium,High,Medium,Low,Low,High,High,Low,High,Low,Low,Low,High,1.0
 Medium,Low,High,High,High,High,Low,Low,High,Low,High,Low,Low,2.0
 Low,High,Medium,Low,Low,High,Low,Low,High,Low,Low,High,Low,1.0
-Medium,High,High,High,High,High,Low,Low,Low,High,Low,Low,Low,1.0
-Medium,High,Medium,Low,High,High,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,High,Medium,Low,Low,Low,Low,Low,Low,High,Low,High,Low,1.0
-Medium,Low,High,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
-Low,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,High,1.0
-High,High,Low,Low,High,High,Low,High,Low,High,Low,Low,Low,1.0
+Medium,High,Medium,Low,High,High,Low,Low,Low,High,Low,Low,Low,1.0
+Medium,High,High,High,High,High,Low,Low,Low,High,Low,Low,Low,1.0
+Medium,High,Medium,Low,Low,Low,Low,Low,Low,Low,High,High,Low,1.0
 Low,Low,Medium,Low,Low,High,Low,Low,Low,High,High,Low,Low,1.0
+Low,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,Low,High,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
+High,High,Low,Low,High,High,Low,High,Low,High,Low,Low,Low,1.0
 High,Low,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,High,1.0
 Medium,Low,Low,High,High,High,High,Low,High,Low,Low,Low,High,2.0
 Low,High,Medium,Low,Low,Low,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
-Medium,High,Medium,Low,High,Low,High,High,Low,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,High,High,Low,High,High,Low,Low,Low,High,2.0
 High,High,Medium,Low,Low,Low,High,Low,Low,Low,Low,High,Low,1.0
 Low,High,Low,High,High,Low,Low,High,Low,Low,Low,Low,High,1.0
 Medium,High,High,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,Low,Low,Low,High,Low,Low,Low,High,1.0
 High,High,High,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
+Medium,Low,Very High,High,High,Low,High,Low,High,Low,Low,Low,High,1.0
 High,Low,Medium,High,High,High,High,High,High,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,High,Low,High,Low,High,Low,Low,Low,1.0
 High,Low,High,High,High,High,Low,Low,High,Low,Low,Low,Low,2.0
 Low,Low,Low,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
-Medium,Low,Medium,Low,Low,High,Low,Low,High,High,Low,High,Low,2.0
 High,High,Medium,Low,High,Low,Low,Low,Low,Low,Low,High,Low,1.0
 High,Low,High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
@@ -134,31 +131,32 @@ High,High,Very High,Low,High,High,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,High,Medium,Low,Low,Low,Low,Low,Low,High,Low,Low,Low,1.0
 High,High,Medium,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 High,High,Medium,Low,High,Low,Low,High,High,Low,Low,High,Low,2.0
+High,High,Medium,Low,Low,High,High,High,High,Low,Low,High,Low,1.0
 High,Low,Very High,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
-High,High,Low,Low,High,Low,Low,Low,Low,High,Low,Low,Low,1.0
-High,High,Medium,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
 Low,Low,Medium,High,High,High,High,High,Low,Low,Low,Low,High,1.0
+High,High,Medium,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
 Low,Low,Low,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 High,High,High,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,High,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
+Low,Low,Very High,High,High,Low,Low,High,Low,Low,Low,Low,High,2.0
 Low,Low,Medium,Low,Low,High,High,Low,High,Low,Low,High,Low,1.0
 Medium,Low,Medium,Low,Low,Low,High,Low,Low,High,Low,Low,Low,1.0
 Medium,Low,Medium,Low,High,High,Low,Low,Low,Low,High,Low,Low,1.0
 High,Low,Very High,High,High,High,High,Low,High,Low,Low,Low,High,2.0
 Medium,Low,High,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,High,Low,Low,High,Low,Low,High,Low,1.0
-High,Low,Medium,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
+High,Low,Medium,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
+High,Low,Very High,High,High,Low,High,Low,High,Low,Low,High,Low,2.0
 Medium,Low,Medium,Low,Low,Low,High,Low,Low,Low,Low,Low,High,1.0
 Medium,High,High,High,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 High,Low,Medium,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,High,High,Low,High,Low,Low,Low,Low,High,2.0
-Medium,Low,Medium,High,High,High,Low,High,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,High,Low,High,Low,Low,Low,High,Low,Low,1.0
+Medium,Low,Medium,High,High,High,Low,High,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,Low,Low,High,Low,Low,Low,Low,High,Low,1.0
 Medium,Low,Low,Low,High,Low,Low,Low,High,Low,Low,High,Low,2.0
 High,Low,High,Low,High,High,Low,High,Low,Low,Low,Low,High,2.0
-Medium,High,Very High,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 Medium,Low,High,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Medium,Low,Low,Low,High,High,Low,High,High,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,Low,High,Low,High,High,High,Low,Low,1.0
@@ -180,12 +178,14 @@ Medium,High,High,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,High,Low,Low,Low,High,Low,Low,Low,1.0
 Low,Low,Medium,Low,Low,High,High,Low,High,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,High,Low,Low,High,Low,Low,Low,Low,High,2.0
-Low,Low,Medium,Low,Low,Low,High,High,Low,Low,Low,Low,High,1.0
-Medium,High,Medium,Low,Low,High,Low,Low,Low,High,Low,High,Low,1.0
+High,Low,Medium,Low,Low,Low,Low,Low,Low,High,Low,High,Low,1.0
 Medium,High,Low,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
+Medium,High,Medium,Low,Low,High,Low,Low,Low,High,Low,High,Low,1.0
+Low,Low,Medium,Low,Low,Low,High,High,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,High,Low,High,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,Low,Low,Low,High,Low,Low,Low,High,1.0
 High,Low,Very High,High,High,Low,High,Low,High,Low,Low,Low,High,2.0
+Medium,High,Very High,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,High,Low,Low,High,Low,High,Low,Low,1.0
 High,Low,Medium,Low,High,High,Low,Low,High,Low,Low,Low,Low,2.0
 Low,Low,Medium,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
@@ -195,9 +195,8 @@ High,High,Medium,Low,Low,Low,Low,Low,Low,Low,High,High,Low,1.0
 Medium,High,Medium,Low,Low,Low,Low,Low,High,Low,Low,High,Low,1.0
 Medium,High,Medium,Low,Low,Low,High,Low,High,Low,Low,Low,High,1.0
 High,Low,High,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
-Medium,Low,Very High,Low,High,High,High,Low,Low,Low,Low,Low,High,2.0
 Medium,High,High,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
-Low,Low,Medium,Low,Low,Low,Low,Low,Low,Low,High,Low,Low,1.0
+Medium,High,Low,Low,High,High,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,High,Low,Low,High,Low,Low,High,High,Low,Low,Low,High,1.0
 Low,High,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,High,1.0
 Low,Low,Medium,Low,Low,High,Low,Low,High,High,Low,Low,Low,1.0
@@ -206,14 +205,14 @@ Medium,High,High,High,High,Low,Low,Low,High,High,Low,Low,Low,1.0
 High,Low,Medium,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
 Medium,Low,High,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Low,Low,Medium,Low,Low,Low,High,Low,High,High,Low,Low,Low,1.0
-Medium,High,Medium,Low,Low,High,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,High,Low,High,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
-Low,Low,Very High,High,High,Low,Low,High,Low,Low,Low,Low,High,1.0
+Medium,High,Medium,Low,Low,High,Low,Low,Low,High,Low,Low,Low,1.0
 Low,High,Medium,Low,Low,High,High,Low,Low,High,Low,Low,Low,1.0
 Medium,High,Medium,Low,High,Low,Low,High,Low,Low,Low,Low,High,2.0
 High,Low,Medium,Low,High,High,Low,Low,Low,Low,High,Low,Low,1.0
-Medium,Low,Medium,Low,Low,Low,High,High,Low,Low,Low,High,Low,1.0
 High,High,Very High,High,High,Low,Low,Low,High,High,Low,Low,Low,2.0
+Low,Low,Very High,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
+Medium,Low,Medium,Low,Low,Low,High,High,Low,Low,Low,High,Low,1.0
 Medium,High,Medium,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Very High,High,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,Low,High,High,Low,Low,Low,High,1.0
@@ -222,27 +221,26 @@ High,High,Medium,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
 High,High,Low,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Medium,Low,Low,High,Low,High,Low,Low,Low,Low,High,1.0
 High,Low,Very High,Low,High,High,Low,Low,Low,Low,Low,Low,Low,2.0
-High,High,Low,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,Low,Low,High,High,Low,Low,Low,1.0
-Low,Low,Medium,High,Low,High,Low,Low,High,Low,Low,Low,High,2.0
+High,High,Low,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
 Medium,Low,Low,Low,High,High,Low,High,High,High,Low,Low,Low,1.0
+Low,Low,Medium,High,Low,High,Low,Low,High,Low,Low,Low,High,2.0
 Low,Low,High,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,High,High,Low,High,Low,Low,High,Low,1.0
 High,High,Low,Low,High,High,High,Low,High,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,Low,Low,High,Low,Low,Low,High,1.0
-High,High,Very High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Low,Low,Medium,Low,Low,Low,Low,Low,Low,Low,Low,High,Low,1.0
 High,Low,Medium,Low,High,High,Low,Low,High,Low,Low,High,Low,1.0
 High,High,Very High,High,High,Low,High,High,High,High,Low,Low,Low,1.0
 Low,High,Very High,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
-High,High,Medium,Low,Low,High,Low,Low,Low,Low,High,High,Low,1.0
 High,Low,Medium,Low,Low,Low,High,High,High,Low,Low,Low,High,1.0
 High,Low,Medium,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
-High,Low,High,Low,High,High,High,Low,High,Low,Low,Low,High,2.0
-Low,High,Medium,Low,Low,Low,Low,High,High,Low,Low,High,Low,1.0
+Medium,High,Medium,Low,High,Low,High,Low,High,Low,Low,Low,High,2.0
 High,Low,Low,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
 High,Low,Very High,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
+Medium,Low,Medium,Low,Low,High,Low,Low,Low,Low,High,High,Low,1.0
 High,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,1.0
+Low,Low,Low,High,High,High,Low,High,High,Low,Low,Low,High,2.0
 Low,Low,Medium,Low,Low,Low,High,High,High,Low,Low,Low,High,1.0
 Low,High,High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
 High,High,Medium,Low,Low,High,Low,Low,Low,High,Low,Low,Low,1.0
@@ -250,34 +248,34 @@ High,Low,Low,Low,High,High,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,High,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,Low,1.0
 High,Low,Medium,Low,Low,Low,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,Low,Medium,Low,Low,High,High,Low,Low,High,Low,Low,Low,1.0
-Medium,Low,Medium,Low,Low,Low,High,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,1.0
+Medium,Low,Medium,Low,Low,Low,High,High,Low,Low,Low,Low,High,1.0
 Low,Low,Medium,Low,Low,Low,Low,High,Low,Low,Low,Low,High,1.0
-Medium,Low,Medium,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
+Medium,High,Medium,Low,Low,High,Low,High,High,Low,Low,High,Low,2.0
 High,High,Very High,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,Low,Medium,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,High,Low,High,Low,High,Low,Low,Low,High,2.0
-Medium,High,Low,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
-Medium,Low,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,High,2.0
+High,Low,Very High,Low,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
 Medium,Low,Medium,Low,Low,Low,Low,Low,Low,Low,Low,High,Low,1.0
-High,Low,Medium,Low,Low,Low,High,Low,Low,Low,High,High,Low,1.0
 Low,Low,Medium,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
+High,Low,Very High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
 High,High,Very High,High,High,High,High,Low,High,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,High,Low,Low,Low,Low,High,Low,Low,1.0
-High,Low,Very High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,High,High,High,Low,Low,Low,Low,Low,Low,1.0
 High,Low,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,Low,Low,High,Low,High,Low,Low,Low,1.0
 High,High,Very High,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
-High,High,High,Low,High,High,Low,Low,Low,High,Low,Low,Low,1.0
+Medium,Low,Low,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 High,Low,Medium,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Medium,High,Low,Low,High,High,High,Low,Low,High,Low,Low,Low,1.0
 High,Low,Very High,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,Low,High,Low,High,High,Low,Low,Low,High,2.0
-Medium,High,Medium,Low,Low,Low,High,Low,Low,Low,High,Low,Low,1.0
-High,Low,Medium,Low,High,High,High,Low,Low,Low,Low,Low,High,2.0
 High,High,Medium,Low,Low,High,High,Low,Low,Low,High,Low,Low,1.0
-Medium,High,Very High,Low,High,Low,High,Low,High,Low,Low,Low,High,2.0
+High,High,Low,High,High,Low,Low,Low,High,Low,Low,Low,High,1.0
+High,Low,Medium,Low,High,High,High,Low,Low,Low,Low,Low,High,2.0
+Medium,High,Medium,Low,Low,Low,High,Low,Low,Low,High,Low,Low,1.0
 Low,High,Medium,High,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
+High,High,Medium,Low,Low,Low,Low,High,Low,High,Low,Low,Low,1.0
 High,High,Low,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Medium,Low,Low,Low,High,Low,High,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,High,Low,Low,Low,Low,Low,High,Low,1.0
@@ -286,110 +284,101 @@ Medium,High,Low,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,High,Low,Low,High,High,Low,Low,Low,1.0
 Low,High,Medium,Low,Low,Low,Low,High,Low,Low,Low,Low,High,1.0
 High,Low,Medium,Low,High,High,Low,Low,Low,High,Low,High,Low,1.0
+High,High,Medium,Low,Low,High,Low,Low,Low,High,Low,High,Low,1.0
 Medium,High,Medium,Low,High,Low,Low,High,High,Low,Low,Low,Low,2.0
 Low,High,Medium,Low,Low,Low,Low,High,Low,Low,Low,High,Low,1.0
+Medium,Low,Medium,Low,High,High,Low,High,Low,Low,Low,Low,High,2.0
 High,Low,High,Low,High,Low,Low,Low,Low,Low,Low,Low,Low,2.0
 Low,Low,Medium,Low,Low,High,Low,High,High,Low,Low,Low,High,1.0
-High,Low,Medium,High,Low,Low,High,Low,High,Low,Low,Low,High,2.0
 Medium,Low,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,Low,2.0
+High,Low,Medium,High,Low,Low,High,Low,High,Low,Low,Low,High,2.0
 High,Low,High,High,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
+Medium,High,Very High,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Very High,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,High,Low,Low,Low,High,Low,Low,Low,1.0
-Medium,High,Very High,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 High,Low,Medium,Low,Low,Low,Low,High,High,Low,Low,Low,High,2.0
-High,High,Medium,Low,High,High,High,Low,High,High,Low,Low,Low,2.0
 High,Low,Medium,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
 High,Low,Very High,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
 Medium,High,Very High,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Medium,High,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 Low,Low,Medium,Low,Low,High,High,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Very High,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
-High,Low,Low,Low,High,Low,High,Low,Low,Low,Low,High,Low,1.0
+Medium,High,Medium,High,High,Low,Low,Low,Low,Low,Low,Low,Low,1.0
 Medium,Low,Medium,Low,Low,High,High,Low,High,Low,Low,Low,High,1.0
-Medium,High,Medium,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,High,Low,Low,High,Low,Low,High,Low,1.0
 High,Low,Medium,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,High,High,High,Low,High,Low,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,Low,High,High,Low,High,Low,Low,High,Low,1.0
 High,High,Medium,Low,Low,High,High,High,High,Low,Low,Low,High,1.0
 High,Low,Medium,High,Low,High,Low,Low,Low,Low,Low,Low,High,2.0
-Low,Low,Low,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
 High,Low,Medium,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
-Low,Low,Medium,Low,Low,High,High,Low,Low,Low,Low,High,Low,1.0
 High,High,Medium,Low,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
 Low,High,Medium,High,Low,Low,Low,Low,Low,Low,Low,Low,High,2.0
-High,Low,Medium,Low,Low,Low,High,High,High,Low,Low,High,Low,1.0
-High,High,High,Low,High,High,High,High,High,Low,Low,Low,High,1.0
+Low,Low,Medium,Low,Low,High,High,Low,Low,Low,Low,High,Low,1.0
 Medium,Low,Medium,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
-Medium,High,Low,Low,High,Low,Low,Low,Low,High,Low,Low,Low,1.0
+Medium,High,High,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,Low,Low,Low,Low,Low,Low,High,Low,1.0
 High,High,Medium,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,Very High,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 High,High,Medium,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
-Medium,High,Low,Low,High,Low,High,Low,Low,High,Low,Low,Low,1.0
 Low,High,Very High,High,High,Low,Low,High,Low,Low,Low,Low,High,2.0
 High,High,Medium,Low,High,Low,Low,High,Low,Low,Low,Low,High,1.0
 Medium,Low,High,High,High,High,Low,High,High,Low,Low,High,Low,2.0
-Medium,High,Medium,Low,Low,Low,High,High,Low,Low,Low,High,Low,1.0
 High,Low,Medium,Low,High,High,High,Low,Low,High,Low,Low,Low,1.0
-Medium,High,Medium,Low,Low,Low,High,High,High,Low,Low,High,Low,1.0
 Medium,Low,Medium,Low,Low,Low,High,High,High,Low,Low,High,Low,1.0
 Low,Low,Low,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 Medium,Low,Medium,Low,Low,High,Low,Low,High,Low,High,Low,Low,1.0
 High,Low,Very High,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
-High,Low,Medium,Low,Low,High,High,Low,Low,Low,Low,Low,Low,1.0
 Medium,High,High,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,High,Low,1.0
-Medium,Low,Medium,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,Low,Low,Low,Low,Low,Low,Low,Low,1.0
-Medium,Low,Medium,Low,Low,High,High,Low,Low,Low,Low,High,Low,1.0
 Medium,High,High,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
-High,Low,Very High,High,High,Low,Low,Low,High,Low,Low,High,Low,1.0
-Medium,High,Medium,Low,Low,Low,Low,High,High,High,Low,High,Low,1.0
-High,High,Medium,Low,Low,High,High,Low,High,Low,Low,Low,High,1.0
-High,Low,Low,Low,High,High,High,Low,Low,Low,Low,High,Low,1.0
+Medium,Low,Medium,Low,Low,High,High,Low,Low,Low,Low,High,Low,1.0
 High,High,Low,Low,High,Low,High,Low,Low,Low,Low,High,Low,1.0
+High,High,Medium,Low,Low,High,High,Low,High,Low,Low,Low,High,1.0
+Medium,High,Medium,Low,Low,Low,Low,High,High,High,Low,High,Low,1.0
+High,Low,Low,Low,High,High,High,Low,Low,Low,Low,High,Low,1.0
+Medium,Low,Medium,Low,Low,Low,Low,Low,Low,Low,High,High,Low,1.0
 Low,Low,Medium,Low,Low,Low,Low,Low,High,High,Low,Low,Low,1.0
 Low,Low,Medium,Low,Low,Low,High,Low,High,Low,Low,Low,High,1.0
 Medium,High,High,High,High,Low,Low,Low,High,Low,Low,High,Low,2.0
 Medium,Low,Medium,Low,Low,Low,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,Low,Low,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,Low,High,Low,Low,Low,High,Low,1.0
-Medium,High,Low,Low,High,High,Low,Low,Low,Low,Low,Low,Low,1.0
 High,High,Medium,Low,High,High,Low,Low,Low,High,Low,Low,Low,1.0
-Medium,Low,Medium,Low,High,High,Low,High,Low,Low,Low,Low,High,1.0
+Medium,High,Low,Low,High,High,Low,Low,Low,Low,Low,Low,Low,1.0
 Low,High,Low,High,High,High,Low,High,Low,Low,Low,Low,High,1.0
-High,High,Very High,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
-High,High,Medium,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
+Medium,High,Medium,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
+High,High,Medium,High,High,Low,High,Low,Low,High,Low,High,Low,2.0
 Low,Low,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,High,1.0
-Low,High,Medium,Low,Low,Low,Low,Low,Low,Low,High,High,Low,1.0
+High,High,Medium,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Low,Low,Medium,Low,Low,High,Low,High,Low,Low,Low,Low,High,1.0
 High,High,Very High,High,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
 Low,High,Very High,High,High,High,High,High,Low,Low,Low,Low,High,2.0
 Low,High,Very High,High,High,Low,High,High,Low,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,High,Low,High,Low,Low,Low,High,Low,Low,1.0
 Low,Low,Medium,Low,High,High,Low,Low,Low,Low,Low,Low,Low,2.0
-High,Low,Medium,Low,Low,High,High,Low,High,Low,Low,High,Low,1.0
 Low,Low,Medium,Low,Low,High,Low,Low,Low,Low,Low,High,Low,1.0
 Low,High,Low,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,High,High,Low,Low,Low,Low,High,Low,1.0
+High,High,Medium,Low,Low,Low,Low,Low,High,High,Low,High,Low,1.0
 High,High,Medium,Low,Low,Low,High,Low,High,High,Low,Low,Low,1.0
 Medium,Low,Low,High,High,Low,High,Low,High,Low,Low,Low,High,2.0
-Low,Low,Medium,Low,Low,Low,High,Low,Low,High,Low,Low,Low,1.0
 Low,Low,Medium,Low,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,Low,High,High,High,Low,Low,Low,Low,High,1.0
-High,High,Very High,High,High,Low,Low,Low,Low,Low,Low,Low,Low,2.0
+Medium,High,Medium,Low,Low,Low,Low,High,High,High,Low,Low,Low,1.0
+Low,Low,Medium,Low,Low,Low,High,Low,Low,High,Low,Low,Low,1.0
 High,High,Medium,Low,High,High,High,Low,Low,Low,Low,High,Low,1.0
+High,High,Very High,High,High,Low,Low,Low,Low,Low,Low,Low,Low,2.0
 High,High,Very High,Low,High,High,High,High,High,Low,Low,Low,High,2.0
-High,High,Medium,Low,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Medium,Low,Very High,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,High,Low,Low,High,Low,Low,Low,Low,High,1.0
-High,High,Medium,Low,Low,Low,Low,High,Low,Low,Low,Low,Low,1.0
 Medium,High,Medium,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 High,Low,Very High,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
-Low,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,1.0
+High,High,Medium,Low,High,High,Low,High,High,Low,Low,Low,High,2.0
 Low,High,Medium,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
+Medium,High,Medium,Low,High,High,Low,High,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Medium,High,Low,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Very High,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
@@ -398,63 +387,67 @@ High,High,Medium,Low,Low,High,Low,Low,High,High,Low,High,Low,1.0
 High,High,Very High,Low,High,Low,Low,Low,High,Low,Low,High,Low,2.0
 High,High,Medium,Low,High,High,High,High,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,High,High,Low,Low,High,High,Low,Low,Low,2.0
+Medium,High,Medium,Low,Low,High,High,Low,Low,High,High,Low,Low,1.0
 High,High,Low,Low,High,High,High,Low,Low,High,Low,Low,Low,1.0
-Low,Low,High,High,High,Low,Low,Low,High,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,High,Low,Low,High,High,Low,Low,Low,1.0
 High,High,Very High,Low,High,High,Low,High,Low,Low,Low,High,Low,1.0
 High,High,Medium,High,Low,High,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,High,High,Low,Low,High,Low,High,Low,1.0
 High,Low,Medium,Low,Low,Low,Low,High,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,High,High,High,High,Low,High,Low,Low,Low,High,2.0
-High,High,Medium,Low,High,Low,High,High,High,Low,Low,Low,High,1.0
 Low,Low,Low,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Low,Low,Medium,Low,Low,Low,Low,Low,Low,Low,Low,Low,High,1.0
 High,Low,Very High,High,High,Low,Low,Low,Low,Low,Low,High,Low,2.0
+Low,Low,Medium,Low,Low,Low,Low,Low,High,Low,Low,Low,Low,1.0
 Medium,Low,Medium,Low,Low,Low,Low,High,High,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,Low,Low,Low,Low,Low,High,Low,Low,1.0
 High,High,Medium,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Medium,Low,Low,High,Low,High,High,Low,Low,Low,High,1.0
+Medium,High,Medium,Low,Low,High,Low,High,High,High,Low,Low,Low,2.0
 High,High,Medium,Low,Low,Low,Low,Low,Low,Low,Low,High,Low,1.0
 Medium,Low,Medium,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
 Medium,Low,Medium,High,Low,Low,Low,Low,High,Low,Low,Low,High,2.0
-Low,High,Very High,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,Low,Medium,Low,Low,Low,Low,High,Low,High,Low,Low,Low,1.0
+Medium,Low,Very High,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,High,High,Low,Low,High,Low,High,Low,1.0
 High,High,Medium,Low,High,Low,High,Low,Low,Low,Low,High,Low,1.0
 High,High,High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 High,High,Low,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
+Medium,Low,Medium,Low,Low,High,High,High,High,Low,Low,Low,High,2.0
 High,High,Low,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
-Medium,High,Very High,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,High,Low,High,High,High,Low,High,Low,Low,High,Low,1.0
 High,High,Medium,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
-Low,Low,Medium,Low,Low,High,High,Low,Low,Low,Low,Low,Low,1.0
 High,High,Medium,Low,Low,Low,Low,Low,Low,Low,Low,Low,Low,1.0
 High,Low,Medium,Low,High,Low,High,Low,Low,High,Low,Low,Low,1.0
 Medium,High,Medium,Low,Low,Low,High,Low,Low,High,Low,Low,Low,1.0
 High,High,Very High,High,High,Low,Low,Low,Low,High,Low,Low,Low,1.0
+Low,Low,Medium,Low,High,High,Low,Low,High,Low,Low,High,Low,2.0
+High,High,Medium,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,Low,High,Low,Low,Low,Low,Low,High,1.0
 High,Low,Low,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 High,High,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,High,1.0
+High,High,Medium,Low,High,High,Low,Low,Low,Low,High,Low,Low,1.0
 Low,High,Medium,Low,Low,High,Low,Low,Low,Low,High,Low,Low,1.0
 Low,High,High,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Low,Low,Medium,Low,Low,Low,Low,High,High,Low,Low,Low,High,1.0
-High,High,Medium,Low,High,High,Low,High,High,Low,Low,Low,High,1.0
 High,Low,High,High,High,Low,High,Low,High,Low,Low,Low,Low,2.0
 Medium,Low,Medium,Low,High,High,High,Low,Low,Low,Low,High,Low,1.0
 High,Low,Medium,Low,Low,Low,High,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,High,High,High,Low,Low,High,Low,Low,High,Low,1.0
+High,Low,Low,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
 Low,Low,Medium,Low,Low,High,High,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,Low,Low,Low,Low,High,Low,High,Low,1.0
+Medium,Low,Medium,Low,Low,High,High,High,Low,Low,Low,High,Low,1.0
 Medium,Low,Medium,Low,Low,High,Low,Low,High,Low,Low,High,Low,1.0
-Medium,High,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,Low,1.0
 High,Low,Medium,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
+Medium,High,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,Low,1.0
 High,Low,Medium,Low,High,Low,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,High,Medium,Low,Low,High,Low,High,High,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,High,High,Low,Low,High,Low,Low,High,Low,2.0
 High,Low,Medium,Low,Low,Low,High,Low,High,Low,Low,High,Low,1.0
 Medium,Low,Medium,Low,High,Low,High,High,High,Low,Low,Low,High,2.0
-Medium,Low,Very High,High,High,High,High,Low,High,Low,Low,Low,High,1.0
 High,Low,Medium,Low,High,Low,Low,High,High,Low,Low,Low,Low,2.0
 High,High,Medium,Low,High,High,Low,Low,High,Low,Low,Low,Low,2.0
 High,Low,Medium,Low,High,High,High,Low,High,Low,Low,Low,High,2.0
@@ -465,11 +458,10 @@ Medium,Low,Medium,High,High,Low,High,Low,High,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,Low,High,High,High,Low,Low,Low,High,1.0
 High,High,Very High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
 Medium,High,Low,Low,High,Low,Low,Low,High,High,Low,Low,Low,1.0
-Medium,Low,Medium,Low,Low,Low,Low,Low,Low,Low,High,Low,Low,1.0
+Medium,Low,Low,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,High,High,Low,Low,High,Low,Low,Low,Low,2.0
-Medium,Low,Low,Low,High,Low,Low,Low,High,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,High,Low,Low,High,High,Low,Low,Low,2.0
-High,Low,High,Low,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
+Medium,Low,Low,Low,High,Low,Low,Low,High,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,High,High,High,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Low,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 High,High,Very High,Low,High,High,High,Low,High,Low,Low,Low,High,1.0
@@ -479,18 +471,20 @@ High,High,Medium,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Low,High,Medium,Low,Low,High,High,High,Low,Low,Low,Low,High,1.0
 Medium,Low,High,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,High,High,Low,Low,High,Low,Low,High,Low,1.0
+High,High,High,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,High,High,High,Low,Low,High,Low,Low,Low,1.0
-High,Low,Low,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
 High,Low,Very High,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
+Medium,Low,Very High,Low,High,Low,Low,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,High,High,Low,Low,High,Low,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,Low,High,High,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,High,High,High,Low,High,Low,Low,Low,High,1.0
-Medium,Low,Very High,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
-High,Low,Medium,Low,Low,Low,High,Low,High,Low,Low,Low,High,1.0
 High,Low,Low,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
+High,Low,Medium,Low,Low,Low,High,Low,High,Low,Low,Low,High,1.0
+Medium,High,High,High,High,Low,Low,High,Low,Low,Low,Low,High,2.0
 Medium,Low,Medium,High,High,High,High,Low,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,High,High,Low,High,Low,Low,Low,High,1.0
 Low,Low,Medium,High,High,High,Low,High,High,Low,Low,Low,High,2.0
+Low,Low,Medium,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Low,High,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Low,Low,High,High,High,Low,High,Low,Low,Low,High,1.0
 Low,High,Very High,High,High,High,Low,High,Low,Low,Low,Low,High,1.0
@@ -500,15 +494,13 @@ High,Low,High,Low,High,High,Low,High,High,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,1.0
 Low,Low,Medium,Low,Low,Low,Low,Low,Low,High,Low,Low,Low,1.0
 Medium,Low,Medium,Low,Low,High,Low,High,Low,Low,Low,Low,High,1.0
-High,High,Medium,Low,High,High,Low,Low,Low,High,Low,High,Low,1.0
-High,Low,Very High,Low,High,High,Low,Low,Low,Low,Low,Low,High,2.0
 Medium,High,Low,Low,High,High,High,Low,Low,Low,Low,High,Low,1.0
-High,Low,Low,Low,High,Low,Low,High,High,Low,Low,Low,High,1.0
 Low,High,Medium,Low,Low,Low,High,Low,Low,High,Low,Low,Low,1.0
+Medium,High,Medium,Low,High,High,High,Low,High,Low,Low,Low,High,2.0
 High,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,Low,Very High,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,Low,High,High,High,Low,High,Low,1.0
 Medium,High,High,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
-Medium,High,Medium,Low,Low,High,Low,Low,High,Low,High,Low,Low,1.0
 High,Low,High,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,Low,High,Low,Low,Low,Low,High,Low,1.0
 Low,High,Medium,Low,Low,High,High,Low,Low,Low,Low,Low,High,1.0
@@ -521,60 +513,58 @@ Low,High,Medium,High,High,Low,Low,Low,Low,High,Low,Low,Low,1.0
 Low,Low,High,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Low,Low,Medium,Low,Low,High,Low,Low,Low,Low,High,Low,Low,1.0
 Medium,Low,Medium,Low,Low,Low,Low,High,High,Low,Low,High,Low,2.0
-Medium,High,Medium,High,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 High,High,High,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,High,Medium,High,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,High,High,Low,Low,High,High,Low,Low,Low,High,1.0
 Low,High,High,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Very High,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
+Medium,Low,Medium,Low,Low,High,High,Low,High,High,Low,Low,Low,1.0
 High,Low,Medium,Low,Low,Low,Low,Low,High,Low,Low,Low,Low,2.0
-Low,Low,Very High,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
-High,Low,High,Low,High,High,Low,Low,High,Low,Low,Low,Low,2.0
 Medium,Low,Low,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,High,High,Low,Low,Low,Low,Low,High,1.0
-High,Low,Low,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
+Medium,Low,Very High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 High,Low,Very High,High,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
 Medium,High,Low,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
-Medium,Low,Very High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
-High,High,Medium,High,High,Low,Low,Low,Low,High,Low,Low,Low,1.0
+High,Low,Low,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,High,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
-Medium,High,Medium,Low,Low,Low,Low,Low,High,High,Low,Low,Low,2.0
-Low,Low,Medium,High,High,High,Low,High,Low,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,High,High,High,High,Low,Low,Low,High,1.0
 High,High,Very High,High,High,Low,High,Low,High,Low,Low,High,Low,2.0
+High,High,Very High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Low,Low,High,Low,Low,High,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,High,Low,Low,Low,Low,High,Low,Low,Low,1.0
 High,Low,Low,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
-High,High,Medium,Low,High,Low,Low,Low,High,High,Low,Low,Low,1.0
 High,High,Medium,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,High,Low,High,Low,High,Low,Low,Low,Low,2.0
-Medium,Low,Very High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
-Low,High,Medium,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,Low,Low,High,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 High,Low,Medium,Low,Low,High,Low,High,Low,Low,Low,Low,High,1.0
-High,High,Low,Low,High,Low,Low,High,High,Low,Low,Low,High,1.0
 Low,High,Very High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
+High,High,Low,Low,High,Low,Low,High,High,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,High,High,Low,Low,Low,Low,High,Low,1.0
 Medium,Low,Medium,Low,Low,Low,Low,Low,Low,Low,Low,Low,Low,1.0
-Low,Low,Medium,High,High,Low,Low,High,High,Low,Low,Low,High,1.0
 Low,Low,Low,High,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 High,High,Very High,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Low,Low,Very High,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Medium,High,High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
+High,Low,Medium,Low,Low,Low,High,Low,Low,High,Low,Low,Low,1.0
 High,Low,High,Low,High,Low,Low,High,Low,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
-High,Low,Medium,Low,Low,Low,High,Low,Low,High,Low,Low,Low,1.0
 Medium,Low,Low,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
 Low,Low,Medium,High,Low,High,Low,Low,Low,Low,Low,Low,High,2.0
 Medium,Low,Medium,High,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
 High,Low,Low,High,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,Low,High,Low,Low,High,Low,High,Low,1.0
 Medium,Low,Low,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
+High,Low,Very High,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,Low,Very High,High,High,Low,Low,High,Low,Low,Low,Low,High,2.0
 Low,High,Medium,Low,Low,Low,High,Low,Low,Low,Low,High,Low,1.0
+Low,High,Very High,High,High,High,High,Low,Low,Low,Low,Low,High,2.0
+High,Low,Medium,Low,Low,Low,High,High,High,High,Low,Low,Low,1.0
 High,High,Very High,Low,High,High,Low,Low,High,Low,Low,High,Low,1.0
-Medium,High,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
-High,High,Medium,Low,Low,High,High,Low,Low,High,Low,Low,Low,1.0
 Medium,High,Very High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,High,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,Low,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,High,1.0
+High,High,Medium,Low,Low,High,High,Low,Low,High,Low,Low,Low,1.0
 Low,High,Medium,Low,Low,High,High,High,High,Low,Low,Low,High,1.0
 Medium,High,Low,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 High,Low,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,Low,2.0
@@ -582,6 +572,7 @@ Medium,High,High,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Low,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,Low,Low,Low,High,High,High,Low,Low,Low,High,1.0
 High,Low,Medium,Low,High,Low,High,Low,High,High,Low,Low,Low,1.0
+Medium,High,Very High,Low,High,Low,Low,Low,Low,Low,Low,High,Low,1.0
 Medium,Low,Medium,Low,Low,High,Low,Low,Low,High,Low,High,Low,1.0
 Low,High,Medium,Low,Low,High,Low,Low,High,High,Low,Low,Low,1.0
 Medium,High,Low,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
@@ -591,29 +582,28 @@ High,Low,Low,Low,High,High,High,High,High,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,High,Low,High,Low,Low,High,Low,Low,Low,1.0
 Medium,Low,Very High,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,High,High,High,Low,Low,Low,Low,High,1.0
-Medium,High,Medium,Low,Low,Low,High,Low,High,Low,Low,High,Low,1.0
 High,High,Very High,High,High,Low,Low,Low,High,Low,Low,High,Low,2.0
+Medium,High,Medium,Low,Low,Low,High,Low,High,Low,Low,High,Low,1.0
 Medium,Low,Very High,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
-High,High,Very High,High,High,Low,Low,High,Low,Low,Low,Low,High,2.0
-Medium,High,High,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
 Low,High,Medium,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
+Medium,High,High,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
 Medium,High,High,High,High,Low,Low,Low,Low,High,Low,Low,Low,1.0
 High,High,Very High,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
 High,High,High,Low,High,Low,Low,Low,Low,Low,Low,High,Low,1.0
 Low,High,Medium,High,Low,High,Low,Low,Low,Low,Low,Low,High,2.0
-High,Low,High,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,Low,High,High,Low,Low,High,Low,Low,Low,1.0
+High,Low,High,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Low,Low,Very High,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
-Low,Low,Very High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
-Low,Low,Medium,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
+High,High,Low,High,High,Low,High,Low,High,Low,Low,Low,High,2.0
+Medium,High,Medium,Low,Low,Low,Low,Low,High,High,Low,Low,Low,1.0
+Low,Low,Medium,High,High,High,Low,High,Low,Low,Low,Low,High,1.0
 High,High,Low,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
+Low,Low,Medium,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,Low,Low,Low,Low,Low,Low,Low,High,1.0
-Medium,High,High,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 High,Low,Medium,Low,High,Low,Low,Low,Low,Low,High,Low,Low,1.0
+Medium,High,High,Low,High,High,Low,Low,Low,Low,Low,Low,High,1.0
 Low,Low,Very High,High,High,High,Low,High,Low,Low,Low,Low,High,2.0
-Medium,High,Medium,Low,High,Low,Low,Low,Low,Low,High,High,Low,1.0
-Low,High,Very High,High,High,Low,High,Low,Low,Low,Low,Low,High,2.0
 Medium,Low,Low,High,High,High,Low,Low,High,Low,Low,Low,High,2.0
 High,High,Very High,Low,High,High,High,Low,Low,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,High,High,Low,Low,Low,Low,Low,High,1.0
@@ -626,13 +616,11 @@ High,Low,Very High,High,High,High,Low,Low,Low,Low,Low,High,Low,2.0
 Medium,High,Medium,Low,Low,Low,Low,High,Low,Low,Low,Low,High,1.0
 Low,High,Medium,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Medium,High,Medium,Low,High,Low,Low,High,High,Low,Low,Low,High,1.0
+Low,Low,Medium,High,High,Low,High,High,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,High,Low,Low,Low,Low,High,Low,Low,1.0
 High,High,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,Low,2.0
-Medium,High,High,High,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
-Medium,Low,Medium,Low,High,Low,High,Low,Low,Low,Low,High,Low,1.0
-High,High,Low,Low,High,Low,High,High,Low,High,Low,Low,Low,1.0
-High,Low,Medium,Low,Low,High,High,High,High,Low,Low,High,Low,1.0
 Low,Low,Medium,Low,Low,Low,High,Low,Low,Low,Low,High,Low,1.0
+Medium,Low,Medium,Low,High,Low,High,Low,Low,Low,Low,High,Low,1.0
 Low,High,Medium,Low,Low,Low,Low,Low,Low,High,Low,Low,Low,1.0
 High,High,Medium,Low,Low,Low,High,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Low,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
@@ -650,10 +638,12 @@ High,High,Medium,Low,High,High,High,Low,Low,Low,Low,Low,High,1.0
 High,Low,Very High,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,Low,Low,Low,High,High,Low,Low,Low,1.0
 Medium,High,Medium,High,High,High,Low,High,High,Low,Low,Low,High,2.0
+High,Low,High,Low,High,Low,High,High,High,Low,Low,Low,High,2.0
 High,Low,Medium,High,High,Low,High,Low,High,Low,Low,Low,High,1.0
-Low,Low,Medium,High,Low,Low,Low,Low,Low,Low,Low,Low,High,2.0
-Low,Low,Medium,Low,Low,Low,Low,Low,High,Low,Low,Low,High,2.0
+Medium,High,Low,Low,High,High,High,Low,High,Low,Low,Low,High,2.0
 High,Low,Very High,High,High,Low,High,Low,High,Low,Low,Low,Low,2.0
+Low,Low,Medium,Low,Low,Low,Low,Low,High,Low,Low,Low,High,2.0
+Low,Low,Medium,High,Low,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,High,High,High,Low,High,Low,Low,Low,High,1.0
 Medium,High,Low,Low,High,High,Low,High,High,Low,Low,Low,High,2.0
 Medium,Low,High,Low,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
@@ -663,8 +653,9 @@ High,Low,Medium,Low,Low,High,High,High,Low,Low,Low,Low,High,1.0
 Medium,Low,Medium,High,High,High,Low,High,High,Low,Low,Low,Low,2.0
 Medium,High,Medium,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Low,High,Medium,High,High,Low,High,Low,Low,Low,Low,High,Low,1.0
-High,High,Low,Low,High,High,Low,High,High,Low,Low,Low,High,1.0
-Medium,High,Medium,Low,Low,Low,Low,Low,High,High,Low,High,Low,2.0
+Low,High,Medium,Low,Low,Low,High,High,High,Low,Low,Low,High,1.0
+High,Low,Medium,Low,High,Low,Low,Low,Low,High,Low,High,Low,1.0
+Low,High,Medium,High,High,Low,Low,High,High,Low,Low,Low,High,2.0
 High,High,Medium,Low,Low,High,Low,High,Low,Low,Low,Low,High,1.0
 Low,High,Very High,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Medium,High,Very High,Low,High,High,Low,High,High,Low,Low,Low,High,2.0
@@ -673,19 +664,23 @@ Medium,High,Medium,Low,High,High,Low,Low,Low,Low,High,High,Low,1.0
 Low,Low,Medium,Low,High,High,Low,Low,Low,Low,Low,Low,High,2.0
 High,Low,Very High,Low,High,Low,High,Low,High,Low,Low,Low,High,1.0
 Low,High,Medium,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
+Medium,High,Medium,Low,High,High,High,Low,Low,Low,High,Low,Low,1.0
 High,High,High,High,High,High,High,Low,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,Low,Low,High,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Medium,Low,Low,Low,Low,High,High,Low,Low,Low,High,1.0
+Medium,High,Medium,Low,Low,High,High,High,Low,High,Low,Low,Low,1.0
 Low,Low,Medium,Low,Low,Low,Low,Low,High,Low,Low,High,Low,1.0
 Low,Low,Low,High,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 High,Low,Medium,Low,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,High,Low,1.0
 Medium,High,Medium,Low,Low,High,High,High,Low,Low,Low,Low,High,1.0
 Medium,High,Medium,Low,High,Low,Low,Low,High,High,Low,Low,Low,2.0
+Low,High,Medium,Low,Low,Low,Low,Low,Low,Low,High,Low,Low,1.0
 High,High,Medium,Low,Low,Low,Low,Low,Low,Low,Low,Low,High,1.0
-High,High,Medium,Low,Low,Low,Low,High,High,Low,High,Low,Low,2.0
 High,High,Medium,Low,Low,Low,High,Low,High,Low,Low,High,Low,1.0
+High,Low,Low,Low,High,Low,Low,High,Low,Low,Low,Low,High,1.0
 High,Low,Medium,Low,Low,High,Low,High,High,Low,Low,Low,High,1.0
+Medium,Low,Medium,Low,Low,High,Low,High,High,High,Low,Low,Low,1.0
 High,High,Medium,Low,Low,High,High,Low,High,High,Low,Low,Low,1.0
 Low,High,Medium,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 High,Low,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
@@ -693,49 +688,48 @@ High,High,Medium,Low,High,Low,Low,Low,High,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,Low,Low,Low,Low,High,Low,Low,1.0
 High,High,Very High,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
 High,High,Medium,High,High,High,High,Low,Low,High,Low,Low,Low,1.0
+High,Low,Very High,High,High,High,Low,Low,Low,High,Low,Low,Low,1.0
 High,High,High,High,High,High,Low,Low,High,Low,Low,Low,High,1.0
 High,High,Very High,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
-Medium,Low,Medium,High,High,Low,High,Low,High,High,Low,Low,Low,2.0
+Low,High,Medium,Low,Low,Low,Low,Low,High,Low,Low,High,Low,1.0
 Low,High,Medium,Low,Low,High,Low,Low,Low,High,Low,Low,Low,1.0
+High,High,Low,Low,High,High,Low,Low,High,High,Low,Low,Low,1.0
 Low,Low,Very High,High,High,Low,Low,Low,Low,Low,Low,High,Low,1.0
 Low,Low,Very High,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Medium,Low,Medium,High,Low,High,Low,Low,High,Low,Low,Low,High,2.0
-Medium,High,High,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Low,Low,Medium,High,High,Low,Low,Low,Low,Low,Low,Low,Low,2.0
 Low,Low,Medium,High,High,High,Low,Low,High,Low,Low,Low,High,1.0
-Medium,High,Low,Low,High,High,High,Low,High,Low,Low,Low,High,1.0
 High,Low,Very High,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
-Low,High,Very High,High,High,Low,High,High,High,Low,Low,Low,High,2.0
+High,High,Very High,High,High,High,Low,Low,High,High,Low,Low,Low,2.0
 Medium,Low,Low,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Medium,High,Medium,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,Low,Low,High,High,Low,Low,Low,High,Low,1.0
 Medium,Low,High,High,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
-Medium,Low,Low,High,High,Low,Low,Low,Low,Low,Low,Low,Low,2.0
 High,Low,Low,Low,High,High,Low,High,High,Low,Low,Low,High,1.0
-High,High,Low,Low,High,High,Low,High,Low,Low,Low,Low,High,1.0
+Medium,High,Low,Low,High,High,Low,Low,High,Low,Low,Low,High,2.0
 Low,High,Medium,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
+High,High,Low,Low,High,High,Low,High,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,High,Low,Low,High,Low,Low,Low,1.0
-Medium,Low,Medium,Low,Low,High,High,High,High,Low,Low,Low,High,1.0
-Medium,High,Medium,Low,High,High,Low,Low,High,Low,Low,High,Low,2.0
+Medium,High,Very High,High,High,High,Low,Low,High,Low,Low,Low,High,1.0
 High,Low,High,High,High,High,Low,Low,Low,Low,Low,Low,High,2.0
 High,High,Medium,Low,Low,Low,High,High,High,Low,Low,Low,High,1.0
+Medium,High,Medium,Low,Low,Low,Low,Low,High,High,Low,High,Low,1.0
 Low,Low,Low,High,High,Low,Low,Low,Low,High,Low,Low,Low,1.0
-Medium,High,Medium,Low,High,High,High,Low,Low,Low,Low,High,Low,1.0
-Medium,Low,Medium,Low,High,Low,Low,Low,Low,Low,Low,High,Low,1.0
+Low,High,Medium,Low,Low,High,Low,High,Low,High,Low,Low,Low,1.0
 High,Low,Medium,Low,Low,Low,Low,Low,High,Low,Low,High,Low,1.0
-High,High,Very High,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
+Low,Low,Medium,High,High,High,High,Low,Low,Low,Low,Low,High,2.0
 Medium,High,Low,Low,High,Low,Low,Low,Low,Low,Low,High,Low,1.0
-Medium,Low,High,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
-High,High,Low,High,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 Medium,Low,Very High,High,High,High,High,Low,Low,Low,Low,Low,High,2.0
 Medium,Low,Very High,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Low,Low,Low,High,High,High,High,Low,High,Low,Low,Low,High,1.0
 High,Low,Very High,High,High,High,High,Low,Low,Low,Low,Low,High,1.0
 High,Low,High,Low,High,High,Low,Low,Low,Low,Low,Low,High,2.0
+Medium,High,Medium,High,High,Low,Low,Low,Low,Low,Low,High,Low,1.0
 Medium,High,Medium,Low,Low,High,Low,High,Low,Low,Low,High,Low,1.0
 High,Low,Low,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 Low,Low,Medium,High,High,High,High,Low,High,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,Low,Low,High,Low,High,Low,Low,1.0
+High,Low,High,High,High,Low,High,Low,High,Low,Low,Low,High,2.0
 High,High,Low,Low,High,High,Low,Low,Low,High,Low,Low,Low,1.0
 High,High,Low,Low,High,Low,Low,Low,Low,Low,Low,Low,High,1.0
 High,High,Medium,Low,Low,Low,High,Low,High,High,Low,High,Low,1.0
@@ -746,23 +740,27 @@ High,High,High,High,High,Low,Low,Low,High,Low,Low,Low,High,1.0
 High,Low,Medium,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 High,Low,Very High,High,High,High,Low,Low,High,Low,Low,Low,Low,2.0
 Medium,High,Medium,Low,Low,High,Low,Low,High,Low,Low,Low,High,1.0
-High,High,Low,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 Medium,High,Medium,Low,Low,Low,High,Low,High,High,Low,Low,Low,1.0
+High,High,Low,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 Low,Low,Medium,Low,Low,High,High,Low,Low,High,Low,Low,Low,1.0
 Medium,Low,Medium,Low,High,Low,Low,Low,High,High,Low,Low,Low,2.0
+Medium,High,Very High,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
 Low,Low,Very High,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 Low,High,Medium,Low,Low,High,Low,Low,Low,Low,Low,High,Low,1.0
 Medium,Low,Medium,High,High,Low,Low,Low,Low,Low,Low,Low,High,2.0
 High,Low,Medium,Low,High,Low,Low,Low,High,Low,Low,Low,Low,2.0
 Medium,Low,High,High,High,High,Low,High,High,Low,Low,Low,High,2.0
-High,Low,Low,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
 High,Low,Medium,Low,Low,High,Low,Low,High,Low,Low,High,Low,1.0
+High,Low,Low,Low,High,High,Low,Low,High,Low,Low,Low,High,1.0
 Low,Low,Medium,High,High,Low,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Low,Low,High,High,Low,Low,Low,Low,Low,High,Low,1.0
 High,High,High,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
 High,Low,Medium,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
 High,Low,High,Low,High,Low,Low,High,High,Low,Low,Low,High,2.0
+Medium,High,High,Low,High,Low,Low,High,High,Low,Low,Low,High,1.0
 Low,High,Medium,Low,Low,Low,High,High,Low,Low,Low,Low,High,1.0
+High,Low,High,Low,High,Low,High,Low,High,Low,Low,Low,High,2.0
+Medium,High,Medium,Low,Low,High,Low,High,Low,High,Low,Low,Low,1.0
 High,Low,Medium,Low,Low,High,High,Low,Low,High,Low,Low,Low,1.0
 Low,Low,Medium,High,High,High,Low,Low,Low,Low,Low,Low,Low,2.0
 Low,Low,Medium,Low,High,Low,High,Low,Low,Low,Low,Low,High,2.0
@@ -775,3 +773,4 @@ Medium,High,Medium,Low,Low,High,Low,High,Low,Low,Low,Low,High,1.0
 High,Low,High,Low,High,Low,Low,Low,High,Low,Low,Low,High,2.0
 High,High,Medium,Low,Low,Low,High,Low,Low,Low,Low,Low,High,1.0
 Low,High,Medium,Low,Low,High,Low,High,High,Low,Low,High,Low,1.0
+Low,High,Medium,Low,Low,Low,Low,High,Low,Low,Low,Low,Low,1.0

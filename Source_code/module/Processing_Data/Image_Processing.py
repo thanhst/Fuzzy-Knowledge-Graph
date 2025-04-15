@@ -45,8 +45,27 @@ def segment_by_kmeans(image, k=2):
 
     return segmented_image, mask
 
-def preprocess_fundus_image(image):
+#remove hairs
+def remove_hairs(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Apply black-hat filtering to detect dark lines (hair)
+    kernel = cv2.getStructuringElement(1, (17, 17))
+    blackhat = cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, kernel)
 
+    # Threshold to create a mask of hair
+    _, thresh = cv2.threshold(blackhat, 10, 255, cv2.THRESH_BINARY)
+
+    # Inpaint to remove the hair from image
+    inpainted = cv2.inpaint(image, thresh, 1, cv2.INPAINT_TELEA)
+    return inpainted
+
+def segment_by_otsu(gray_image):
+    blur = cv2.GaussianBlur(gray_image, (5, 5), 0)
+    _, binary_mask = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    return binary_mask
+
+def preprocess_fundus_image(image):
+    image = remove_hairs(image)
     # Làm nét
     sharpened = apply_unsharp_mask(image)
 
@@ -54,10 +73,10 @@ def preprocess_fundus_image(image):
     clahe_img = apply_clahe(sharpened)
     # Stretch nhẹ để làm sáng
     final = linear_contrast_stretch(clahe_img)
-
-    _, lesion_mask = segment_by_kmeans(final)
     
+    _, lesion_mask = segment_by_kmeans(final)
     return final,lesion_mask
+
 df = pd.DataFrame(
     columns=[
         "Contrast Feature",
@@ -183,6 +202,14 @@ for col in columns_to_normalize:
         dfMerge[col] = (dfMerge[col] - dfMerge[col].min()) / (dfMerge[col].max() - dfMerge[col].min())
 
 
+
+corr_with_label = dfMerge.corr()['diagnostic'].abs().sort_values(ascending=False)
+selected_features = corr_with_label[corr_with_label > 0.02].index.tolist()
+
+if 'diagnostic' not in selected_features:
+    selected_features.append('diagnostic')
+df_selected = dfMerge[selected_features]
+
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset/OnlyImageFeature.csv"), index=False)
 
 import matplotlib.pyplot as plt
@@ -190,7 +217,4 @@ import seaborn as sns
 corr_matrix = dfMerge.corr()
 dfMerge = pd.DataFrame(corr_matrix)
 df.to_csv(os.path.join(base_path,"data/Dataset/OnlyImage/corr_matrix.csv"), index=False)
-# plt.figure(figsize=(10, 8))
-# sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-# plt.title("Ma trận tương quan của các đặc trưng ảnh")
-# plt.show()
+

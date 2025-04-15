@@ -43,9 +43,27 @@ def segment_by_kmeans(image, k=2):
     mask = mask.reshape((image.shape[0], image.shape[1]))
 
     return segmented_image, mask
+#remove hairs
+def remove_hairs(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Apply black-hat filtering to detect dark lines (hair)
+    kernel = cv2.getStructuringElement(1, (17, 17))
+    blackhat = cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, kernel)
+
+    # Threshold to create a mask of hair
+    _, thresh = cv2.threshold(blackhat, 10, 255, cv2.THRESH_BINARY)
+
+    # Inpaint to remove the hair from image
+    inpainted = cv2.inpaint(image, thresh, 1, cv2.INPAINT_TELEA)
+    return inpainted
+
+def segment_by_otsu(gray_image):
+    blur = cv2.GaussianBlur(gray_image, (5, 5), 0)
+    _, binary_mask = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    return binary_mask
 
 def preprocess_fundus_image(image):
-
+    image = remove_hairs(image)
     # Làm nét
     sharpened = apply_unsharp_mask(image)
 
@@ -251,6 +269,14 @@ boolean_mapping = {
 }
 
 dfMerge['biopsed'] = dfMetaData['biopsed'].replace(boolean_mapping)
+
+corr_with_label = dfMerge.corr()['diagnostic'].abs().sort_values(ascending=False)
+selected_features = corr_with_label[corr_with_label > 0.02].index.tolist()
+
+if 'diagnostic' not in selected_features:
+    selected_features.append('diagnostic')
+df_selected = dfMerge[selected_features]
+
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset/FusionFeatureRemoveMissing.csv"), index=False)
 
 
@@ -260,7 +286,4 @@ import seaborn as sns
 corr_matrix = dfMerge.corr()
 dfMerge = pd.DataFrame(corr_matrix)
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset/Fusion_remove_missing/correlation_matrix.csv"), index=False)
-# plt.figure(figsize=(10, 8))
-# sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-# plt.title("Ma trận tương quan của các đặc trưng ảnh")
-# plt.show()
+

@@ -92,17 +92,21 @@ boolean_mapping = {
 }
 dfMetaData['biopsed'] = dfMetaData['biopsed'].replace(boolean_mapping)
 
+
+corr_with_label = dfMetaData.corr()['diagnostic'].abs().sort_values(ascending=False)
+selected_features = corr_with_label[corr_with_label > 0.02].index.tolist()
+
+if 'diagnostic' not in selected_features:
+    selected_features.append('diagnostic')
+df_selected = dfMetaData[selected_features]
+
 dfMetaData.to_csv(os.path.join(base_path,"data/Dataset/OnlyTableFeatureRemoveMissing.csv"), index=False)
 
 dfMetaData_numeric = dfMetaData.select_dtypes(include=[np.number])
+
+
 
 corr_matrix = dfMetaData_numeric.corr()
 df = pd.DataFrame(corr_matrix)
 df.to_csv(os.path.join(base_path,"data/Dataset/OnlyMetadataRemove30%/correlation_matrix.csv"), index=False)
 
-# plt.figure(figsize=(12, 8))
-# sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-# plt.title("Ma trận tương quan của các đặc trưng metadata")
-# plt.show()
-
-# dfMetaData.head()
