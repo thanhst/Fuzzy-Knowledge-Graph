@@ -44,13 +44,15 @@ Cấu trúc thư mục của dự án như sau:
 │   ├── 📁 base                          # Thư mục chứa các lý thuyết cơ sở cho phương pháp phát triển sau này.
 │   ├── 📁 data                          # Dữ liệu như file tiền xử lý, luật FRB, và các file mô hình
 │   │   ├── 📁 BaseData                  # File thử nghiệm ban sơ
-│   │   ├── 📁 Dataset                   # File dataset thử nghiệm
-│   │   ├── 📁 Dataset_diabetic          # Thử nghiệm tiền xử lý bệnh võng mạc tiểu đường
+│   │   ├── 📁 Dataset                   # File dataset thử nghiệm ban sơ
+│   │   ├── 📁 Dataset_diabetic          # Thử nghiệm tiền xử lý bệnh võng mạc tiểu đường của từng kịch bản chạy
 │   │   ├── 📁 FIS                       # Input và output của thuật toán FIS
+│   │   │   ├── 📁 input                 # input là thư mục chứa các input đầu vào train, test của mô hình FIS với từng kịch bản
+|   |   |   ├── 📁 output                # ouput là thư mục chứa các output đầu ra của FIS là FRB cơ bản dùng cho FKG, rules list, ...
 │   │   ├── 📁 FKG                       # Output của thuật toán FKG
 │   │   └── 📁 Metadata                  # Metadata về y tế ban đầu
 │   │       └── 📄 Metadata.csv          # Dữ liệu metadata
-│   ├── 📁 main                          # Kịch bản chạy chính của chương trình
+│   ├── 📁 main                          # Các kịch bản chạy chính của chương trình
 │   ├── 📁 models                        # Kết quả mô hình của từng kịch bản
 │   └── 📁 module                        # Các module phục vụ chương trình
 ├── 📄 Scenario_diabetic_retinopathy_fusion_feature_with_glcm.bat                   # Kịch bản kết hợp GLCM với metadata
