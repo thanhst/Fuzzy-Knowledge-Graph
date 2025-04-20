@@ -46,15 +46,40 @@ Cấu trúc thư mục của dự án như sau:
 │   │   ├── 📁 BaseData                  # File thử nghiệm ban sơ
 │   │   ├── 📁 Dataset                   # File dataset thử nghiệm ban sơ
 │   │   ├── 📁 Dataset_diabetic          # Thử nghiệm tiền xử lý bệnh võng mạc tiểu đường của từng kịch bản chạy
-│   │   ├── 📁 FIS                       # Input và output của thuật toán FIS
+│   │   ├── 📁 FIS
 │   │   │   ├── 📁 input                 # input là thư mục chứa các input đầu vào train, test của mô hình FIS với từng kịch bản
 |   |   |   ├── 📁 output                # ouput là thư mục chứa các output đầu ra của FIS là FRB cơ bản dùng cho FKG, rules list, ...
 │   │   ├── 📁 FKG                       # Output của thuật toán FKG
 │   │   └── 📁 Metadata                  # Metadata về y tế ban đầu
-│   │       └── 📄 Metadata.csv          # Dữ liệu metadata
+│   │       └── 📄 Metadata.csv
 │   ├── 📁 main                          # Các kịch bản chạy chính của chương trình
 │   ├── 📁 models                        # Kết quả mô hình của từng kịch bản
 │   └── 📁 module                        # Các module phục vụ chương trình
+│       ├── 📁 Convert                   # Bộ chuyển đổi luật dạng số học thành dạng ngôn ngữ
+│       ├── 📁 FCM
+│       │   ├── 📄 FCM_Function.py       # Thuật toán phân cụm mờ
+│       │   └── 📄 standardize_data.py   # Code chuẩn hóa dữ liệu
+│       ├── 📁 FIS
+│       │   └── 📄 FIS.py                # Thuật toán FIS
+│       ├── 📁 FKG
+│       │   ├── 📄 FKG_general.py        # Thuật toán FKG dùng cho bài toán nhiều nhãn
+│       │   ├── 📄 FKG_model.py          # Thuật toán FKG dùng cho bài toán 6 nhãn
+│       │   ├── 📄 FKG_S.py              # Thuật toán FKG sampling
+│       │   └── 📄 FKG.py                # Thuật toán FKG cơ bản cho hai nhãn
+│       ├── 📁 Helper                    # Một số hàm hỗ trợ
+│       ├── 📁 Membership_Function
+│       │   ├── 📄 ExpMF.py              # Mức độ hàm thành viên tính bằng hàm mũ
+│       │   ├── 📄 GaussMF.py            # Mức độ hàm thành viên tính bằng hàm Gaussian
+│       │   ├── 📄 SigmoidMF.py          # Mức độ hàm thành viên tính bằng hàm Sigmoid
+│       │   ├── 📄 TrapezoidalMF.py      # Mức độ hàm thành viên tính bằng hàm hình thang
+│       │   └── 📄 TriangleMF.py         # Mức độ hàm thành viên tính bằng hàm tam giác
+│       ├── 📁 Module_CPP                # Các module c++ phục vụ tính toán
+│       ├── 📁 Processing_Data           # Code tiền xử lý cho các kịch bản
+│       ├── 📁 Rules_Function
+│       │   ├── 📄 Rules_gen.py          # Code sinh luật mờ
+│       │   ├── 📄 Rules_reduce.py       # Code giảm các luật conflict và các luật trùng nhau
+│       │   └── 📄 RuleWeight.py         # Code tính trọng số luật mờ
+│       └── 📁 Setup_module              # Chứa thư mục CMAKE và các file c++, pyd phục vụ cho việc xây dựng module python bằng c++ hỗ trợ hiệu suất tính toán.
 ├── 📄 Scenario_diabetic_retinopathy_fusion_feature_with_glcm.bat                   # Kịch bản kết hợp GLCM với metadata
 ├── 📄 Scenario_diabetic_retinopathy_fusion_feature_with_statistical.bat            # Kịch bản kết hợp statistical với metadata
 ├── 📄 Scenario_diabetic_retinopathy_fusion_feature.bat                             # Kết hợp GLCM, statistical với metadata
@@ -62,6 +87,6 @@ Cấu trúc thư mục của dự án như sau:
 ├── 📄 Scenario_diabetic_retinopathy_image_feature.bat                              # Kịch bản thuộc tính ảnh
 ├── 📄 Scenario_diabetic_retinopathy_statistical_feature.bat                        # Kịch bản statistical của ảnh
 ├── 📄 Scenario_diabetic_retinopathy_table_feature.bat                              # Kịch bản metadata dạng table
-└── 📄 README.md                         # Tệp README của dự án
+└── 📄 README.md                                                                    # Tệp README của dự án
 
 
