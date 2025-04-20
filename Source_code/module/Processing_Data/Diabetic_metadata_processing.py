@@ -10,7 +10,6 @@ from imblearn.over_sampling import BorderlineSMOTE
 from sklearn.utils import shuffle
 output_dir = os.path.join(base_path, "data/Dataset_diabetic/Metadata_feature")
 
-# Tạo thư mục nếu chưa tồn tại
 os.makedirs(output_dir, exist_ok=True)
 dfMerge = pd.read_csv(os.path.join(base_path,"data/Dataset_diabetic/labels_brset.csv"))
 start_process_table = time.time()

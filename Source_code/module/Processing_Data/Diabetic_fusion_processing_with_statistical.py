@@ -13,7 +13,7 @@ import gc
 import csv
 base_path = Path(__file__).resolve().parents[2]
 
-# Hàm cải thiện độ sáng và tương phản sử dụng CLAHE )
+# Brightness and contrast enhancement function using CLAHE )
 def apply_clahe(image):
 
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
