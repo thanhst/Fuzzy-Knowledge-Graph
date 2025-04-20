@@ -40,25 +40,26 @@ Cấu Trúc Thư Mục
 Cấu trúc thư mục của dự án như sau:
 ```text
 📦 Project
-├── 📁 Source_code
-│   ├── 📁 base # Đây là thư mục chứa các folder là cơ sở lý thuyết cho các phương pháp phát triển sau này.
-│   ├── 📁 data # Đây là nơi chứa các dữ liệu như file tiền xử lý, file luật FRB và một số file mô hình.
-        ├── 📁 BaseData # Đây là thư mục chứa các file thử nghiệm ban sơ.
-        ├── 📁 Dataset # Đây là thư mục chứa các file dataset thử nghiệm
-        ├── 📁 Dataset_diabetic # Đây là thư mục chứa các trường hợp chạy thử nghiệm tiền xử lý của bệnh võng mạc tiểu đường.
-        ├── 📁 FIS # Đây là thư mục chứa input và output của thuật toán FIS.
-        ├── 📁 FKG # Đây là thư mục chứa kết quả output của thuật toán FKG.
-        ├── 📁 Metadata # Đây là thư mục chứa file metadata về y tế ban đầu chưa được xử lý và lựa chọn bệnh lý để chẩn đoán.
-            └── 📄 Metadata.csv
-    ├── 📁 main # Đây là thư mục chứa các kịch bản chạy chính của chương trình.
-│   ├── 📁 models # Đây là thư mục chứa các kết quả model của từng kịch bản.
-│   └── 📁 module # Đây là thư mục chứa các module được lập trình để phục vụ chương trình.
-├── 📄 Scenario_diabetic_retinopathy_fusion_feature_with_glcm.bat # Đây là file bat chạy kịch bản kết hợp thuộc tính GLCM của ảnh với metadata dạng table.
-├── 📄 Scenario_diabetic_retinopathy_fusion_feature_with_statistical.bat # Đây là file bat chạy kịch bản kết hợp thuộc tính statistical của ảnh với metadata dạng table.
-├── 📄 Scenario_diabetic_retinopathy_fusion_feature.bat # Đây là file bat chạy kịch bản kết hợp thuộc tính GLCM, statistical của ảnh với metadata dạng table.
-├── 📄 Scenario_diabetic_retinopathy_GLCM_feature.bat # Đây là file bat chạy kịch bản thuộc tính GLCM của ảnh.
-├── 📄 Scenario_diabetic_retinopathy_image_feature.bat # Đây là file bat chạy kịch bản thuộc tính ảnh.
-├── 📄 Scenario_diabetic_retinopathy_statistical_feature.bat # Đây là file bat chạy kịch bản statistical của ảnh.
-├── 📄 Scenario_diabetic_retinopathy_table_feature.bat # Đây là file bat chạy kịch barn metadata dạng table.
-└── 📄 README.md
+├── 📁 Source_code                       # Mã nguồn chính
+│   ├── 📁 base                          # Thư mục chứa các lý thuyết cơ sở cho phương pháp phát triển sau này.
+│   ├── 📁 data                          # Dữ liệu như file tiền xử lý, luật FRB, và các file mô hình
+│   │   ├── 📁 BaseData                  # File thử nghiệm ban sơ
+│   │   ├── 📁 Dataset                   # File dataset thử nghiệm
+│   │   ├── 📁 Dataset_diabetic          # Thử nghiệm tiền xử lý bệnh võng mạc tiểu đường
+│   │   ├── 📁 FIS                       # Input và output của thuật toán FIS
+│   │   ├── 📁 FKG                       # Output của thuật toán FKG
+│   │   └── 📁 Metadata                  # Metadata về y tế ban đầu
+│   │       └── 📄 Metadata.csv          # Dữ liệu metadata
+│   ├── 📁 main                          # Kịch bản chạy chính của chương trình
+│   ├── 📁 models                        # Kết quả mô hình của từng kịch bản
+│   └── 📁 module                        # Các module phục vụ chương trình
+├── 📄 Scenario_diabetic_retinopathy_fusion_feature_with_glcm.bat                   # Kịch bản kết hợp GLCM với metadata
+├── 📄 Scenario_diabetic_retinopathy_fusion_feature_with_statistical.bat            # Kịch bản kết hợp statistical với metadata
+├── 📄 Scenario_diabetic_retinopathy_fusion_feature.bat                             # Kết hợp GLCM, statistical với metadata
+├── 📄 Scenario_diabetic_retinopathy_GLCM_feature.bat                               # Kịch bản thuộc tính GLCM của ảnh
+├── 📄 Scenario_diabetic_retinopathy_image_feature.bat                              # Kịch bản thuộc tính ảnh
+├── 📄 Scenario_diabetic_retinopathy_statistical_feature.bat                        # Kịch bản statistical của ảnh
+├── 📄 Scenario_diabetic_retinopathy_table_feature.bat                              # Kịch bản metadata dạng table
+└── 📄 README.md                         # Tệp README của dự án
+
 
