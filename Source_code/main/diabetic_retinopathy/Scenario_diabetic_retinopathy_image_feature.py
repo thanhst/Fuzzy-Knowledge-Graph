@@ -17,7 +17,7 @@ import pandas as pd
 print("Diabetic Retinopathy Image Feature")
 
 print("__________Running Processing___________")
-from module.Processing_Data import Diabetic_image_processing
+# from module.Processing_Data import Diabetic_image_processing
 
 print("__________Running FIS___________")
 FIS(fileName="Diabetic Retinopathy Image Feature",

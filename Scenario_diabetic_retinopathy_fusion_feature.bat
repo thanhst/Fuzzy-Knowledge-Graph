@@ -1,23 +1,23 @@
 @echo off
 setlocal enabledelayedexpansion
 
-rem --- Ghi lại thời gian bắt đầu để dễ dàng kiểm tra
+rem --- Logtime
 echo [INFO] --- Script started at: %date% %time%
 
-rem --- Đặt thư mục làm việc
+rem --- set workdir
 cd Source_code
 
 rem --- install code FKG
 pip install --find-links=module/Setup_module/CMAKE/wheel/wheelhouse/window fisa_module
 
 
-rem --- Hiển thị thông báo trước khi chạy script
+rem 
 echo [INFO] --- Running the Python script...
 
-rem --- Chạy Python script với module
+rem --- Running python by module
 python -m main.diabetic_retinopathy.Scenario_diabetic_retinopathy_fusion_feature
 
-rem --- Kiểm tra nếu lệnh python chạy thành công
+rem --- check error
 if %errorlevel% neq 0 (
     echo [ERROR] --- Python script execution failed. Check the error above.
     echo [INFO] --- Press any key to exit...
@@ -25,12 +25,12 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
-rem --- Hiển thị thông báo khi chạy thành công
+rem --- finish
 echo [INFO] --- Python script executed successfully.
 
-rem --- Giữ cửa sổ terminal mở để kiểm tra kết quả
+rem
 echo [INFO] --- Press any key to exit...
 pause
 
-rem --- Ghi lại thời gian kết thúc
+rem
 echo [INFO] --- Script finished at: %date% %time%

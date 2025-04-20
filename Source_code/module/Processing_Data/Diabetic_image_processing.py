@@ -147,8 +147,8 @@ total_time_feature_selected_time = 0
 total_time_feature_extraction_time = 0
 
 feature_selected_time = time.time()
-if not os.path.exists(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/images_ft.csv")):
-    with open(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/images_ft.csv"), mode='w', newline='') as f:
+if not os.path.exists(os.path.join(base_path,"data/Dataset_diabetic/Image_feature/images_ft.csv")):
+    with open(os.path.join(base_path,"data/Dataset_diabetic/Image_feature/images_ft.csv"), mode='w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([
             "image_id",
@@ -207,7 +207,7 @@ for image in list_of_images:
     
     feature_extraction_time = time.time()
 
-    with open(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/images_ft.csv"), mode='a', newline='') as f:
+    with open(os.path.join(base_path,"data/Dataset_diabetic/Image_feature/images_ft.csv"), mode='a', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([
             os.path.splitext(os.path.basename(image))[0],
