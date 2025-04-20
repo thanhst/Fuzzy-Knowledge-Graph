@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 import os,sys
 from pathlib import Path
-
+import time
+start = time.time()
 base_path = Path(__file__).resolve().parents[2]
 
 dfMetaData = pd.read_csv(os.path.join(base_path ,"data/Dataset/metadata.csv"))
@@ -101,6 +102,9 @@ if 'diagnostic' not in selected_features:
 df_selected = dfMetaData[selected_features]
 
 dfMetaData.to_csv(os.path.join(base_path,"data/Dataset/OnlyTableFeatureRemoveMissing.csv"), index=False)
+end = time.time()
+print(f'Process time: ${start-end}s')
+
 
 dfMetaData_numeric = dfMetaData.select_dtypes(include=[np.number])
 

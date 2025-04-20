@@ -6,7 +6,8 @@ import os
 import cv2
 from pathlib import Path
 base_path = Path(__file__).resolve().parents[2]
-
+import time
+start = time.time()
 #Làm rõ vùng tối/sáng, giúp mạch máu và tổn thương dễ nhận diện hơn.
 def apply_clahe(image):
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
@@ -102,6 +103,7 @@ for i in range(1,4):
     
 for image in list_of_images:
     img = cv2.imread(image)
+    img = cv2.resize(img, (256, 256))
     img, mask = preprocess_fundus_image(img)
     gray = color.rgb2gray(img)
     image = img_as_ubyte(gray)
@@ -211,6 +213,8 @@ if 'diagnostic' not in selected_features:
 df_selected = dfMerge[selected_features]
 
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset/OnlyImageFeature.csv"), index=False)
+end = time.time()
+print(f'Process time: ${start-end}s')
 
 import matplotlib.pyplot as plt
 import seaborn as sns

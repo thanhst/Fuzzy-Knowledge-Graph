@@ -1,0 +1,45 @@
+1:  function PROCESS_TABULAR(base_path)
+2:      # Read label file and extract relevant columns
+3:      df_data <- read CSV at base_path + "data/Dataset_diabetic/labels_brset.csv"
+4:      columns_to_keep <- [
+5:          'image_id', 'patient_age', 'patient_sex', 'diabetes_time_y', 'insuline',
+6:          'diabetes', 'exam_eye', 'optic_disc', 'vessels', 'macula', 'focus',
+7:          'Illuminaton', 'image_field', 'quality', 'diabetic_retinopathy'
+8:      ]
+9:      df_data <- df_data[columns_to_keep]
+
+19:     # Mapping categorical values ​​to numbers
+20:     diabetes_time_y_map <- {'NA': 0}
+21:     insuline_map <- {'yes': 2, 'no': 1}
+22:     diabetes_map <- {'yes': 2, 'No': 1}
+23:     quality_map <- {'Adequate': 2, 'Inadequate': 1}
+
+24:     df_data_table['diabetes_time_y'] <- MAP_VALUES(df_data_table['diabetes_time_y'], diabetes_time_y_map)
+25:     df_data_table['insuline'] <- MAP_VALUES(df_data_table['insuline'], insuline_map)
+26:     df_data_table['diabetes'] <- MAP_VALUES(df_data_table['diabetes'], diabetes_map)
+27:     df_data_table['quality'] <- MAP_VALUES(df_data_table['quality'], quality_map)
+
+28:     # Casting and handling missing values
+29:     FOR column IN ['diabetes_time_y', 'insuline', 'diabetes', 'patient_age'] DO
+30:         df_data_table[column] <- CONVERT_TO_NUMERIC(df_data_table[column])
+31:         df_data_table[column] <- FILL_NA_WITH_MEAN(df_data_table[column])
+32:     END FOR
+
+33:     # Reassign output label (Label)
+34:     label_map <- {0: 1, 1: 2}
+35:     df_data_table['diabetic_retinopathy'] <- MAP_VALUES(df_data_table['diabetic_retinopathy'], label_map)
+
+36:     # Extract input features and labels
+37:     df_data_table <- DROP_COLUMN(df_data_table, 'image_id')
+38:     df_data_table <- MOVE_COLUMN_TO_END(df_data_table, 'diabetic_retinopathy')
+39:     X <- df_data_table without 'diabetic_retinopathy'
+40:     y <- df_data_table['diabetic_retinopathy']
+
+41:     # Apply BorderlineSMOTE to balance the label
+42:     border_smote <- INIT_BORDERLINE_SMOTE(random_state=42, k_neighbors=5)
+43:     (X_resampled, y_resampled) <- border_smote.FIT_RESAMPLE(X, y)
+
+44:     # Merge into complete DataFrame
+45:     df_balanced <- CONCAT(X_resampled, y_resampled)
+46:     return df_balanced
+47: end function

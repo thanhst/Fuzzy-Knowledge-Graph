@@ -1,0 +1,71 @@
+1: function UNSHARP_MASK(image)
+2:     # Sharpen image using unsharp masking technique
+3:     blurred <- GaussianBlur(image)
+4:     sharpened <- image * (1 + α) − blurred * α
+5:     return sharpened
+6: end function
+
+7: function APPLY_CLAHE(image)
+8:     # Increase local contrast
+9:     lab_image <- convert image to LAB color space
+10:     l, a, b <- split lab_image
+11:     clahe <- CLAHE object (clipLimit = 2.0, tileGridSize = (8,8))
+12:     l_clahe <- apply CLAHE to l
+13:     merged <- merge l_clahe, a, b and convert to BGR
+14:     return merged
+15: end function
+
+16: function DENOISE_IMAGE(image)
+17:     # Denoising using fast Non-local Means Denoising
+18:     denoised <- apply fastNlMeansDenoisingColored
+19:     return denoised
+20: end function
+
+21: function NORMALIZE_NUMERIC_FEATURES(dataframe)
+22:     # Normalize numeric columns to the range [0, 1] or by Z-score
+23:     for column in dataframe do
+24:         if column is numeric then
+25:             Apply Min-Max Scaling or StandardScaler
+26:         end if
+27:     end for
+28:     return dataframe
+29: end function
+
+30: function PREPROCESS_IMAGE(image)
+31:     # Sharpen image using unsharp masking technique
+32:     sharpened <- UNSHARP_MASK(image)
+33:     denoised <- DENOISE_IMAGE(sharpened)
+34:     clahe_image <- APPLY_CLAHE(denoised)
+35:     gray <- convert clahe_image to grayscale
+36:     lesion_mask <- apply Otsu thresholding on gray
+37:     return (clahe_image, lesion_mask)
+38: end function
+
+39:  function EXTRACT_GLCM_FEATURES(image_folder)
+40:      # Read image and extract texture features (GLCM) from retinal images
+41:      Initialize empty list glcm_features
+42:      image_paths <- list all image files in image_folder
+43:      for each path in image_paths do
+44:         image <- read and resize image
+45:         (enhanced_image, lesion_mask) <- PREPROCESS_IMAGE(image)
+46:         variance_feature <- calculate_variance(data)
+47:         std_dev_feature <- calculate_standard_deviation(data)
+48:         rms_feature <- calculate_rms(data)
+49:         mean_feature <- calculate_mean(data)
+50:         Append (variance_feature,std_dev_feature,rms_feature,mean_feature) to features_arr
+51:         gray_image <- convert enhanced_image to grayscale
+52:         masked_image <- apply lesion_mask on gray_image
+53:         normalized_image <- rescale pixel values into 16 gray levels
+54:         glcm <- compute GLCM (distances = [1], angles = [0°, 45°, 90°, 135°])
+55:         features <- extract contrast, homogeneity, correlation, etc. from glcm features
+56:         Append features to features_arr
+57:     end for
+58:     # Normalize continuous features from images
+59:     columns_to_normalize <- ["Variance Feature", "Standard Deviation Feature", "RMS Feature", "Mean Feature"]
+60:     for col in columns_to_normalize do
+61:         if col ∈ features_arr.columns then
+62:             features_arr[col] <- MIN_MAX_SCALING(features_arr[col])
+63:         end if
+64:     end for
+65:     return features_arr
+66: end function
