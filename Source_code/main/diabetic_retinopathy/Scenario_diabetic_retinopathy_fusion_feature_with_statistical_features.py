@@ -16,14 +16,14 @@ from module.FKG.FKG_S import FKGS
 
 print("Diabetic Retinopathy Fusion Feature with statistical")
 
-print("__________Running Processing___________")
-from module.Processing_Data import Diabetic_fusion_processing_with_statistical
+# print("__________Running Processing___________")
+# from module.Processing_Data import Diabetic_fusion_processing_with_statistical
 
-print("__________Running FIS___________")
-FIS(fileName="Diabetic Retinopathy Statistical Feature",
-    filePath=os.path.join(project_root,"data\Dataset_diabetic\Fusion_feature_with_statistical\data_process.csv"),
-    cluster=[3,2,4,2,2,2,2,2,2,2,2,2,2,5,5,5,5,2])
-print("--------------------------------")
+# print("__________Running FIS___________")
+# FIS(fileName="Diabetic Retinopathy Statistical Feature",
+#     filePath=os.path.join(project_root,"data\Dataset_diabetic\Fusion_feature_with_statistical\data_process.csv"),
+#     cluster=[3,2,4,2,2,2,2,2,2,2,2,2,2,5,5,5,5,2])
+# print("--------------------------------")
 
 print("__________Running FKG___________")
 traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Statistical Feature/Rule_List.csv'))

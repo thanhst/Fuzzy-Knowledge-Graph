@@ -289,18 +289,22 @@ class FKGS:
         self.listRe = list(self.Trecall(X, X_test).values())
         
     def FKGS(self,df,testdf,Turn = None,Modality = None,ran = None, e = None):
+        print(f'Running with ran: {ran} và e {e}.')
         basedf = df.values.tolist()
         traindf = [row[:] for row in basedf]
         test = testdf
         sampling_time = []
         train_time = []
         test_time = []
-        accuracy = []
+        total_time =  []
+        acc_values = []
+        precision_values = []
+        recall_values = []
         train_labels = df.iloc[:, -1]
         test_labels = pd.DataFrame(testdf).iloc[:, -1]
         all_labels = pd.concat([train_labels, test_labels], axis=0)
         unique_labels = sorted(all_labels.unique())
-        
+
         n_classes = len(unique_labels)
         
         for i in range(1,6):
@@ -318,14 +322,15 @@ class FKGS:
             B = fs.calculateB(base,A,M)
             C = fs.calculateC(base,B,n_classes)
             C_normal = min_max_normalize(C)
-            totalTime = time.time() - start
-            train_time.append(totalTime)
+            traint = time.time() - start
+            train_time.append(traint)
 
 
             start = time.time()
             self.testAccuracy(base,test,C_normal,n_classes)
-            totalTime = time.time() - start
-            test_time.append(totalTime)
+            testt = time.time() - start
+            test_time.append(testt)
+            total_time.append(traint+testt)
             print("---Finish---\n")
         print(":"*100)
         print('sampling_time:', sum(sampling_time) / len(sampling_time) if sampling_time else 0)
@@ -334,7 +339,25 @@ class FKGS:
         print('accuracy:', sum(self.listAcc) / len(self.listAcc) if self.listAcc else 0)
         print('precision:',sum(self.listPre) / len(self.listPre) if self.listPre else 0)
         print('recall:',sum(self.listRe) / len(self.listRe) if self.listRe else 0)
+        print('Total time:',sum(total_time) / len(total_time) if total_time else 0)
+        print(":" * 100)
+        print('sampling_time:', np.mean(sampling_time), '±', np.std(sampling_time))
+        print('train_time:', np.mean(train_time), '±', np.std(train_time))
+        print('test_time:', np.mean(test_time), '±', np.std(test_time))
+        print('accuracy:', np.mean(self.listAcc), '±', np.std(self.listAcc))
+        print('precision:', np.mean(self.listPre), '±', np.std(self.listPre))
+        print('recall:', np.mean(self.listRe), '±', np.std(self.listRe))
+        print('Total time:', np.mean(total_time), '±', np.std(total_time))
 
+        # Tính phương sai
+        print("\nVariance:")
+        print('sampling_time variance:', np.var(sampling_time))
+        print('train_time variance:', np.var(train_time))
+        print('test_time variance:', np.var(test_time))
+        print('accuracy variance:', np.var(self.listAcc))
+        print('precision variance:', np.var(self.listPre))
+        print('recall variance:', np.var(self.listRe))
+        print('Total time variance:', np.var(total_time))
         
     
     def scenario_random(self,df,Turn = None,Modality = None,ran = None):

@@ -148,6 +148,8 @@ total_time_feature_selected_time = 0
 total_time_feature_extraction_time = 0
 
 feature_selected_time = time.time()
+if os.path.exists(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature_with_glcm/images_ft.csv")):
+    os.remove(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature_with_glcm/images_ft.csv")) 
 if not os.path.exists(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature_with_glcm/images_ft.csv")):
     with open(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature_with_glcm/images_ft.csv"), mode='w', newline='') as f:
         writer = csv.writer(f)

@@ -148,6 +148,8 @@ total_time_feature_selected_time = 0
 total_time_feature_extraction_time = 0
 
 feature_selected_time = time.time()
+if os.path.exists(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature_with_statistical/images_ft.csv")):
+    os.remove(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature_with_statistical/images_ft.csv")) 
 if not os.path.exists(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature_with_statistical/images_ft.csv")):
     with open(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature_with_statistical/images_ft.csv"), mode='w', newline='') as f:
         writer = csv.writer(f)
@@ -189,16 +191,17 @@ for image in list_of_images:
         normed=True,
         symmetric=True,
     )
+    masked_inds = img[otsu_mask == 0]
     CF = contrast_feature(matrix_coocurrence)
     DF= dissimilarity_feature(matrix_coocurrence)
     HF = homogeneity_feature(matrix_coocurrence)
     EF = energy_feature(matrix_coocurrence)
     COR = correlation_feature(matrix_coocurrence)
     ASM = asm_feature(matrix_coocurrence)
-    MF = mean_feature(matrix_coocurrence)
-    VF = variance_feature(matrix_coocurrence)
-    SD = sd_feature(matrix_coocurrence)
-    RMS = rms_feature(matrix_coocurrence)
+    MF = mean_feature(masked_inds)
+    VF = variance_feature(masked_inds)
+    SD = sd_feature(masked_inds)
+    RMS = rms_feature(masked_inds)
     
     feature_extraction_time = time.time()
 

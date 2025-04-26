@@ -17,16 +17,17 @@ from module.FKG.FKG_S import FKGS
 print("Diabetic Retinopathy Fusion Feature")
 
 print("__________Running Processing___________")
-from module.Processing_Data import Diabetic_fusion_processing
+# from module.Processing_Data import Diabetic_fusion_processing
 
 print("__________Running FIS___________")
 FIS(fileName="Diabetic Retinopathy Feature",
     filePath=os.path.join(project_root,"data\Dataset_diabetic\Fusion_feature\data_process.csv"),
     cluster=[3,2,4,2,2,2,2,2,2,2,2,2,2,5,5,5,5,5,5,5,5,5,5,2])
+    # cluster=[5,5,5,5,5,5,5,5,5,5,2])
 print("--------------------------------")
 
 print("__________Running FKG___________")
-traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/Rule_List.csv'))
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/Rule_List_All.csv'))
 testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
 base = [[int(float(x)) for x in row] for row in traindf.values]
 base = pd.DataFrame(base)
@@ -36,7 +37,7 @@ fkg_instance.FKG(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy 
 print("--------------------------------")
 
 print("__________Running FKG-S___________")
-traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/Rule_List.csv'))
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/Rule_List_All.csv'))
 testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
 base = [[int(float(x)) for x in row] for row in traindf.values]
 base = pd.DataFrame(base)

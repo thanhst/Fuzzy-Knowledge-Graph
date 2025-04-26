@@ -11,9 +11,10 @@ from pathlib import Path
 import time
 import gc
 import csv
-base_path = Path(__file__).resolve().parents[2]
+import joblib
 
-# Brightness and contrast enhancement function using CLAHE )
+base_path = Path(__file__).resolve().parents[2]
+# # Brightness and contrast enhancement function using CLAHE )
 def apply_clahe(image):
 
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
@@ -147,6 +148,8 @@ total_time_feature_selected_time = 0
 total_time_feature_extraction_time = 0
 
 feature_selected_time = time.time()
+if os.path.exists(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/images_ft.csv")):
+    os.remove(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/images_ft.csv")) 
 if not os.path.exists(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/images_ft.csv")):
     with open(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/images_ft.csv"), mode='w', newline='') as f:
         writer = csv.writer(f)
@@ -165,7 +168,6 @@ if not os.path.exists(os.path.join(base_path,"data/Dataset_diabetic/Fusion_featu
         ])
 rs_feature_selected_time = time.time()
 total_time_feature_selected_time += rs_feature_selected_time-feature_selected_time
-
 for image in list_of_images:
     time_preprocess_image = time.time()
     img = cv2.imread(image)
@@ -194,17 +196,17 @@ for image in list_of_images:
         normed=True,
         symmetric=True,
     )
+    masked_inds = img[otsu_mask == 0]
     CF = contrast_feature(matrix_coocurrence)
     DF= dissimilarity_feature(matrix_coocurrence)
     HF = homogeneity_feature(matrix_coocurrence)
     EF = energy_feature(matrix_coocurrence)
     COR = correlation_feature(matrix_coocurrence)
     ASM = asm_feature(matrix_coocurrence)
-    MF = mean_feature(matrix_coocurrence)
-    VF = variance_feature(matrix_coocurrence)
-    SD = sd_feature(matrix_coocurrence)
-    RMS = rms_feature(matrix_coocurrence)
-    
+    MF = mean_feature(masked_inds)
+    VF = variance_feature(masked_inds)
+    SD = sd_feature(masked_inds)
+    RMS = rms_feature(masked_inds)
     feature_extraction_time = time.time()
 
     with open(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/images_ft.csv"), mode='a', newline='') as f:
@@ -344,7 +346,7 @@ df_selected = dfBalanced[selected_features]
 end_time_selection_data = time.time()
 
 total_time_selected = end_time_selection_data - time_selection_data
-dfMerge = pd.DataFrame(dfBalanced)
+
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset_diabetic/Fusion_feature/data_process.csv"),index=False)
 
 

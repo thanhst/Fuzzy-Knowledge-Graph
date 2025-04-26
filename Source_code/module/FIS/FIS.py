@@ -80,10 +80,12 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     rules = np.hstack((rules, np.min(t, axis=1, keepdims=True), train_data[:, [col_num]]))
     
     rules_reduce = reduce_rule(h,col_num,rules)
+    # rules_reduce = rules
     df_Rule_List1 = pd.DataFrame(rules_reduce)
     df_Rule_List1.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List_reduce.csv"), index=False)
 
-    ruleList = remove_rule(h,col_num,rules_reduce)
+    # ruleList = remove_rule(h,col_num,rules_reduce)
+    ruleList = np.array(df_Rule_List)
     ruleListLang = change_var_lang̣_default(cluster,ruleList)
 
     df_rule_lang = pd.DataFrame(ruleListLang)
