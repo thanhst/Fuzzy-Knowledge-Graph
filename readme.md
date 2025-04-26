@@ -88,5 +88,9 @@ Cấu trúc thư mục của dự án như sau:
 ├── 📄 Scenario_diabetic_retinopathy_statistical_feature.bat                        # Kịch bản statistical của ảnh
 ├── 📄 Scenario_diabetic_retinopathy_table_feature.bat                              # Kịch bản metadata dạng table
 └── 📄 README.md                                                                    # Tệp README của dự án
+### Hướng dẫn chạy chương trình.
+- Trong folder chính của dự án, có các file batch khi thực hiện trích các đặc trưng từ ảnh, bảng và kết hợp. Bấm chạy các file batch để chương trình hoạt động.
+- Trong folder fusion-case là các trường hợp fusion của hai mô thức ảnh và bảng, có các trường hợp như kết hợp fusion theo wrapper, feature selection, filter multimodal , hadamard và tensor selection. Bấm chạy các file batch để chương trình hoạt động.
+*** Lưu ý: Chương trình chạy code với tính toán FISA bằng module C++ được build trên window, máy linux sẽ chưa thể hoạt động được. ***
 
 
