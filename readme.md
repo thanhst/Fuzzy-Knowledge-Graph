@@ -32,9 +32,7 @@ Chúng tôi sử dụng thư viện OpenCV và scikit-image cho việc xử lý 
 
 - Cài đặt các thư viện yêu cầu qua requirements.txt.
 
-4. Cách Sử Dụng
-- Tiền Xử Lý Dữ Liệu:
-    - Để tiền xử lý ảnh fundus, chạy lệnh sau:
+4. Cách Sử Dụng:
 
 Cấu Trúc Thư Mục
 Cấu trúc thư mục của dự án như sau:
