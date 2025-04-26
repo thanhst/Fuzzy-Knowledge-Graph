@@ -22,17 +22,17 @@ Chúng tôi sử dụng thư viện OpenCV và scikit-image cho việc xử lý 
    ```bash
    git clone https://github.com/thanhst/Fuzzy-Knowledge-Graph.git
 
-Cài đặt các phụ thuộc:
+2. Cài đặt các phụ thuộc:
    ```bash
    pip install -r requirements.txt
 
-Cấu hình môi trường:
+3. Cấu hình môi trường:
 
 - Cài đặt Python 3.x
 
 - Cài đặt các thư viện yêu cầu qua requirements.txt.
 
-Cách Sử Dụng
+4. Cách Sử Dụng
 - Tiền Xử Lý Dữ Liệu:
     - Để tiền xử lý ảnh fundus, chạy lệnh sau:
 
