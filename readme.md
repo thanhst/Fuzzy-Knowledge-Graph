@@ -23,7 +23,8 @@ Chúng tôi sử dụng thư viện OpenCV và scikit-image cho việc xử lý 
    git clone https://github.com/thanhst/Fuzzy-Knowledge-Graph.git
 
 Cài đặt các phụ thuộc:
-   ```bash pip install -r requirements.txt
+   ```bash
+   pip install -r requirements.txt
 
 Cấu hình môi trường:
 
