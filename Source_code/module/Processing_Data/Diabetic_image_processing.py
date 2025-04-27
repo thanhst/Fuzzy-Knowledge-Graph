@@ -580,18 +580,12 @@ def processing(file_path_img,file_path_table, folder_save):
     # df_merge = df_image.merge(df_table.iloc[:,:-1],how='inner',on="image_id")
     # df_merge = df_merge.drop(['image_id'],axis=1)
     
-    Label = df_image.iloc[:,-1]
-    mid = df_image.shape[1] // 2
-
-    Ftab = df_image.iloc[:, 1:mid]
-    Fimg = df_image.iloc[:, mid:-1]
+    # Label = df_image.iloc[:,-1]
+    # Fall = df_image.iloc[:,1:-1]
     
-    from sklearn.preprocessing import StandardScaler
-    scaler_img = StandardScaler()
-    scaler_tab = StandardScaler()
-    Fimg = scaler_img.fit_transform(Fimg.values)
-    Ftab = scaler_tab.fit_transform(Ftab.values)
-    
+    # from sklearn.preprocessing import StandardScaler
+    # scaler_all = StandardScaler()
+    # Fall = scaler_all.fit_transform(Fall.values)
     # Áp dụng wrapper
     # from module.Processing_Data.Fusion_function import wrapper_multimodal_feature_selection
     # Ffused_df = pd.DataFrame(wrapper_multimodal_feature_selection.wrapper_multimodal_selection(Fimg=Fimg,Ftab=Ftab,target=Label.values.ravel(),max_img=max_img,max_tab=max_tab,min_img=2,min_tab=2))
