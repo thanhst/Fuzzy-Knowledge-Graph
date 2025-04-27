@@ -15,7 +15,7 @@ rem
 echo [INFO] --- Running the Python script...
 
 rem --- Running python by module
-python -m main.diabetic_retinopathy.Scenario_diabetic_retinopathy_fusion_feature
+python -m main.diabetic_retinopathy.Scenario_diabetic_retinopathy_fusion_feature_with_ft_selection
 
 rem --- check error
 if %errorlevel% neq 0 (

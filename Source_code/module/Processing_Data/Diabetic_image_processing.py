@@ -31,7 +31,6 @@ base_path = Path(__file__).resolve().parents[2]
 # def apply_unsharp_mask(image, amount=1.5, threshold=0):
 #     blurred = cv2.GaussianBlur(image, (0, 0), sigmaX=3)
 #     sharpened = cv2.addWeighted(image, 1 + amount, blurred, -amount, 0)
-    
 #     return sharpened # Download result back to CPU
 
 # # Hàm cải thiện độ sáng với linear contrast stretching (dùng cupy)
