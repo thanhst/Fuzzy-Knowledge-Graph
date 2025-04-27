@@ -17,7 +17,7 @@ from module.FKG.FKG_S import FKGS
 print("Diabetic Retinopathy Fusion Feature")
 
 print("__________Running Processing___________")
-# from module.Processing_Data import Diabetic_fusion_processing
+from module.Processing_Data import Diabetic_fusion_processing
 
 print("__________Running FIS___________")
 FIS(fileName="Diabetic Retinopathy Feature",

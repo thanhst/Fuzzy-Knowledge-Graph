@@ -577,19 +577,6 @@ def processing(file_path_img,file_path_table, folder_save):
     os.makedirs(os.path.join(base_path,f'data/Dataset_diabetic/{folder_save}'), exist_ok=True)
     process_image(file_path=file_path_img,folder_save=folder_save)
     df_image = pd.read_csv(f'data/Dataset_diabetic/{folder_save}/image_fts_norm.csv')
-    # df_merge = df_image.merge(df_table.iloc[:,:-1],how='inner',on="image_id")
-    # df_merge = df_merge.drop(['image_id'],axis=1)
-    
-    # Label = df_image.iloc[:,-1]
-    # Fall = df_image.iloc[:,1:-1]
-    
-    # from sklearn.preprocessing import StandardScaler
-    # scaler_all = StandardScaler()
-    # Fall = scaler_all.fit_transform(Fall.values)
-    # Áp dụng wrapper
-    # from module.Processing_Data.Fusion_function import wrapper_multimodal_feature_selection
-    # Ffused_df = pd.DataFrame(wrapper_multimodal_feature_selection.wrapper_multimodal_selection(Fimg=Fimg,Ftab=Ftab,target=Label.values.ravel(),max_img=max_img,max_tab=max_tab,min_img=2,min_tab=2))
-    # Ffused_df = pd.concat([Ffused_df, Label.reset_index(drop=True)], axis=1)
     
     X = df_image.iloc[:, 1:-1]
     y = df_image.iloc[:, -1]

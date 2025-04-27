@@ -132,7 +132,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     #Test file
     
     testStart = time.time()
-    from module.Test.FIS_Test_file import FIS_Test_file
+    from module.Test_FIS.FIS_Test_file import FIS_Test_file
     FIS_Test_file(Modality = "Metadata-Image Fusion",Turn = Turn,fileName=fileName)
     testTime = time.time() - testStart
     totalTime = time.time() - start_time
