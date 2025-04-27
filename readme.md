@@ -22,19 +22,17 @@ Chúng tôi sử dụng thư viện OpenCV và scikit-image cho việc xử lý 
    ```bash
    git clone https://github.com/thanhst/Fuzzy-Knowledge-Graph.git
 
-Cài đặt các phụ thuộc:
-    ```bash
-    pip install -r requirements.txt
+2. Cài đặt các phụ thuộc:
+   ```bash
+   pip install -r requirements.txt
 
-Cấu hình môi trường:
+3. Cấu hình môi trường:
 
 - Cài đặt Python 3.x
 
 - Cài đặt các thư viện yêu cầu qua requirements.txt.
 
-Cách Sử Dụng
-- Tiền Xử Lý Dữ Liệu:
-    - Để tiền xử lý ảnh fundus, chạy lệnh sau:
+4. Cách Sử Dụng:
 
 Cấu Trúc Thư Mục
 Cấu trúc thư mục của dự án như sau:
@@ -88,5 +86,9 @@ Cấu trúc thư mục của dự án như sau:
 ├── 📄 Scenario_diabetic_retinopathy_statistical_feature.bat                        # Kịch bản statistical của ảnh
 ├── 📄 Scenario_diabetic_retinopathy_table_feature.bat                              # Kịch bản metadata dạng table
 └── 📄 README.md                                                                    # Tệp README của dự án
+### Hướng dẫn chạy chương trình.
+- Trong folder chính của dự án, có các file batch khi thực hiện trích các đặc trưng từ ảnh, bảng và kết hợp. Bấm chạy các file batch để chương trình hoạt động.
+- Trong folder fusion-case là các trường hợp fusion của hai mô thức ảnh và bảng, có các trường hợp như kết hợp fusion theo wrapper, feature selection, filter multimodal , hadamard và tensor selection. Bấm chạy các file batch để chương trình hoạt động.
+*** Lưu ý: Chương trình chạy code với tính toán FISA bằng module C++ được build trên window, máy linux sẽ chưa thể hoạt động được. ***
 
 
