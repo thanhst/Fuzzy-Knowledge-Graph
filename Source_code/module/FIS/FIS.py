@@ -84,7 +84,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     df_Rule_List1 = pd.DataFrame(rules_reduce)
     df_Rule_List1.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List_reduce.csv"), index=False)
 
-    # ruleList = remove_rule(h,col_num,rules_reduce)
+    ruleListModel = remove_rule(h,col_num,rules_reduce)
     ruleList = np.array(df_Rule_List)
     ruleListLang = change_var_lang̣_default(cluster,ruleList)
 
@@ -116,7 +116,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     print("*"*100)
     print("centers: \n", pd.DataFrame(centers))
     model_data = {
-        "ruleList": ruleList,
+        "ruleList": ruleListModel,
         "sigma_M": sigma_M,
         "centers": centers,
         "min_vals": min_vals,

@@ -3,12 +3,12 @@ import numpy as np
 from skimage.feature import graycomatrix, graycoprops
 from skimage import io, color, img_as_ubyte
 import os
-import cv2
+import cv2,csv
 from pathlib import Path
 base_path = Path(__file__).resolve().parents[2]
 import time
 start = time.time()
-#Làm rõ vùng tối/sáng, giúp mạch máu và tổn thương dễ nhận diện hơn.
+# Làm rõ vùng tối/sáng, giúp mạch máu và tổn thương dễ nhận diện hơn.
 def apply_clahe(image):
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
@@ -64,76 +64,35 @@ def segment_by_otsu(gray_image):
     _, binary_mask = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     return binary_mask
 
+def segment_with_otsu_and_kmeans(image, k=2):
+    # Bước 1: Áp dụng Otsu Thresholding
+    gray = color.rgb2gray(image)
+    gray_image = img_as_ubyte(gray)
+    
+    # Áp dụng Otsu Thresholding để phân đoạn ảnh
+    otsu_mask = segment_by_otsu(gray_image)
+    
+    # Bước 2: Phân đoạn ảnh với KMeans
+    segmented_image, kmeans_mask = segment_by_kmeans(image, k)
+    
+    # Bước 3: Kết hợp kết quả Otsu và KMeans
+    # Giữ lại vùng có giá trị lớn hơn ngưỡng Otsu và những vùng phân đoạn qua KMeans
+    combined_mask = otsu_mask & kmeans_mask  # Chỉ giữ lại các vùng mà cả Otsu và KMeans đều xác nhận
+    
+    # Áp dụng mask để giữ lại các vùng quan trọng
+    masked_image = image.copy()
+    masked_image[combined_mask == 0] = 0  # Giữ lại những vùng không phải là nền
+    
+    return masked_image, otsu_mask, kmeans_mask, combined_mask
+
 def preprocess_fundus_image(image):
-    image = remove_hairs(image)
-    # Làm nét
     sharpened = apply_unsharp_mask(image)
-
-    # Cải thiện độ tương phản bằng CLAHE
-    clahe_img = apply_clahe(sharpened)
-    # Stretch nhẹ để làm sáng
-    final = linear_contrast_stretch(clahe_img)
     
-    _, lesion_mask = segment_by_kmeans(final)
-    return final,lesion_mask
-
-
-
-df = pd.DataFrame(
-    columns=[
-        "Contrast Feature",
-        "Dissimilarity Feature",
-        "Homogeneity Feature",
-        "Energy Feature",
-        "Correlation Feature",
-        "ASM Feature",
-        "Mean Feature",
-        "Variance Feature",
-        "Standard Deviation Feature",
-        "RMS Feature"
-    ]
-)
-matrix1 = []
-list_of_images = []
-name_of_images = []
-for i in range(1,4):
-    path_of_images =os.path.join( base_path,f"data/Image/imgs_part_{i}")
-    images = os.listdir(path_of_images)
-    name_of_images.extend(images)
-    list_of_images.extend([os.path.join(path_of_images, img) for img in images])
+    denoised = cv2.fastNlMeansDenoisingColored(sharpened, None, 10, 10, 7, 21)
     
-for image in list_of_images:
-    img = cv2.imread(image)
-    img = cv2.resize(img, (256, 256))
-    img, mask = preprocess_fundus_image(img)
-    gray = color.rgb2gray(img)
-    image = img_as_ubyte(gray)
-    gray_masked = gray.copy()
-    gray_masked[mask == 0] = 0
-    bins = np.array(
-        [0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 255]
-    )  # 16-bit
-    inds = np.digitize(
-        gray_masked, bins
-    )
+    clahe_img = apply_clahe(denoised)
 
-    max_value = inds.max() + 1
-    matrix_coocurrence = graycomatrix(
-        inds,
-        [1],
-        [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4],
-        levels=max_value,
-        normed=False,
-        symmetric=False,
-    )
-    matrix1.append(matrix_coocurrence)
-CF =[]
-DF =[]
-HF =[]
-EF =[]
-COR = []
-ASM = []
-MF, VF, SD ,RMS = [], [], [],[]
+    return clahe_img
 
 def contrast_feature(matrix):
     return np.mean(graycoprops(matrix, 'contrast'))
@@ -164,41 +123,96 @@ def sd_feature(matrix):
     
 def rms_feature(matrix):
     return np.sqrt(np.mean(np.square(matrix)))
-    
-for matrix in matrix1:
-    CF.append(contrast_feature(matrix))
-    DF.append(dissimilarity_feature(matrix))
-    HF.append(homogeneity_feature(matrix))
-    EF.append(energy_feature(matrix))
-    COR.append(correlation_feature(matrix))
-    ASM.append(asm_feature(matrix))
-    MF.append(mean_feature(matrix))
-    VF.append(variance_feature(matrix))
-    SD.append(sd_feature(matrix))
-    RMS.append(rms_feature(matrix))
-df["Contrast Feature"] = CF
-df["Dissimilarity Feature"] = DF
-df["Homogeneity Feature"] = HF
-df["Energy Feature"] = EF
-df["Correlation Feature"] = COR
-df["ASM Feature"] = ASM
-df["Mean Feature"] = MF
-df["Variance Feature"] = VF
-df["Standard Deviation Feature"] = SD
-df["RMS Feature"] = RMS
 
-df.index = name_of_images
-df.index.name = "img_id"
+list_of_images = []
+os.makedirs(os.path.join(base_path,"data/Dataset/Fusion_feature"), exist_ok=True)
+
+for i in range(1,4):
+    path_of_images =os.path.join( base_path,f"data/Image/imgs_part_{i}")
+    images = os.listdir(path_of_images)
+    list_of_images.extend([os.path.join(path_of_images, img) for img in images])
+
+
+if os.path.exists(os.path.join(base_path,"data/Dataset/Fusion_feature/images_ft.csv")):
+    os.remove(os.path.join(base_path,"data/Dataset/Fusion_feature/images_ft.csv"))
+if not os.path.exists(os.path.join(base_path,"data/Dataset/Fusion_feature/images_ft.csv")):
+    with open(os.path.join(base_path,"data/Dataset/Fusion_feature/images_ft.csv"), mode='w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "img_id",
+            "Contrast Feature",
+            "Dissimilarity Feature",
+            "Homogeneity Feature",
+            "Energy Feature",
+            "Correlation Feature",
+            "ASM Feature",
+        ])
+for image in list_of_images:
+    img = cv2.imread(image)
+    img = cv2.resize(img, (256, 256))
+    img = preprocess_fundus_image(img)
+    segmented_img, otsu_mask, kmeans_mask, combined_mask = segment_with_otsu_and_kmeans(img, k=3)
+    
+    time_segment_image = time.time()
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Bước 5: Áp dụng mask Otsu để giữ lại vùng tổn thương
+    masked_img = cv2.bitwise_and(gray_img, gray_img, mask=otsu_mask)
+
+    # Bước 6: Chuyển ảnh masked về dạng 8-bit nếu cần
+    masked_img_ubyte = img_as_ubyte(masked_img)
+
+    # Bước 7: Phân bin ảnh thành 16 mức xám
+
+    # Bước 8: Tính GLCM
+    matrix_coocurrence = graycomatrix(
+        masked_img_ubyte,
+        distances=[1],
+        angles=[0, np.pi/4, np.pi/2, 3*np.pi/4],
+        levels=256,
+        normed=True,
+        symmetric=True,
+    )
+    masked_inds = img[otsu_mask == 0]
+    CF = contrast_feature(matrix_coocurrence)
+    DF= dissimilarity_feature(matrix_coocurrence)
+    HF = homogeneity_feature(matrix_coocurrence)
+    EF = energy_feature(matrix_coocurrence)
+    COR = correlation_feature(matrix_coocurrence)
+    ASM = asm_feature(matrix_coocurrence)
+    
+    with open(os.path.join(base_path,"data/Dataset/Fusion_feature/images_ft.csv"), mode='a', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            os.path.basename(image),
+            CF,
+            DF,
+            HF,
+            EF,
+            COR,
+            ASM
+        ])
+    
+    del img, gray_img, masked_img, masked_img_ubyte, matrix_coocurrence,CF,DF,HF,EF,COR,ASM
+
+
+df = pd.read_csv(os.path.join(base_path,"data/Dataset/Fusion_feature/images_ft.csv"))
+df = pd.DataFrame(df)
+for col in df.columns[1:]:
+    df[col] = (df[col] - df[col].min()) / (df[col].max() - df[col].min())
+print(df)
+
 
 dfMetaData = pd.read_csv(os.path.join(base_path,"data/Dataset/metadata.csv"))
 dfMetaData = dfMetaData[["age", "region", "itch", "grew", "hurt", "changed", "bleed", "elevation", "biopsed","img_id", "diagnostic"]]
-dfMerge = pd.merge(dfMetaData, df, on='img_id', how='inner')
+dfMerge = dfMetaData.merge(df, how='inner', on='img_id')
+print(dfMerge)
 columns = [col for col in dfMerge.columns if col != 'diagnostic']
 dfMerge = dfMerge[columns + ['diagnostic']]
 mapping = {'BCC': 1, 'SCC': 2, 'ACK': 3, 'SEK' : 4, 'NEV': 5, 'MEL':6}
 dfMerge['diagnostic']=dfMerge['diagnostic'].replace(mapping)
 dfMerge = dfMerge.drop(['img_id'],axis=1)
-dfMerge = dfMerge.drop(columns=['Unnamed: 0'], errors='ignore')
+# dfMerge = dfMerge.drop(columns=['Unnamed: 0'], errors='ignore')
 columns_to_normalize = ["Variance Feature", "Standard Deviation Feature", "RMS Feature","Mean Feature"]
 
 for col in columns_to_normalize:
@@ -271,14 +285,14 @@ boolean_mapping = {
     True: 1
 }
 
-dfMerge['biopsed'] = dfMetaData['biopsed'].replace(boolean_mapping)
+dfMerge['biopsed'] = dfMerge['biopsed'].replace(boolean_mapping)
 
-corr_with_label = dfMerge.corr()['diagnostic'].abs().sort_values(ascending=False)
-selected_features = corr_with_label[corr_with_label > 0.02].index.tolist()
+# corr_with_label = dfMerge.corr()['diagnostic'].abs().sort_values(ascending=False)
+# selected_features = corr_with_label[corr_with_label > 0.02].index.tolist()
 
-if 'diagnostic' not in selected_features:
-    selected_features.append('diagnostic')
-df_selected = dfMerge[selected_features]
+# if 'diagnostic' not in selected_features:
+#     selected_features.append('diagnostic')
+# df_selected = dfMerge[selected_features]
 
 dfMerge.to_csv(os.path.join(base_path,"data/Dataset/FusionFeatureRemoveMissing.csv"), index=False)
 end = time.time()

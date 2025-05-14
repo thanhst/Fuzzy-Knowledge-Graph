@@ -27,7 +27,7 @@ FIS(fileName="Diabetic Retinopathy Feature",
 print("--------------------------------")
 
 print("__________Running FKG___________")
-traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/Rule_List_All.csv'))
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule_All.csv'))
 testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
 base = [[int(float(x)) for x in row] for row in traindf.values]
 base = pd.DataFrame(base)
@@ -37,7 +37,7 @@ fkg_instance.FKG(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy 
 print("--------------------------------")
 
 print("__________Running FKG-S___________")
-traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/Rule_List_All.csv'))
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule_All.csv'))
 testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
 base = [[int(float(x)) for x in row] for row in traindf.values]
 base = pd.DataFrame(base)

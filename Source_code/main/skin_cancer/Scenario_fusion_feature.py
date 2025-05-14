@@ -26,7 +26,7 @@ FIS(fileName="Fusion Feature Remove Missing",
 print("--------------------------------")
 
 print("__________Running FKG___________")
-traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Fusion Feature Remove Missing/Rule_List.csv'))
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Fusion Feature Remove Missing/FRB/TrainDataRule.csv'))
 testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Fusion Feature Remove Missing/FRB/TestDataRule.csv'))
 base = [[int(float(x)) for x in row] for row in traindf.values]
 base = pd.DataFrame(base)

@@ -28,7 +28,7 @@ print("Diabetic Retinopathy Fusion Feature Tensor")
 # print("--------------------------------")
 
 print("__________Running FKG___________")
-traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/Rule_List_All.csv'))
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule_All.csv'))
 testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
 base = [[int(float(x)) for x in row] for row in traindf.values]
 base = pd.DataFrame(base)
@@ -43,7 +43,7 @@ r = [15,20]
 for i in r:
     for j in e:
         print("__________Running FKG-S___________")
-        traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Tensor/Rule_List_All.csv'))
+        traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Tensor/FRB/TrainDataRule_All.csv'))
         testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Tensor/FRB/TestDataRule.csv'))
         base = [[int(float(x)) for x in row] for row in traindf.values]
         base = pd.DataFrame(base)
@@ -53,7 +53,7 @@ for i in r:
         print("-"*100)
 
 print("__________Running FKG-S with K-fold___________")
-traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Tensor/Rule_List_All.csv'))
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Tensor/FRB/TrainDataRule_All.csv'))
 base = [[int(float(x)) for x in row] for row in traindf.values]
 base = np.array(base)
 X = base[:, :-1]
