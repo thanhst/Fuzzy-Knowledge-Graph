@@ -1,98 +1,104 @@
-# Chẩn Đoán Bệnh Lý tiểu đường võng mạc bằng phương pháp FKGS
+# Chẩn Đoán Bệnh Lý Võng Mạc Tiểu Đường bằng Phương Pháp FKGS
 
-Hệ thống này sử dụng các phương pháp xử lý ảnh và học máy để phân tích ảnh fundus và dữ liệu liên quan nhằm hỗ trợ chẩn đoán các bệnh lý mắt, đặc biệt là các bệnh liên quan đến tiểu đường. Dự án kết hợp việc trích xuất đặc trưng từ ảnh fundus với dữ liệu bệnh nhân để đưa ra các phân tích và dự đoán chính xác.
+Hệ thống sử dụng các phương pháp xử lý ảnh và học máy để phân tích ảnh fundus cùng dữ liệu metadata hỗ trợ chẩn đoán các bệnh lý mắt, đặc biệt là bệnh võng mạc do tiểu đường. Phương pháp này kết hợp trích xuất đặc trưng GLCM từ ảnh với thông tin y tế nhằm nâng cao độ chính xác chẩn đoán.
 
-## Mô Tả
+## 📌 Mô Tả
 
-Dự án này bao gồm các bước tiền xử lý ảnh, trích xuất đặc trưng bằng phương pháp GLCM (Gray Level Co-occurrence Matrix), và kết hợp dữ liệu metadata của bệnh nhân để huấn luyện mô hình học máy giúp chẩn đoán bệnh lý mắt - võng mạc tiểu đường.
+Dự án gồm các bước:
 
-Chúng tôi sử dụng thư viện OpenCV và scikit-image cho việc xử lý ảnh, kết hợp với các phương pháp như Fuzzy interfences system và Fuzzy knowledge graph, đặc biệt là Fuzzy knowledge graph sampling để đưa ra các dự đoán chính xác hơn, nhanh chóng hơn nhờ các mối quan hệ của các thuộc tính.
+* Tiền xử lý ảnh.
+* Trích xuất đặc trưng bằng GLCM (Gray Level Co-occurrence Matrix).
+* Kết hợp với dữ liệu bệnh nhân.
+* Huấn luyện mô hình học máy với thuật toán Fuzzy Knowledge Graph Sampling (FKGS).
 
-## Cài Đặt
+Sử dụng các thư viện như OpenCV, scikit-image, NumPy và Pandas. Các thuật toán fuzzy như FIS (Fuzzy Inference System), FKG và FRB (Fuzzy Rule Base) được tích hợp để xử lý các mối quan hệ phức tạp trong dữ liệu.
+
+## ⚙️ Cài Đặt
 
 ### Yêu Cầu Hệ Thống
 
-- Python 3.x
-- Các thư viện: OpenCV, scikit-image, NumPy, Pandas
-- Hệ điều hành: Windows
+* Python 3.x
+* Thư viện: OpenCV, scikit-image, NumPy, Pandas
+* Hệ điều hành: **Windows** *(hiện tại chưa hỗ trợ Linux do có module C++ build sẵn)*
 
 ### Cài Đặt Các Phụ Thuộc
 
-1. Clone repository này về máy:
-   ```bash
-   git clone https://github.com/thanhst/Fuzzy-Knowledge-Graph.git
+```bash
+# Clone repo
+git clone https://github.com/thanhst/Fuzzy-Knowledge-Graph.git
+cd Fuzzy-Knowledge-Graph
 
-2. Cài đặt các phụ thuộc:
-   ```bash
-   pip install -r requirements.txt
+# Cài đặt thư viện
+pip install -r requirements.txt
+```
 
-3. Cấu hình môi trường:
+## 📁 Cấu Trúc Thư Mục
 
-- Cài đặt Python 3.x
-
-- Cài đặt các thư viện yêu cầu qua requirements.txt.
-
-4. Cách Sử Dụng:
-
-Cấu Trúc Thư Mục
-Cấu trúc thư mục của dự án như sau:
 ```text
 📦 Project
-├── 📁 Source_code                       # Mã nguồn chính
-│   ├── 📁 base                          # Thư mục chứa các lý thuyết cơ sở cho phương pháp phát triển sau này.
-│   ├── 📁 data                          # Dữ liệu như file tiền xử lý, luật FRB, và các file mô hình
-│   │   ├── 📁 BaseData                  # File thử nghiệm ban sơ
-│   │   ├── 📁 Dataset                   # File dataset thử nghiệm ban sơ
-│   │   ├── 📁 Dataset_diabetic          # Thử nghiệm tiền xử lý bệnh võng mạc tiểu đường của từng kịch bản chạy
-│   │   ├── 📁 FIS
-│   │   │   ├── 📁 input                 # input là thư mục chứa các input đầu vào train, test của mô hình FIS với từng kịch bản
-|   |   |   ├── 📁 output                # ouput là thư mục chứa các output đầu ra của FIS là FRB cơ bản dùng cho FKG, rules list, ...
-│   │   ├── 📁 FKG                       # Output của thuật toán FKG
-│   │   └── 📁 Metadata                  # Metadata về y tế ban đầu
-│   │       └── 📄 Metadata.csv
-│   ├── 📁 main                          # Các kịch bản chạy chính của chương trình
-│   ├── 📁 models                        # Kết quả mô hình của từng kịch bản
-│   └── 📁 module                        # Các module phục vụ chương trình
-│       ├── 📁 Convert                   # Bộ chuyển đổi luật dạng số học thành dạng ngôn ngữ
-│       ├── 📁 FCM
-│       │   ├── 📄 FCM_Function.py       # Thuật toán phân cụm mờ
-│       │   └── 📄 standardize_data.py   # Code chuẩn hóa dữ liệu
-│       ├── 📁 FIS
-│       │   └── 📄 FIS.py                # Thuật toán FIS
-│       ├── 📁 FKG
-│       │   ├── 📄 FKG_general.py        # Thuật toán FKG dùng cho bài toán nhiều nhãn
-│       │   ├── 📄 FKG_model.py          # Thuật toán FKG dùng cho bài toán 6 nhãn
-│       │   ├── 📄 FKG_S.py              # Thuật toán FKG sampling
-│       │   └── 📄 FKG.py                # Thuật toán FKG cơ bản cho hai nhãn
-│       ├── 📁 Helper                    # Một số hàm hỗ trợ
-│       ├── 📁 Membership_Function
-│       │   ├── 📄 ExpMF.py              # Mức độ hàm thành viên tính bằng hàm mũ
-│       │   ├── 📄 GaussMF.py            # Mức độ hàm thành viên tính bằng hàm Gaussian
-│       │   ├── 📄 SigmoidMF.py          # Mức độ hàm thành viên tính bằng hàm Sigmoid
-│       │   ├── 📄 TrapezoidalMF.py      # Mức độ hàm thành viên tính bằng hàm hình thang
-│       │   └── 📄 TriangleMF.py         # Mức độ hàm thành viên tính bằng hàm tam giác
-│       ├── 📁 Module_CPP                # Các module c++ phục vụ tính toán
-│       ├── 📁 Processing_Data           # Code tiền xử lý cho các kịch bản
-│       ├── 📁 Rules_Function
-│       │   ├── 📄 Rules_gen.py          # Code sinh luật mờ
-│       │   ├── 📄 Rules_reduce.py       # Code giảm các luật conflict và các luật trùng nhau
-│       │   └── 📄 RuleWeight.py         # Code tính trọng số luật mờ
-│       └── 📁 Setup_module              # Chứa thư mục CMAKE và các file c++, pyd phục vụ cho việc xây dựng module python bằng c++ hỗ trợ hiệu suất tính toán.
-├── 📄 Scenario_diabetic_retinopathy_fusion_feature_with_glcm.bat                   # Kịch bản kết hợp GLCM với metadata
-├── 📄 Scenario_diabetic_retinopathy_fusion_feature_with_statistical.bat            # Kịch bản kết hợp statistical với metadata
-├── 📄 Scenario_diabetic_retinopathy_fusion_feature.bat                             # Kết hợp GLCM, statistical với metadata
-├── 📄 Scenario_diabetic_retinopathy_GLCM_feature.bat                               # Kịch bản thuộc tính GLCM của ảnh
-├── 📄 Scenario_diabetic_retinopathy_image_feature.bat                              # Kịch bản thuộc tính ảnh
-├── 📄 Scenario_diabetic_retinopathy_statistical_feature.bat                        # Kịch bản statistical của ảnh
-├── 📄 Scenario_diabetic_retinopathy_table_feature.bat                              # Kịch bản metadata dạng table
-└── 📄 README.md                                                                    # Tệp README của dự án
+├── 📁 Source_code
+│   ├── base                        # Lý thuyết nền
+│   ├── data                        # Dữ liệu GLCM, metadata, luật FRB
+│   │   ├── BaseData
+│   │   ├── Dataset
+│   │   ├── Dataset_diabetic
+│   │   ├── FIS
+│   │   │   ├── input              # Input train/test cho FIS
+│   │   │   └── output             # Output là FRB, rules list
+│   │   ├── FKG                    # Output của thuật toán FKG
+│   │   └── Metadata
+│   │       └── Metadata.csv
+│   ├── main                        # Các kịch bản chạy chính
+│   ├── models                      # Kết quả huấn luyện mô hình
+│   └── module                      # Các module xử lý
+│       ├── Convert
+│       ├── FCM
+│       ├── FIS
+│       ├── FKG
+│       ├── Helper
+│       ├── Membership_Function
+│       ├── Module_CPP             # Mã nguồn C++ build module
+│       ├── Processing_Data
+│       ├── Rules_Function
+│       └── Setup_module
+├── 📄 Các file *.bat chạy các kịch bản tiền xử lý và huấn luyện
+└── 📄 README.md
 ```
-### Hướng dẫn chạy chương trình.
-- Trong folder chính của dự án, có các file batch khi thực hiện trích các đặc trưng từ ảnh, bảng và kết hợp. Bấm chạy các file batch để chương trình hoạt động.
-- Trong folder fusion-case là các trường hợp fusion của hai mô thức ảnh và bảng, có các trường hợp như kết hợp fusion theo wrapper, feature selection, filter multimodal , hadamard và tensor selection. Bấm chạy các file batch để chương trình hoạt động.
-- Trong folder Multimodality là các trường hợp fusion của 3 mô thức, gồm ảnh võng mạc đáy mắt ( fundus ) và ảnh chụp cắt lớp của mắt ( OCT B-Scan), file dữ liệu bổ trợ dạng bảng. Có 4 trường hợp kết hợp như sau: Fundus + Table, Fundus + OCT, OCT+ Table, Fundus + OCT + Table. Trong dữ liệu dạng bảng có các thuộc tính như sau : race,male,hispanic,maritalstatus,language,dr_class. Dữ liệu OCT images được trích ra các thuộc tính : Contrast Feature,Dissimilarity Feature,Homogeneity Feature,Energy Feature,Correlation Feature,ASM Feature,Mean Feature,Variance Feature,Standard Deviation Feature,RMS Feature,dr_class. Dữ liệu fundus images cũng chứa các thuộc tính tương tự OCT images. Từ đó, sử dụng các phương pháp kết hợp như Feature Selection, Filter Multimodal Selection, Hadamard Selection, Tensor Selection và Wrapper Selection để kết hợp dữ liệu với việc trích ra 6 đặc trưng tốt nhất trong 10 đặc trưng của fundus images, 6 đặc trưng tốt nhất trong 10 đặc trưng của OCT images và 4 đặc trưng của dữ liệu bổ trợ dạng bảng. Sau các phương pháp thì nhận thấy phương pháp Feature Selection phù hợp với trích đặc trưng từ các thuộc tính của bộ dữ liệu này, mang lại độ chính xác cao nhất trong 5 phương pháp kết hợp kể trên.
-- Step by step của chương trình: Tiền xử lý -> Lựa chọn phương pháp kết hợp -> Trích chọn đặc trưng -> Xây dựng tập luật FRB bằng phương pháp FCM -> Huấn luyện mô hình FKGS với các tham số ran, e lần lượt từ 15,0.2 - 15,0.3 - 20,0.2 - 20, 0.3 -> Test mô hình với bộ test. 
-<br>
-*** Lưu ý: Chương trình chạy code với tính toán FISA bằng module C++ được build trên window, máy linux sẽ chưa thể hoạt động được. ***
 
+## ▶️ Hướng Dẫn Chạy Chương Trình
 
+### 1. Chạy Các Kịch Bản
+
+Trong thư mục chính có các file `.bat` như:
+
+* `Scenario_diabetic_retinopathy_image_feature.bat`
+* `Scenario_diabetic_retinopathy_GLCM_feature.bat`
+* `Scenario_diabetic_retinopathy_fusion_feature.bat`
+* ...
+  Chạy file phù hợp với kịch bản bạn muốn thực hiện.
+
+### 2. Kết Hợp Dữ Liệu (Fusion)
+
+* **Thư mục `fusion-case`**: chứa các kịch bản kết hợp 2 mô thức (ảnh + bảng).
+* **Thư mục `Multimodality`**: chứa các kịch bản kết hợp 3 mô thức: Fundus, OCT, và metadata dạng bảng.
+
+Các phương pháp kết hợp:
+
+* Feature Selection
+* Filter Multimodal
+* Hadamard
+* Tensor Selection
+* Wrapper
+
+> Qua thực nghiệm, phương pháp **Feature Selection** cho kết quả chính xác cao nhất.
+
+### 3. Quy Trình Xử Lý
+
+1. Tiền xử lý dữ liệu
+2. Chọn phương pháp kết hợp
+3. Trích xuất đặc trưng
+4. Sinh luật FRB bằng thuật toán FCM
+5. Huấn luyện mô hình FKGS với các tham số `ran`, `e`: (15, 0.2), (15, 0.3), (20, 0.2), (20, 0.3)
+6. Kiểm thử mô hình với tập test
+
+⚠️ **Lưu ý:** Mô đun C++ tính toán FIS chỉ hỗ trợ trên Windows!

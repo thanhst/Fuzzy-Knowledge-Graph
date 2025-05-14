@@ -16,17 +16,17 @@ df_table = pd.read_csv(os.path.join(project_root,'main/diabetic_harvard_data/dat
 Label = df_table.iloc[:, -1]
 Fimg = df_fundus.iloc[:,1:-1]
 Ftab = df_table.iloc[:,1:-1]
-# Fimg_select = pd.DataFrame(feature_selection.select_features(X=Fimg,y = Label, k = 6))
-# Ftab_select = pd.DataFrame(feature_selection.select_features(X=Ftab,y = Label, k = 4))
-# merged_features = pd.concat([Fimg_select, Ftab_select], axis=1)
+Fimg_select = pd.DataFrame(feature_selection.select_features(X=Fimg,y = Label, k = 6))
+Ftab_select = pd.DataFrame(feature_selection.select_features(X=Ftab,y = Label, k = 4))
+merged_features = pd.concat([Fimg_select, Ftab_select], axis=1)
 
 #hadamard
 # merged_features = pd.DataFrame(hadamard_selection.hadamard_fusion(Fimg=Fimg,Ftab=Ftab, common_dim=4))
 
 #filter_multimodal_selection
-Fimg=Fimg.to_numpy()
-Ftab = Ftab.to_numpy()
-merged_features = pd.DataFrame(filter_multimodal_selection.filter_multimodal_selection(Fimg=Fimg,Ftab=Ftab,target=Label,k_img=6,k_tab=4))
+# Fimg=Fimg.to_numpy()
+# Ftab = Ftab.to_numpy()
+# merged_features = pd.DataFrame(filter_multimodal_selection.filter_multimodal_selection(Fimg=Fimg,Ftab=Ftab,target=Label,k_img=6,k_tab=4))
 
 scaler = MinMaxScaler()
 features_scaled = pd.DataFrame(scaler.fit_transform(merged_features), columns=merged_features.columns)
@@ -43,9 +43,9 @@ print('Dataset Multimodality fundus fusion table')
 print("__________Running FIS___________")
 FIS(fileName="Dataset Multimodality fundus fusion table",
     filePath=".\main\diabetic_harvard_data\data\\fundus_table_fusion_ft.csv",
-    # cluster=[5,5,5,5,5,5,3,2,2,3,2])
+    cluster=[5,5,5,5,5,5,3,2,2,3,2])
     # cluster=[5,5,5,5,5,5,3,2,2,3,3,3,2])
-    cluster=[5,5,5,5,5,5,3,2,2,2,2])
+    # cluster=[5,5,5,5,5,5,3,2,2,2,2])
 print("--------------------------------")
 
 print("__________Running FKG___________")
