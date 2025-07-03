@@ -15,17 +15,30 @@ df_oct = pd.read_csv(os.path.join(project_root,'main/diabetic_harvard_data/data/
 Label = df_oct.iloc[:, -1]
 Fimg = df_fundus.iloc[:,1:-1]
 Foct = df_oct.iloc[:,1:-1]
-Fimg_select = pd.DataFrame(feature_selection.select_features(X=Fimg,y = Label, k = 6))
-Foct_select = pd.DataFrame(feature_selection.select_features(X=Foct,y = Label, k = 6))
-merged_features = pd.concat([Fimg_select, Foct_select], axis=1)
 
-#hadamard
+# ***Feature selection
+# Fimg_select = pd.DataFrame(feature_selection.select_features(X=Fimg,y = Label, k = 6))
+# Foct_select = pd.DataFrame(feature_selection.select_features(X=Foct,y = Label, k = 6))
+# merged_features = pd.concat([Fimg_select, Foct_select], axis=1)
+
+# ***Hadamard
 # merged_features = pd.DataFrame(hadamard_selection.hadamard_fusion(Fimg=Fimg,Ftab=Foct,common_dim=5))
 
-#filter_multimodal_selection
+# ***Filter_multimodal_selection
 # Fimg=Fimg.to_numpy()
 # Foct = Foct.to_numpy()
 # merged_features = pd.DataFrame(filter_multimodal_selection.filter_multimodal_selection(Fimg=Fimg,Ftab=Foct,target=Label,k_img=6,k_tab=6))
+
+# ***Tensor selection
+# import numpy as np
+# Fimg = np.array(Fimg, dtype=float)
+# Foct = np.array(Foct,dtype=float)
+# merged_features = pd.DataFrame(tensor_selection.tensor_fusion(Fimg=Fimg,Ftab=Foct,rank=10))
+
+# ***Wrapper selection
+Fimg = Fimg.to_numpy()
+Foct = Foct.to_numpy()
+merged_features = pd.DataFrame(wrapper_multimodal_feature_selection.wrapper_multimodal_selection(Fimg=Fimg,Ftab=Foct,target=Label,max_img=6,max_tab=6))
 
 scaler = MinMaxScaler()
 features_scaled = pd.DataFrame(scaler.fit_transform(merged_features), columns=merged_features.columns)
@@ -42,9 +55,11 @@ print('Dataset Multimodality fundus fusion oct')
 print("__________Running FIS___________")
 FIS(fileName="Dataset Multimodality fundus fusion oct",
     filePath=".\main\diabetic_harvard_data\data\\fundus_oct_fusion_ft.csv",
-    cluster=[5,5,5,5,5,5,5,5,5,5,5,5,2])
-    # cluster=[5,5,5,5,5,5,5,5,5,5,5,5,3,3,3,2])
-    # cluster=[5,5,5,5,5,5,5,5,5,5,5,2])
+    # cluster=[5,5,5,5,5,5,5,5,5,5,5,5,2]) # Feature selection
+    # cluster=[5,5,5,5,5,5,5,5,5,5,5,5,3,3,3,2]) # Hadamard selection
+    # cluster=[5,5,5,5,5,5,5,5,5,5,5,2]) # Filter selection
+    # cluster=[5,5,5,5,5,5,5,5,5,5,2]) # Tensor selection
+    cluster=[5,5,5,5,5,5,2]) # Wrapper selection
 print("--------------------------------")
 
 print("__________Running FKG___________")

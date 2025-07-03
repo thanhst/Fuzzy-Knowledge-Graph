@@ -5,18 +5,16 @@ rem --- Logtime
 echo [INFO] --- Script started at: %date% %time%
 
 rem --- set workdir
-cd ..
 cd Source_code
 
 rem --- install code FKG
-pip install --find-links=module/Setup_module/CMAKE/wheel/wheelhouse/window fisa_module
-
+@REM pip install --find-links=module/Setup_module/CMAKE/wheel/wheelhouse/window fisa_module
 
 rem
 echo [INFO] --- Running the Python script...
 
 rem --- Running python by module
-python -m main.diabetic_harvard_data.run.Scenario_fundus_features
+python -m main.ICTA.main
 
 rem --- check error
 if %errorlevel% neq 0 (

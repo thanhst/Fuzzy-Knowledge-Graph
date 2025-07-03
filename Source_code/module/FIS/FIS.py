@@ -11,6 +11,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     import sys
     import time
     import os
+    from sklearn.model_selection import train_test_split
     
     base_dir = os.getcwd()
     
@@ -31,11 +32,11 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     df = pd.read_csv(filePath)
     full_data = df
     df_full_data = pd.DataFrame(full_data)
-    train_data = df_full_data.sample(frac=0.7, random_state=None)
+    train_data, test_data = train_test_split(df_full_data, test_size=0.3, random_state=37)
     train_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/train_data.csv'))
+    test_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/test_data.csv'))
     train_data = train_data.values
-    test_data = df_full_data.sample(frac=0.3, random_state=None)
-
+    test_data = test_data.values
 
     full_data = np.array(full_data)
     train_data = np.array(train_data)
@@ -47,7 +48,6 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     max_vals_data = pd.DataFrame(max_vals)
     min_vals_data.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/min_vals.csv"))
     max_vals_data.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/max_vals.csv"))
-    test_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/test_data.csv'))
 
     h = train_data.shape[0]
     w = train_data.shape[1]
