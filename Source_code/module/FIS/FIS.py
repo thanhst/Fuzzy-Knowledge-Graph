@@ -32,7 +32,9 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     df = pd.read_csv(filePath)
     full_data = df
     df_full_data = pd.DataFrame(full_data)
-    train_data, test_data = train_test_split(df_full_data, test_size=0.3, random_state=37)
+    # train_data, test_data = train_test_split(df_full_data, test_size=0.3, random_state=37)
+    train_data=df_full_data.sample(frac=0.7,random_state=None)
+    test_data=df_full_data.sample(frac=0.3,random_state=None)
     train_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/train_data.csv'))
     test_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/test_data.csv'))
     train_data = train_data.values
@@ -61,7 +63,7 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     esp = 0.01
     maxTest = 200
 
-    #phan cụm mờ / 
+    #phan cụm mờ 
     rules,centers,U = rule_generate(h,w,train_data,cluster,min_vals,max_vals,m,esp,maxTest)
 
     col_num = train_data.shape[1] -1
