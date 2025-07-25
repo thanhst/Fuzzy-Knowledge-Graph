@@ -75,60 +75,60 @@ Trong thư mục chính có các file `.bat` như:
 * `Scenario_diabetic_retinopathy_GLCM_feature.bat`
 * `Scenario_diabetic_retinopathy_fusion_feature.bat`
 * ...
-  Chạy file phù hợp với kịch bản bạn muốn thực hiện.
-  Nếu bạn muốn lập trình thêm (tạo các kịch bản code từ FKG) thì có thể thực hiện theo dạng file code như sau:
-  ```
-  import sys
-  import os
+Chạy file phù hợp với kịch bản bạn muốn thực hiện.
+Nếu bạn muốn lập trình thêm (tạo các kịch bản code từ FKG) thì có thể thực hiện theo dạng file code như sau:
+```
+import sys
+import os
 
-  # Lấy đường dẫn tuyệt đối tới thư mục gốc của project (ở đây là Source_code)
-  # Bạn nên đưa file code vào thư mục main và sau đó tạo một file bat tương tự như ví dụ bat ở trên để dễ dàng chạy nhé!
-  current_dir = os.path.dirname(os.path.abspath(__file__))
-  project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))  # lên 2 cấp
+# Lấy đường dẫn tuyệt đối tới thư mục gốc của project (ở đây là Source_code)
+# Bạn nên đưa file code vào thư mục main và sau đó tạo một file bat tương tự như ví dụ bat ở trên để dễ dàng chạy nhé!
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))  # lên 2 cấp
 
-  if project_root not in sys.path:
-      sys.path.append(project_root)
+if project_root not in sys.path:
+    sys.path.append(project_root)
 
-  import pandas as pd
-  from module.FIS.FIS import FIS
-  from module.FKG.FKG_general import FKG
-  from module.FKG.FKG_S import FKGS
+import pandas as pd
+from module.FIS.FIS import FIS
+from module.FKG.FKG_general import FKG
+from module.FKG.FKG_S import FKGS
 
 
-  print("Diabetic Retinopathy Fusion Feature")
+print("Diabetic Retinopathy Fusion Feature")
 
-  print("__________Running Processing___________")
-  # Đây là file code bạn tiền xử lý cho dữ liệu của bạn
-  from module.Processing_Data import Diabetic_fusion_processing
+print("__________Running Processing___________")
+# Đây là file code bạn tiền xử lý cho dữ liệu của bạn
+from module.Processing_Data import Diabetic_fusion_processing
 
-  print("__________Running FIS___________")
-  # Sử dụng FIS cho việc tiền đánh giá dữ liệu gốc bằng luật mờ, đồng thời cũng tạo ra một FRB dùng cho FKG
-  FIS(fileName="Diabetic Retinopathy Feature",
-      filePath=os.path.join(project_root,"data\Dataset_diabetic\Fusion_feature\data_process.csv"),
-      cluster=[3,2,4,2,2,2,2,2,2,2,2,2,2,5,5,5,5,5,5,5,5,5,5,2])
-  print("--------------------------------")
+print("__________Running FIS___________")
+# Sử dụng FIS cho việc tiền đánh giá dữ liệu gốc bằng luật mờ, đồng thời cũng tạo ra một FRB dùng cho FKG
+FIS(fileName="Diabetic Retinopathy Feature",
+    filePath=os.path.join(project_root,"data\Dataset_diabetic\Fusion_feature\data_process.csv"),
+    cluster=[3,2,4,2,2,2,2,2,2,2,2,2,2,5,5,5,5,5,5,5,5,5,5,2])
+print("--------------------------------")
 
-  print("__________Running FKG___________")
-  # Ở đây chỉ cần gọi thư viện và truyền các tham số, dữ liệu là hoàn toàn FKG có thể hoạt động được.
-  traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule_All.csv'))
-  testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
-  base = [[int(float(x)) for x in row] for row in traindf.values]
-  base = pd.DataFrame(base)
-  test = [[int(float(x)) for x in row] for row in testdf.values]
-  fkg_instance = FKG()
-  fkg_instance.FKG(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature")
-  print("--------------------------------")
+print("__________Running FKG___________")
+# Ở đây chỉ cần gọi thư viện và truyền các tham số, dữ liệu là hoàn toàn FKG có thể hoạt động được.
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule_All.csv'))
+testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
+base = [[int(float(x)) for x in row] for row in traindf.values]
+base = pd.DataFrame(base)
+test = [[int(float(x)) for x in row] for row in testdf.values]
+fkg_instance = FKG()
+fkg_instance.FKG(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature")
+print("--------------------------------")
 
-  print("__________Running FKG-S___________")
-  traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule_All.csv'))
-  testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
-  base = [[int(float(x)) for x in row] for row in traindf.values]
-  base = pd.DataFrame(base)
-  test = [[int(float(x)) for x in row] for row in testdf.values]
-  fkg_instance = FKGS()
-  fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature",ran=20,e=0.2,folderPath=project_root)
-  print("-"*100)
-  ```
+print("__________Running FKG-S___________")
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule_All.csv'))
+testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
+base = [[int(float(x)) for x in row] for row in traindf.values]
+base = pd.DataFrame(base)
+test = [[int(float(x)) for x in row] for row in testdf.values]
+fkg_instance = FKGS()
+fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature",ran=20,e=0.2,folderPath=project_root)
+print("-"*100)
+```
 ### 2. Kết Hợp Dữ Liệu (Fusion)
 
 * **Thư mục `fusion-case`**: chứa các kịch bản kết hợp 2 mô thức (ảnh + bảng).
