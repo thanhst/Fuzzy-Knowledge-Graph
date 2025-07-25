@@ -156,3 +156,10 @@ Các phương pháp kết hợp:
 6. Kiểm thử mô hình với tập test
 
 ⚠️ **Lưu ý:** Mô đun C++ tính toán FIS chỉ hỗ trợ trên Windows!
+
+7. Một số hình ảnh khái quát
+![Hình 1: Heatmap đặc trưng của FT selection](image.png)
+
+![Hình 2: Ma trận nhầm lẫn - kịch bản FKGS với e=0.3 và ran=15](image-1.png)
+
+![Hình 3: Độ đo - kịch bản FKGS với e=0.3 và ran=15](image-2.png)

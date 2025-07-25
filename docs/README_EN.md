@@ -179,3 +179,10 @@ print("-"*100)
 
 - This project uses C++ modules (FISA) for high-performance fuzzy calculations.
 - **Currently only supports Windows OS**. Linux systems are not yet supported for C++ execution modules.
+
+7. Some Illustrative Figures
+![Figure 1: Feature heatmap obtained from feature selection](image.png)
+
+![Figure 2: Confusion matrix – FKGS scenario with e = 0.3 and ran = 15](image-1.png)
+
+![Figure 3: Accuracy – FKGS scenario with e = 0.3 and ran = 15](image-2.png)
