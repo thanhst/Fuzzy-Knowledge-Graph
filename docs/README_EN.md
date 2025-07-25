@@ -82,6 +82,60 @@ Ensure Python 3.x is installed and all libraries listed in `requirements.txt` ar
   - `Scenario_diabetic_retinopathy_table_feature.bat` – Metadata features
   - `Scenario_diabetic_retinopathy_fusion_feature.bat` – Combined features (GLCM + statistical + metadata)
 
+If you wish to develop further (e.g., creating custom scenarios based on the FKG), you can do so in the form of code files structured as shown below:
+```
+import sys
+import os
+
+# Get the absolute path to the root directory of the project (in this case, Source_code).
+# It's recommended that you place your code file inside the main folder and then create a .bat file similar to the examples above for easier execution.
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))  # lên 2 cấp
+
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+import pandas as pd
+from module.FIS.FIS import FIS
+from module.FKG.FKG_general import FKG
+from module.FKG.FKG_S import FKGS
+
+
+print("Diabetic Retinopathy Fusion Feature")
+
+print("__________Running Processing___________")
+# This is the code file you use to preprocess your data.
+from module.Processing_Data import Diabetic_fusion_processing
+
+print("__________Running FIS___________")
+# Use FIS to pre-evaluate the original data using fuzzy rules, and simultaneously generate an FRB for use in FKG
+FIS(fileName="Diabetic Retinopathy Feature",
+    filePath=os.path.join(project_root,"data\Dataset_diabetic\Fusion_feature\data_process.csv"),
+    cluster=[3,2,4,2,2,2,2,2,2,2,2,2,2,5,5,5,5,5,5,5,5,5,5,2])
+print("--------------------------------")
+
+print("__________Running FKG___________")
+# Here, you only need to import the library and pass the parameters — the data will be fully compatible for FKG to operate.
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule.csv'))
+testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
+base = [[int(float(x)) for x in row] for row in traindf.values]
+base = pd.DataFrame(base)
+test = [[int(float(x)) for x in row] for row in testdf.values]
+fkg_instance = FKG()
+fkg_instance.FKG(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature")
+print("--------------------------------")
+
+print("__________Running FKG-S___________")
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule.csv'))
+testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
+base = [[int(float(x)) for x in row] for row in traindf.values]
+base = pd.DataFrame(base)
+test = [[int(float(x)) for x in row] for row in testdf.values]
+fkg_instance = FKGS()
+fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature",ran=20,e=0.2,folderPath=project_root)
+print("-"*100)
+```
+
 ### 🧪 Fusion Cases
 
 - **Two-modal fusion** (`fusion-case` folder):  
