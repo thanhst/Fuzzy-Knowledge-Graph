@@ -266,9 +266,10 @@ class FKGS:
 
         return label_recall
 
-    
-
-    def testAccuracy(self,base,Te,C,n_classes):
+    def testAccuracy(self,base,Te,C,n_classes,input_dir,event_name,e_value,rand):
+        from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+        import matplotlib.pyplot as plt
+        
         print("Bắt đầu test")
         test = Te
         X = np.zeros(len(test))
@@ -277,18 +278,59 @@ class FKGS:
         print("Bắt đầu tính toán FISA")
         for i in range(len(test)):
             try:
-                X[i], ddd[i] = fs.FISA(base, C, test[i],n_classes)
+                X[i], ddd[i] =fs.FISA(base, C, test[i],n_classes)
                 self.listRank.append(ddd[i])
             except RuntimeError as e:
                 print("Exception: ",e)
         self.res.append(X)
-        # print(X)
-        # print(X_test)
+        
+        print("Predict labels: \n",pd.DataFrame(X))
+        print("True labels: \n",pd.DataFrame(X_test))
         self.listAcc.append(self.Acc(X,X_test))
         self.listPre = list(self.Tprecision(X, X_test).values())
         self.listRe = list(self.Trecall(X, X_test).values())
         
-    def FKGS(self,df,testdf,Turn = None,Modality = None,ran = None, e = None):
+
+        cm = confusion_matrix(X_test, X)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot()
+        plt.title(f'Confusion Matrix for {event_name}\n(e: {e_value}, ran: {rand})')
+        os.makedirs(input_dir, exist_ok=True)
+        plt.savefig(os.path.join(input_dir,f'conf_matrix_{e_value}_{rand}.png'))
+
+        listPrecision = np.array(self.listPre) / 100 if max(self.listPre) > 1 else np.array(self.listPre)
+        listRecall = np.array(self.listRe) / 100 if max(self.listRe) > 1 else np.array(self.listRe)
+
+        labels = list(range(n_classes))
+        x = np.arange(len(labels))
+        width = 0.35
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        rects1 = ax.bar(x - width/2, listPrecision, width, label='Precision')
+        rects2 = ax.bar(x + width/2, listRecall, width, label='Recall')
+
+        ax.set_ylabel('Scores (0-1)')
+        ax.set_title(f'Precision and Recall per Class for {event_name}\n(e: {e_value}, ran: {rand})')
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels)
+        ax.legend()
+        ax.set_ylim(0, 1.1)
+
+        for rect in rects1 + rects2:
+            height = rect.get_height()
+            ax.annotate(f'{height*100:.2f}%',
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, 3),
+                        textcoords="offset points",
+                        ha='center', va='bottom', fontsize=8)
+
+        plt.tight_layout()
+        plt.savefig(os.path.join(input_dir, f'scores_{e_value}_{rand}.png'))
+        plt.close()
+        
+    def FKGS(self,df,testdf,Turn = None,Modality = None,ran = None, e = None, folderPath=None):
+        base_dir = os.getcwd()
+        input_dir = os.path.join(base_dir,f"data/FKG/{Modality}/")
         print(f'Running with ran: {ran} và e {e}.')
         basedf = df.values.tolist()
         traindf = [row[:] for row in basedf]
@@ -327,7 +369,7 @@ class FKGS:
 
 
             start = time.time()
-            self.testAccuracy(base,test,C_normal,n_classes)
+            self.testAccuracy(base,test,C_normal,n_classes,input_dir=input_dir,event_name=Modality,e_value=e,rand=ran)
             testt = time.time() - start
             test_time.append(testt)
             total_time.append(traint+testt)
@@ -350,7 +392,29 @@ class FKGS:
         print(f'precision: {np.mean(self.listPre):.2f} ± {np.std(self.listPre):.2f}')
         print(f'recall: {np.mean(self.listRe):.2f} ± {np.std(self.listRe):.2f}')
         print(f'Total time: {np.mean(total_time):.2f} ± {np.std(total_time):.2f}')
+        
+        acc_mean = round(np.mean(self.listAcc) / 100, 2)
+        pre_mean = round(np.mean(self.listPre) / 100, 2)
+        recall_mean = round(np.mean(self.listRe) / 100, 2)
+        metrics = ['Accuracy', 'Precision', 'Recall']
+        values = [acc_mean, pre_mean, recall_mean]
+        
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(6, 5))
+        bars = plt.bar(metrics, values, color=['skyblue', 'orange', 'green'])
 
+        for bar in bars:
+            yval = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width() / 2, yval + 0.01, f'{yval:.2f}', ha='center', va='bottom')
+
+        plt.ylim(0, 1.05)
+        plt.ylabel('Score')
+        plt.title('Mean Accuracy, Precision and Recall')
+        plt.tight_layout()
+        save_dir = os.path.join(folderPath, f'data/FKG/{Modality}')
+        os.makedirs(save_dir, exist_ok=True)
+        plt.savefig(os.path.join(folderPath, f'data/FKG/{Modality}/bar_scores_e{e}_ran{ran}.png'))
+        
         # Variance
         print("\nVariance:")
         print(f'sampling_time variance: {np.var(sampling_time):.2f}')

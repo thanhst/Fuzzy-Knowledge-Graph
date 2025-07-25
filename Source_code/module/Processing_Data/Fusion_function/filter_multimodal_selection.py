@@ -61,3 +61,33 @@ def filter_multimodal_selection(Fimg, Ftab, target, k_img=10, k_tab=10, corr_thr
     Ffused = np.concatenate((Fimg[:, final_img_indices], Ftab[:, final_tab_indices]), axis=1)
 
     return Ffused
+
+# def filter_multimodal_selection(Fimg, Ftab, target, k_img=10, k_tab=10, corr_threshold=0.9, img_names=None, tab_names=None):
+#     # Step 1: Feature importance
+#     img_scores = compute_feature_importance(Fimg, target)
+#     tab_scores = compute_feature_importance(Ftab, target)
+
+#     # Step 2: Sort features
+#     sorted_img_indices = np.argsort(img_scores)[::-1]
+#     sorted_tab_indices = np.argsort(tab_scores)[::-1]
+
+#     # Step 3: Initial candidate selection (2x)
+#     candidate_img_indices = sorted_img_indices[:2 * k_img]
+#     candidate_tab_indices = sorted_tab_indices[:2 * k_tab]
+
+#     # Step 4: Remove correlation
+#     final_img_indices = remove_correlated_features(Fimg, candidate_img_indices, corr_threshold)
+#     final_tab_indices = remove_correlated_features(Ftab, candidate_tab_indices, corr_threshold)
+
+#     # Step 5: Truncate
+#     final_img_indices = final_img_indices[:k_img]
+#     final_tab_indices = final_tab_indices[:k_tab]
+
+#     # Optional: get feature names
+#     selected_img_names = [img_names[i] for i in final_img_indices] if img_names is not None else final_img_indices
+#     selected_tab_names = [tab_names[i] for i in final_tab_indices] if tab_names is not None else final_tab_indices
+
+#     # Step 6: Concatenate features
+#     Ffused = np.concatenate((Fimg[:, final_img_indices], Ftab[:, final_tab_indices]), axis=1)
+
+#     return Ffused, selected_img_names, selected_tab_names

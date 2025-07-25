@@ -11,7 +11,7 @@ if project_root not in sys.path:
 from sklearn.preprocessing import MinMaxScaler
 from module.Processing_Data.Fusion_function import feature_selection
 from module.Processing_Data.Fusion_function import filter_multimodal_selection,hadamard_selection,tensor_selection,wrapper_multimodal_feature_selection
-
+print('Dataset Multimodality all')
 df_fundus= pd.read_csv(os.path.join(project_root,'main/diabetic_harvard_data/data/SOL_features/images_ft.csv'))
 df_oct = pd.read_csv(os.path.join(project_root,'main/diabetic_harvard_data/data/OCT_features/images_ft.csv'))
 df_table = pd.read_csv(os.path.join(project_root,'main/diabetic_harvard_data/data/table_features/table_ft.csv'))
@@ -62,7 +62,6 @@ from module.FIS.FIS import FIS
 from module.FKG.FKG_general import FKG
 from module.FKG.FKG_S import FKGS
 
-print('Dataset Multimodality all')
 
 
 print("__________Running FIS___________")
@@ -95,5 +94,5 @@ for i in r:
         base = pd.DataFrame(base)
         test = [[int(float(x)) for x in row] for row in testdf.values]
         fkg_instance = FKGS()
-        fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Dataset Multimodality all",ran=i,e=j)
+        fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Dataset Multimodality all",ran=i,e=j,folderPath=project_root)
         print("-"*100)

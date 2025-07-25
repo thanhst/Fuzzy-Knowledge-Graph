@@ -39,7 +39,18 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     test_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/test_data.csv'))
     train_data = train_data.values
     test_data = test_data.values
+    
+    df_features = df.iloc[:, :-1]
 
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(df_features.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+    plt.title("Heatmap")
+    plt.tight_layout()
+
+    heatmap_path = os.path.join(base_dir, f'data/FIS/input/{fileName}/heatmap.png')
+    plt.savefig(heatmap_path, dpi=300)
+    plt.close()
+        
     full_data = np.array(full_data)
     train_data = np.array(train_data)
     

@@ -60,25 +60,25 @@ for i in r:
         base = pd.DataFrame(base)
         test = [[int(float(x)) for x in row] for row in testdf.values]
         fkg_instance = FKGS()
-        fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature Filter",ran=i,e=j)
+        fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature Filter",ran=i,e=j,folderPath=project_root)
         print("-"*100)
 
 
-print("__________Running FKG-S with K-fold___________")
-traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Filter/FRB/TrainDataRule.csv'))
-base = [[int(float(x)) for x in row] for row in traindf.values]
-base = np.array(base)
-X = base[:, :-1]
-y = base[:, -1]
-kf = KFold(n_splits=5, shuffle=True, random_state=42)
-for train_index, val_index in kf.split(X):
-    X_train, X_val = X[train_index], X[val_index]
-    y_train, y_val = y[train_index], y[val_index]
-    train_combined = np.hstack((X_train, y_train.reshape(-1, 1)))
-    val_combined = np.hstack((X_val, y_val.reshape(-1, 1)))
-    train_combined = pd.DataFrame(train_combined)
-    fkg_instance = FKGS()
-    fkg_instance.FKGS(df = train_combined,testdf=val_combined,Turn=None,Modality="Diabetic Retinopathy Feature Filter",ran=20,e=0.2)
-    print("-"*100)
+# print("__________Running FKG-S with K-fold___________")
+# traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Filter/FRB/TrainDataRule.csv'))
+# base = [[int(float(x)) for x in row] for row in traindf.values]
+# base = np.array(base)
+# X = base[:, :-1]
+# y = base[:, -1]
+# kf = KFold(n_splits=5, shuffle=True, random_state=42)
+# for train_index, val_index in kf.split(X):
+#     X_train, X_val = X[train_index], X[val_index]
+#     y_train, y_val = y[train_index], y[val_index]
+#     train_combined = np.hstack((X_train, y_train.reshape(-1, 1)))
+#     val_combined = np.hstack((X_val, y_val.reshape(-1, 1)))
+#     train_combined = pd.DataFrame(train_combined)
+#     fkg_instance = FKGS()
+#     fkg_instance.FKGS(df = train_combined,testdf=val_combined,Turn=None,Modality="Diabetic Retinopathy Feature Filter",ran=20,e=0.2,folderPath=project_root)
+#     print("-"*100)
 
 

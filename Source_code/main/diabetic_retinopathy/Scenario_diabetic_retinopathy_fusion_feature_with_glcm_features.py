@@ -42,6 +42,6 @@ base = [[int(float(x)) for x in row] for row in traindf.values]
 base = pd.DataFrame(base)
 test = [[int(float(x)) for x in row] for row in testdf.values]
 fkg_instance = FKGS()
-fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy GLCM Feature",ran=20,e=0.2)
+fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy GLCM Feature",ran=20,e=0.2,folderPath=project_root)
 print("-"*100)
 

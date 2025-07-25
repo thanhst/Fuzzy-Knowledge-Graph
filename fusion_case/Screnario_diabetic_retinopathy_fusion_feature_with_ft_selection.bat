@@ -5,13 +5,13 @@ rem --- Logtime
 echo [INFO] --- Script started at: %date% %time%
 
 rem --- set workdir
+cd ..
 cd Source_code
 
 rem --- install code FKG
 pip install --find-links=module/Setup_module/CMAKE/wheel/wheelhouse/window fisa_module
 
-cd ..
-cd Source_code
+
 
 rem
 echo [INFO] --- Running the Python script...

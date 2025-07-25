@@ -5,6 +5,7 @@ rem --- Logtime
 echo [INFO] --- Script started at: %date% %time%
 
 rem --- set workdir
+cd ..
 cd Source_code
 
 rem --- install code FKG

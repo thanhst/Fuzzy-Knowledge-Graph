@@ -191,7 +191,7 @@ class FKG:
 
     
 
-    def testAccuracy(self,base,Te,C,n_classes):
+    def testAccuracy(self,base,Te,C,n_classes,input_dir):
         print("Bắt đầu test")
         test = Te
         X = np.zeros(len(test))
@@ -211,7 +211,49 @@ class FKG:
         self.listPre = list(self.Tprecision(X, X_test).values())
         self.listRe = list(self.Trecall(X, X_test).values())
         
+        from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+        import matplotlib.pyplot as plt
+
+        cm = confusion_matrix(X_test, X)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot()
+        plt.title("Confusion Matrix")
+        os.makedirs(input_dir, exist_ok=True)
+        plt.savefig(os.path.join(input_dir,"conf_matrix.png"))
+
+        listPrecision = np.array(self.listPre) / 100 if max(self.listPre) > 1 else np.array(self.listPre)
+        listRecall = np.array(self.listRe) / 100 if max(self.listRe) > 1 else np.array(self.listRe)
+
+        labels = list(range(n_classes))
+        x = np.arange(len(labels))
+        width = 0.35
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        rects1 = ax.bar(x - width/2, listPrecision, width, label='Precision')
+        rects2 = ax.bar(x + width/2, listRecall, width, label='Recall')
+
+        ax.set_ylabel('Scores (0-1)')
+        ax.set_title('Precision and Recall per Class')
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels)
+        ax.legend()
+        ax.set_ylim(0, 1.1)
+
+        for rect in rects1 + rects2:
+            height = rect.get_height()
+            ax.annotate(f'{height*100:.2f}%',
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, 3),
+                        textcoords="offset points",
+                        ha='center', va='bottom', fontsize=8)
+
+        plt.tight_layout()
+        plt.savefig(os.path.join(input_dir, "scores.png"))
+        plt.close()
+        
     def FKG(self,df,testdf,Turn = None,Modality = None):
+        base_dir = os.getcwd()
+        input_dir = os.path.join(base_dir,f"data/FKG/{Modality}/")
         print("\n---Start---\n")
         from sklearn.model_selection import train_test_split
         base = df.values.tolist()
@@ -236,7 +278,7 @@ class FKG:
         print("FKG train finish: ", totalTime)
         C_norm = min_max_normalize(C)
         start = time.time()
-        self.testAccuracy(base,test,C_norm,n_classes)
+        self.testAccuracy(base,test,C_norm,n_classes,input_dir)
         totalTimeTest = time.time() - start
         print("FKG test finish: ", totalTimeTest)
         results = {
@@ -250,8 +292,7 @@ class FKG:
             "List Rank Length": [len( self.listRank)],
             "Label": self.res,
         }
-        base_dir = os.getcwd()
-        input_dir = os.path.join(base_dir,f"data/FKG/{Modality}/")
+
         
         if not os.path.exists(input_dir):
             os.makedirs(input_dir)
@@ -344,8 +385,8 @@ class FKG:
         
         if not os.path.exists(input_dir):
             os.makedirs(input_dir)
+            
         dfData.to_csv(os.path.join(input_dir,f"Results_FKG.csv"), index=False)
-        
         
         csv_file = os.path.join(input_dir,f"Test/acc.csv")
         if(Turn!=None):

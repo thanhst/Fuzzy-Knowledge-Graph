@@ -19,11 +19,11 @@ print("Diabetic Retinopathy Fusion Feature with statistical")
 # print("__________Running Processing___________")
 # from module.Processing_Data import Diabetic_fusion_processing_with_statistical
 
-# print("__________Running FIS___________")
-# FIS(fileName="Diabetic Retinopathy Statistical Feature",
-#     filePath=os.path.join(project_root,"data\Dataset_diabetic\Fusion_feature_with_statistical\data_process.csv"),
-#     cluster=[3,2,4,2,2,2,2,2,2,2,2,2,2,5,5,5,5,2])
-# print("--------------------------------")
+print("__________Running FIS___________")
+FIS(fileName="Diabetic Retinopathy Statistical Feature",
+    filePath=os.path.join(project_root,"data\Dataset_diabetic\Fusion_feature_with_statistical\data_process.csv"),
+    cluster=[3,2,4,2,2,2,2,2,2,2,2,2,2,5,5,5,5,2])
+print("--------------------------------")
 
 print("__________Running FKG___________")
 traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Statistical Feature/FRB/TrainDataRule.csv'))
@@ -42,6 +42,6 @@ base = [[int(float(x)) for x in row] for row in traindf.values]
 base = pd.DataFrame(base)
 test = [[int(float(x)) for x in row] for row in testdf.values]
 fkg_instance = FKGS()
-fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Statistical Feature",ran=20,e=0.2)
+fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Statistical Feature",ran=20,e=0.2,folderPath=project_root)
 print("-"*100)
 

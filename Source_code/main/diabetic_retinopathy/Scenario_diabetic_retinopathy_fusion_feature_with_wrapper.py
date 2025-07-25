@@ -27,15 +27,15 @@ print("Diabetic Retinopathy Fusion Feature Wrapper")
 #     cluster=[5,5,5,5,2,2,2,2,2])
 # print("--------------------------------")
 
-print("__________Running FKG___________")
-traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule_All.csv'))
-testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
-base = [[int(float(x)) for x in row] for row in traindf.values]
-base = pd.DataFrame(base)
-test = [[int(float(x)) for x in row] for row in testdf.values]
-fkg_instance = FKG()
-fkg_instance.FKG(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature")
-print("--------------------------------")
+# print("__________Running FKG___________")
+# traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TrainDataRule.csv'))
+# testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature/FRB/TestDataRule.csv'))
+# base = [[int(float(x)) for x in row] for row in traindf.values]
+# base = pd.DataFrame(base)
+# test = [[int(float(x)) for x in row] for row in testdf.values]
+# fkg_instance = FKG()
+# fkg_instance.FKG(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature")
+# print("--------------------------------")
 # e = [0.1,0.2,0.3,0.4,0.5]
 # r = [10,15,20]
 e = [0.2,0.3]
@@ -43,13 +43,13 @@ r = [15,20]
 for i in r:
     for j in e:
         print("__________Running FKG-S___________")
-        traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Wrapper/FRB/TrainDataRule_All.csv'))
+        traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Wrapper/FRB/TrainDataRule.csv'))
         testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Feature Wrapper/FRB/TestDataRule.csv'))
         base = [[int(float(x)) for x in row] for row in traindf.values]
         base = pd.DataFrame(base)
         test = [[int(float(x)) for x in row] for row in testdf.values]
         fkg_instance = FKGS()
-        fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature Wrapper",ran=i,e=j)
+        fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Feature Wrapper",ran=i,e=j,folderPath=project_root)
         print("-"*100)
 
 # print("__________Running FKG-S with K-fold___________")

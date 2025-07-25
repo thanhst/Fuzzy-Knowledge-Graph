@@ -84,5 +84,5 @@ for i in r:
         base = pd.DataFrame(base)
         test = [[int(float(x)) for x in row] for row in testdf.values]
         fkg_instance = FKGS()
-        fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Dataset Multimodality oct fusion table",ran=i,e=j)
+        fkg_instance.FKGS(df = base,testdf=test,Turn=None,Modality="Dataset Multimodality oct fusion table",ran=i,e=j,folderPath=project_root)
         print("-"*100)
