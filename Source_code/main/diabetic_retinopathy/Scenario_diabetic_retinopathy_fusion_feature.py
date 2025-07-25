@@ -23,7 +23,6 @@ print("__________Running FIS___________")
 FIS(fileName="Diabetic Retinopathy Feature",
     filePath=os.path.join(project_root,"data\Dataset_diabetic\Fusion_feature\data_process.csv"),
     cluster=[3,2,4,2,2,2,2,2,2,2,2,2,2,5,5,5,5,5,5,5,5,5,5,2])
-    # cluster=[5,5,5,5,5,5,5,5,5,5,2])
 print("--------------------------------")
 
 print("__________Running FKG___________")
