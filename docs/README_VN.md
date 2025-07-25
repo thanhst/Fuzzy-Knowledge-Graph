@@ -75,6 +75,7 @@ Trong thư mục chính có các file `.bat` như:
 * `Scenario_diabetic_retinopathy_GLCM_feature.bat`
 * `Scenario_diabetic_retinopathy_fusion_feature.bat`
 * ...
+
 Chạy file phù hợp với kịch bản bạn muốn thực hiện.
 Nếu bạn muốn lập trình thêm (tạo các kịch bản code từ FKG) thì có thể thực hiện theo dạng file code như sau:
 ```
