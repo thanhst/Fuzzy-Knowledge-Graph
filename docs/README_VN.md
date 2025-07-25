@@ -77,6 +77,7 @@ Trong thư mục chính có các file `.bat` như:
 * ...
 
 Chạy file phù hợp với kịch bản bạn muốn thực hiện.
+
 Nếu bạn muốn lập trình thêm (tạo các kịch bản code từ FKG) thì có thể thực hiện theo dạng file code như sau:
 ```
 import sys
