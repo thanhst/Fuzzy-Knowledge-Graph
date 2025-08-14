@@ -447,7 +447,6 @@ class FKGS:
             sampling_time.append(totalTime)
             print(f'len base {i}:', len(base))
 
-
             start = time.time()
             A = fs.caculateA(base)
             M = fs.caculateM(base)
@@ -455,7 +454,6 @@ class FKGS:
             C = fs.caculateC(base,B)
             totalTime = time.time() - start
             train_time.append(totalTime)
-
 
             start = time.time()
             acc = self.testAccuracy(base,test,C)

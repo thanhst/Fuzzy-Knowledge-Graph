@@ -174,6 +174,7 @@ vector<vector<double>> calculateC(const vector<vector<int>> &base, const vector<
     return C;
 }
 
+
 pair<int, double> FISA(const vector<vector<int>> &base, const vector<vector<double>> &C, const vector<int> &list,int n_classes)
 {
     int row = base.size();
@@ -219,6 +220,56 @@ pair<int, double> FISA(const vector<vector<int>> &base, const vector<vector<doub
     double confidence = (D_sum > 0) ? D[bestIndex] / D_sum : 0.0;
     return {bestIndex + 1, confidence};
 }
+struct FISAResult {
+    int bestClass;
+    double confidence;
+    std::vector<double> D;
+};
+FISAResult FISA_with_confidence(const vector<vector<int>> &base, const vector<vector<double>> &C, const vector<int> &list,int n_classes)
+{
+    int row = base.size();
+    if (row == 0)
+        return {0, 0.0};
+
+    int colum = base[0].size();
+    int cols = combination(3, colum - 1);
+
+    vector<vector<double>> C_values(n_classes, vector<double>(cols, 0.0));
+
+    int t = 0;
+    for (int a = 0; a < colum - 3; ++a)
+    {
+        for (int b = a + 1; b < colum - 2; ++b)
+        {
+            for (int c = b + 1; c < colum - 1; ++c)
+            {
+                for (int r = 0; r < row ; ++r)
+                {
+                    if (base[r][a] == list[a] && base[r][b] == list[b] && base[r][c] == list[c])
+                    {
+                        int label = base[r][colum - 1]-1;
+                        C_values[label][t] = C[r][t + (label * cols)];
+                    }
+                }
+                t++;
+            }
+        }
+    }
+
+    vector<double> D(n_classes, 0.0);
+    for (int i = 0; i < n_classes; ++i)
+    {
+        if (!C_values[i].empty())
+        {
+            D[i] = *max_element(C_values[i].begin(), C_values[i].end()) + *min_element(C_values[i].begin(), C_values[i].end());
+        }
+    }
+
+    double D_sum = std::accumulate(D.begin(), D.end(), 0.0);
+    int bestIndex = std::max_element(D.begin(), D.end()) - D.begin();
+    double confidence = (D_sum > 0) ? D[bestIndex] / D_sum : 0.0;
+    return FISAResult{bestIndex + 1, confidence, D};
+}
 
 PYBIND11_MODULE(fisa_module, m)
 {
@@ -227,4 +278,5 @@ PYBIND11_MODULE(fisa_module, m)
     m.def("calculateM", &calculateM);
     m.def("calculateB", &calculateB);
     m.def("calculateC", &calculateC);
+    m.def("FISA_with_confidence",&FISA_with_confidence);
 }
