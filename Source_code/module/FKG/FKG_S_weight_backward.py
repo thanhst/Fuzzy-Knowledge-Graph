@@ -423,6 +423,17 @@ class FKG:
         test_time.append(testt)
         total_time.append(traint+testt)
         print("---Finish---\n")
+        print("="*30)
+        print("| {:<15} | {:>10} |".format("Name", "Value"))
+        print("="*30)
+        print("| {:<15} | {:>10.2f} s |".format("Train Time", train_time[0]))
+        print("| {:<15} | {:>10.2f} s |".format("Test Time", test_time[0]))
+        print("| {:<15} | {:>10.2f} s |".format("Total Time", total_time[0]))
+        print("="*30)
+        print("| {:<15} | {:>10.2f} % |".format("Accuracy", self.listAcc[0]))
+        print("| {:<15} | {:>10.2f} % |".format("Precision", sum(self.listPre) / len(self.listPre) if self.listPre else 0))
+        print("| {:<15} | {:>10.2f} % |".format("Recall", sum(self.listRe) / len(self.listRe) if self.listRe else 0))
+        print("="*30)
         
     def FISA_fluence(self,base,C,Te,n_classes):
         test = Te

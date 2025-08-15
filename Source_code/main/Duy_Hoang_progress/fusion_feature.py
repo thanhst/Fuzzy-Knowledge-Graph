@@ -20,7 +20,7 @@ print("__________Running Processing___________")
 # from module.Processing_Data import Diabetic_metadata_processing
 # # Diabetic_metadata_processing.processing_wrapper(file_path_table="data/Dataset_diabetic/data_process.csv",file_path_img="data/Image/fundus_photo",folder_save="Metadata_feature",max_img=5,max_tab=4)
 # Diabetic_metadata_processing.processing_ft_selection(file_path_table="data/Dataset_diabetic/data_process.csv",file_path_img="data/Image/fundus_photo",folder_save="Metadata_feature",k=13)
-fkg_instance = FKG(weight=[1]*20, bias=0.001,learning_rate=0.01)
+fkg_instance = FKG(weight=[1]*20, bias=0.0001,learning_rate=0.01)
 for i in range(epoch):
     print("Epoch: ", i+1)
     data = pd.read_csv(os.path.join(project_root,'data\Dataset\combined_data_AWF.csv'))
