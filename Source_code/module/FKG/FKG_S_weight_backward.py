@@ -444,6 +444,9 @@ class FKG:
         print("Bắt đầu tính toán FISA")
         for j in range(len(test)):
             Y_pred[j],ddd[j] = fs.FISA(base, C, test[j],n_classes)
+        self.listAcc.append(self.Acc(Y_train,Y_pred))
+        self.listPre = list(self.Tprecision(Y_train, Y_pred).values())
+        self.listRe = list(self.Trecall(Y_train, Y_pred).values())
         base_input = np.array(test)[:, :-1]
         loss_plus_w = loss_function(np.array(self.weight) + self.h, self.bias, base_input, Y_train)
         loss_minus_w = loss_function(np.array(self.weight) - self.h, self.bias, base_input, Y_train)
