@@ -13,6 +13,7 @@ from module.FKG.FKG_S_weight_backward import FKG
 from module.FKG.FKG_S import FKGS
 
 import pandas as pd
+import time
 
 print("Diabetic Retinopathy Table Feature")
 epoch = 5
@@ -20,6 +21,7 @@ print("__________Running Processing___________")
 # from module.Processing_Data import Diabetic_metadata_processing
 # # Diabetic_metadata_processing.processing_wrapper(file_path_table="data/Dataset_diabetic/data_process.csv",file_path_img="data/Image/fundus_photo",folder_save="Metadata_feature",max_img=5,max_tab=4)
 # Diabetic_metadata_processing.processing_ft_selection(file_path_table="data/Dataset_diabetic/data_process.csv",file_path_img="data/Image/fundus_photo",folder_save="Metadata_feature",k=13)
+startTime = time.time()
 fkg_instance = FKG(weight=[1]*20, bias=0.0001,learning_rate=0.01)
 for i in range(epoch):
     print("Epoch: ", i+1)
@@ -45,6 +47,10 @@ for i in range(epoch):
     fkg_instance.FKG_weight(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion AWF")
     if fkg_instance.loss < 1e-15:
         break
+    print(f"Loss of epoch {i}: ", fkg_instance.loss)
+print("Best loss: ", fkg_instance.loss)
+endTime = time.time()
+print("Time to find best weight: ", endTime - startTime)
 fkg_instance.FKG(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion AWF")
 print("--------------------------------")
 
