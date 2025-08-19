@@ -13,7 +13,7 @@ pip install --find-links=module/Setup_module/CMAKE/wheel/wheelhouse/linux fisa_m
 # --- Running the Python script...
 echo "[INFO] --- Running the Python script..."
 
-python -m main.Duy_Hoang_progress.fusion_feature_selection
+python3 -m main.Duy_Hoang_progress.fusion_feature_selection
 if [ $? -ne 0 ]; then
     echo "[ERROR] --- Python script execution failed. Check the error above."
     exit 1
