@@ -147,7 +147,6 @@ class FKG:
         print("done B")
         return B
 
-
     def calculateC(self,base, B):
         colum = len(base[0])
         row = len(base)
@@ -416,7 +415,6 @@ class FKG:
         C_normal = min_max_normalize(C)
         traint = time.time() - start
         train_time.append(traint)
-        
         self.FISA_fluence(base,C_normal,Te=test,n_classes=n_classes)
         start = time.time()
         testt = time.time() - start
@@ -440,20 +438,22 @@ class FKG:
         Y_pred = np.zeros(len(test))
         ddd = np.zeros(len(test))
         Y_train = np.array(test)[:, -1]
-        tensorValue = []
+        D_value_matrix = []
+        value_tensor = []
         print("Bắt đầu tính toán FISA")
         for j in range(len(test)):
-            Y_pred[j],ddd[j] = fs.FISA(base, C, test[j],n_classes)
+            Y_pred[j],ddd[j],D_value_matrix[j] = fs.FISA(base, C, test[j],n_classes)
+            value_tensor[j] = D_value_matrix[j][Y_pred[j] - 1]
         self.listAcc.append(self.Acc(Y_train,Y_pred))
         self.listPre = list(self.Tprecision(Y_train, Y_pred).values())
         self.listRe = list(self.Trecall(Y_train, Y_pred).values())
         base_input = np.array(test)[:, :-1]
-        loss_plus_w = loss_function(np.array(self.weight) + self.h, self.bias, base_input, Y_train)
-        loss_minus_w = loss_function(np.array(self.weight) - self.h, self.bias, base_input, Y_train)
+        loss_plus_w = loss_function(predict_percent=value_tensor)
+        loss_minus_w = loss_function(predict_percent=value_tensor)
         grad_w = (loss_plus_w - loss_minus_w) / (2 * self.h)
         
-        loss_plus_b = loss_function(self.weight, np.array(self.bias) + self.h, base_input, Y_train)
-        loss_minus_b = loss_function(self.weight, np.array(self.bias) - self.h, base_input, Y_train)
+        loss_plus_b = loss_function(predict_percent=value_tensor)
+        loss_minus_b = loss_function(predict_percent=value_tensor)
         grad_b = (loss_plus_b - loss_minus_b) / (2 * self.h)
         
         self.loss = (loss_plus_w+loss_minus_w)/2
@@ -488,6 +488,19 @@ def cross_entropy(preds, labels, epsilon=1e-15):
     loss = -np.sum(labels * np.log(preds)) / preds.shape[0]
     return loss
 
-def loss_function(w, b, x, y):
-    y_pred = x @ np.array(w) + np.array(b)
-    return np.mean((y_pred - np.array(y))**2)
+def loss_function(predict_percent: np.ndarray):
+    """
+    # 0.3 0.7 [ 1 0 ] label là 0 => lấy ra  1- 0.3 = 0.7 ( mean => loss_mean)
+    Args:
+        predict_percent (array):
+    Returns:
+        _type_: _description_
+    """
+    return np.mean(1- np.array(predict_percent))
+
+# [0.3 0.7 0.8 0.2] [0 1 0 0] => 1- 0.7 => loss = 0.3
+# [0.3 0.7 0.8 0.2] [1] => 1- 0.8 => loss = 0.2
+# [0.3 0.7 0.8 0.2] [1 ] loss = mean(losses
+# 0.3 0.7 [ 1 0 ] label là 0 => lấy ra  1- 0.3 = 0.7 ( mean => loss_mean)
+# 0.7 0.3 [ 1 ] 2x2 * 2x2 => 2x1=> mean -> loss
+# loss_arr = [[0.3 0]]
