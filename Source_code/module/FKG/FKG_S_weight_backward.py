@@ -446,7 +446,7 @@ class FKG:
             Y_pred[j] = res.bestClass
             ddd[j] = res.confidence
             D_value_matrix.append(res.D)
-            value_tensor[j] = D_value_matrix[j][int(Y_pred[j] - 1)]
+            value_tensor.append(D_value_matrix[j][int(Y_pred[j] - 1)])
         self.listAcc.append(self.Acc(Y_train,Y_pred))
         self.listPre = list(self.Tprecision(Y_train, Y_pred).values())
         self.listRe = list(self.Trecall(Y_train, Y_pred).values())
