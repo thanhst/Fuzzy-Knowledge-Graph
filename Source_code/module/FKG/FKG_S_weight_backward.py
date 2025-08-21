@@ -445,7 +445,7 @@ class FKG:
             res = fs.FISA_with_confidence(base, C, test[j], n_classes)
             Y_pred[j] = res.bestClass
             ddd[j] = res.confidence
-            D_value_matrix.append(min_max_normalize(res.D))
+            D_value_matrix.append(L1_normalize(np.array(res.D)))
             value_tensor.append(D_value_matrix[j][int(Y_pred[j] - 1)])
         self.listAcc.append(self.Acc(Y_train,Y_pred))
         self.listPre = list(self.Tprecision(Y_train, Y_pred).values())
@@ -488,6 +488,16 @@ def min_max_normalize(C):
     C_max = np.max(C, axis=0)
     C_normalized = (C - C_min) / (C_max - C_min)
     return C_normalized
+
+def L1_normalize(x):
+    """
+    Normalize logits using softmax to convert them into probabilities.
+    """
+    x = np.array(x, dtype=float)
+    if not np.isfinite(x).all() or x.sum() == 0:
+        return np.zeros_like(x)
+
+    return x / x.sum()
 
 def gradient_descent_cross_entropy(X, W, Y_true):
     N = X.shape[0]
