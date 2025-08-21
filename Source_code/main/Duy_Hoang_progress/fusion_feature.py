@@ -25,15 +25,12 @@ startTime = time.time()
 fkg_instance = FKG(weight=[1]*20, bias=0.0001,learning_rate=0.01)
 for i in range(epoch):
     print("Epoch: ", i+1)
-    data = pd.read_csv(os.path.join(project_root,'data\Dataset\combined_data_AWF.csv'))
-    X_train = data.iloc[:, :-1].values
-    X_train = X_train * np.array(fkg_instance.weight) + np.array(fkg_instance.bias)
-    X = pd.DataFrame(X_train)
-    dataFrame = pd.concat([X, data.iloc[:, -1]], axis=1)
-    dataFrame.to_csv(os.path.join(project_root,'data\Dataset\combined_data_AWF.csv'),index=False)
+    path_file = os.path.join(project_root,'data\Dataset\combined_data_AWF.csv')
+    
+    file_plus = fkg_instance.Cross_weight(path_file=path_file,file_name = "combined_data_AWF",weight=fkg_instance.weight,bias=fkg_instance.bias,h=1e-15,plus_or_minus="plus")
     print("__________Running FIS___________")
     FIS(fileName="Diabetic Retinopathy Hoang Fusion AWF",
-        filePath=os.path.join(project_root,'data\Dataset\combined_data_AWF.csv'),
+        filePath=file_plus,
         cluster = [3] * 20 + [2])
         # cluster=[5,5,5,5,5,5,5,5,5,2])
     print("--------------------------------")
@@ -44,7 +41,29 @@ for i in range(epoch):
     base = [[int(float(x)) for x in row] for row in traindf.values]
     base = pd.DataFrame(base)
     test = [[int(float(x)) for x in row] for row in testdf.values]
-    fkg_instance.FKG_weight(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion AWF")
+    loss_plus = fkg_instance.FKG_weight(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion AWF")
+    
+    file_minus = fkg_instance.Cross_weight(path_file=path_file,file_name = "combined_data_AWF",weight=fkg_instance.weight,bias=fkg_instance.bias,h=-1e-15,plus_or_minus="minus")
+    print("__________Running FIS___________")
+    FIS(fileName="Diabetic Retinopathy Hoang Fusion AWF",
+        filePath=file_minus,
+        cluster = [3] * 20 + [2])
+        # cluster=[5,5,5,5,5,5,5,5,5,2])
+    print("--------------------------------")
+
+    print("__________Running FKG___________")
+    traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion AWF/FRB/TrainDataRule.csv'))
+    testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion AWF/FRB/TestDataRule.csv'))
+    base = [[int(float(x)) for x in row] for row in traindf.values]
+    base = pd.DataFrame(base)
+    test = [[int(float(x)) for x in row] for row in testdf.values]
+    loss_minus = fkg_instance.FKG_weight(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion AWF")
+    
+    grad_w = (loss_plus - loss_minus) / (2)
+    fkg_instance.loss = (loss_plus+loss_minus)/2
+    fkg_instance.backward(grad_w=grad_w)
+    # Update weights after backward pass
+    fkg_instance.Cross_weight(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight,bias=fkg_instance.bias)
     # if fkg_instance.loss < 1e-15:
     #     break
     print(f"Loss of epoch {i}: ", fkg_instance.loss)

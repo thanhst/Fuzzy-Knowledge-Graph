@@ -385,9 +385,8 @@ class FKG:
         print("| {:<15} | {:>10.2f} % |".format("Recall", sum(self.listRe) / len(self.listRe) if self.listRe else 0))
         print("="*30)
 
-    def backward(self,grad_w,grad_b):
+    def backward(self,grad_w):
         self.weight = self.weight - self.learning_rate * grad_w
-        self.bias = self.bias - self.learning_rate * grad_b
         
     def FKG_weight(self,df,testdf,Turn = None,Modality = None,ran = None, e = None, folderPath=None):
         base_dir = os.getcwd()
@@ -415,7 +414,7 @@ class FKG:
         C_normal = min_max_normalize(C)
         traint = time.time() - start
         train_time.append(traint)
-        self.FISA_fluence(base,C_normal,Te=test,n_classes=n_classes)
+        loss = self.FISA_fluence(base,C_normal,Te=test,n_classes=n_classes)
         start = time.time()
         testt = time.time() - start
         test_time.append(testt)
@@ -432,6 +431,7 @@ class FKG:
         print("| {:<15} | {:>10.2f} % |".format("Precision", sum(self.listPre) / len(self.listPre) if self.listPre else 0))
         print("| {:<15} | {:>10.2f} % |".format("Recall", sum(self.listRe) / len(self.listRe) if self.listRe else 0))
         print("="*30)
+        return loss
         
     def FISA_fluence(self,base,C,Te,n_classes):
         test = Te
@@ -445,22 +445,36 @@ class FKG:
             res = fs.FISA_with_confidence(base, C, test[j], n_classes)
             Y_pred[j] = res.bestClass
             ddd[j] = res.confidence
-            D_value_matrix.append(res.D)
+            D_value_matrix.append(min_max_normalize(res.D))
             value_tensor.append(D_value_matrix[j][int(Y_pred[j] - 1)])
         self.listAcc.append(self.Acc(Y_train,Y_pred))
         self.listPre = list(self.Tprecision(Y_train, Y_pred).values())
         self.listRe = list(self.Trecall(Y_train, Y_pred).values())
         base_input = np.array(test)[:, :-1]
-        loss_plus_w = loss_function(predict_percent=value_tensor)
-        loss_minus_w = loss_function(predict_percent=value_tensor)
-        grad_w = (loss_plus_w - loss_minus_w) / (2 * self.h)
         
-        loss_plus_b = loss_function(predict_percent=value_tensor)
-        loss_minus_b = loss_function(predict_percent=value_tensor)
-        grad_b = (loss_plus_b - loss_minus_b) / (2 * self.h)
-        
-        self.loss = (loss_plus_w+loss_minus_w)/2
-        self.backward(grad_w=grad_w,grad_b=grad_b)
+        loss = loss_function(value_tensor)
+        return loss
+
+    def Cross_weight(self,path:str,file_name:str, weight: list, bias: float, h: float = 0,plus_or_minus:str = ""):
+        """
+        Cross weight for FKG
+        :param path: Path to the file containing the data
+        :param weight: Initial weights
+        :param bias: Initial bias
+        :param learning_rate: Learning rate for gradient descent
+        :param h: Small value for numerical gradient approximation
+        """
+        data = pd.read_csv(os.join(path,f"{file_name}.csv"))
+        X_train = data.iloc[:, :-1].values
+        X_train = X_train * np.array(weight) + np.array(bias) + h
+        X = pd.DataFrame(X_train)
+        dataFrame = pd.concat([X, data.iloc[:, -1]], axis=1)
+        if(plus_or_minus != ""):
+            file_save = os.path.join(path, f"{file_name}_{plus_or_minus}.csv")
+        else:
+            file_save = os.path.join(path, f"{file_name}.csv")
+        dataFrame.to_csv(file_save,index=False)
+        return file_save
 
     
 def gaussian_normalize(C):
@@ -493,7 +507,7 @@ def cross_entropy(preds, labels, epsilon=1e-15):
 
 def loss_function(predict_percent: np.ndarray):
     """
-    # 0.3 0.7 [ 1 0 ] label là 0 => lấy ra  1- 0.3 = 0.7 ( mean => loss_mean)
+    0.3 0.7 [ 1 0 ] label là 0 => lấy ra  1- 0.3 = 0.7 ( mean => loss_mean)
     Args:
         predict_percent (array):
     Returns:
