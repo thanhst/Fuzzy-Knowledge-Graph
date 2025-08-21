@@ -45,8 +45,8 @@ for i in range(epoch):
     base = pd.DataFrame(base)
     test = [[int(float(x)) for x in row] for row in testdf.values]
     fkg_instance.FKG_weight(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion Wrapper Weight")
-    if fkg_instance.loss < 1e-15:
-        break
+    # if fkg_instance.loss < 1e-15:
+    #     break
     print(f"Loss of epoch {i}: ", fkg_instance.loss)
 print("Best loss: ", fkg_instance.loss)
 endTime = time.time()
