@@ -25,7 +25,7 @@ startTime = time.time()
 fkg_instance = FKG(weight=[1]*8, bias=0.0001,learning_rate=0.01)
 for i in range(epoch):
     print("Epoch: ", i+1)
-    path_file = os.path.join(project_root,'data\Dataset_diabetic\Fusion_feature_wrapper\data_process_duy_hoang.csv')
+    path_file = os.path.join(project_root,'data\Dataset_diabetic\Fusion_feature_wrapper')
     
     file_plus = fkg_instance.Cross_weight(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight,bias=fkg_instance.bias,h=1e-15,plus_or_minus="plus")
     print("__________Running FIS___________")
