@@ -273,6 +273,10 @@ FISAResult FISA_with_confidence(const vector<vector<int>> &base, const vector<ve
 
 PYBIND11_MODULE(fisa_module, m)
 {
+    py::class_<FISAResult>(m, "FISAResult")
+    .def_readwrite("bestClass", &FISAResult::bestClass)
+    .def_readwrite("confidence", &FISAResult::confidence)
+    .def_readwrite("D", &FISAResult::D);
     m.def("FISA", &FISA);
     m.def("calculateA", &calculateA);
     m.def("calculateM", &calculateM);
