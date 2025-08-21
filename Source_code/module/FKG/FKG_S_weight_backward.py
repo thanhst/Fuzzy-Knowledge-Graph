@@ -443,9 +443,9 @@ class FKG:
         print("Bắt đầu tính toán FISA")
         for j in range(len(test)):
             res = fs.FISA_with_confidence(base, C, test[j], n_classes)
-            Y_pred[j] = res.Y_pred
+            Y_pred[j] = res.bestClass
             ddd[j] = res.confidence
-            D_value_matrix[j] = res.D_value
+            D_value_matrix[j] = res.D
             value_tensor[j] = D_value_matrix[j][Y_pred[j] - 1]
         self.listAcc.append(self.Acc(Y_train,Y_pred))
         self.listPre = list(self.Tprecision(Y_train, Y_pred).values())
