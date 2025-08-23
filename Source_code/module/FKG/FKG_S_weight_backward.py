@@ -443,6 +443,30 @@ class FKG:
         loss = loss_function(predict_percent=value_tensor)
         return loss
 
+    def Cross_weight_with_i(self,path_file:str,file_name:str, weight: list, h: float = 0,plus_or_minus:str = "",i:int = 0):
+        """
+        Cross weight for FKG
+        :param path: Path to the file containing the data
+        :param weight: Initial weights
+        :param learning_rate: Learning rate for gradient descent
+        :param h: Small value for numerical gradient approximation
+        """
+        data = pd.read_csv(os.path.join(path_file,f"{file_name}.csv"))
+        X_train = data.iloc[:, :-1].values
+        w = np.array(weight)
+        w_i = w.copy()
+        w_i[i] += h
+        # X_train = X_train * (np.array(weight) + h)
+        X_train = X_train * w_i
+        X = pd.DataFrame(X_train)
+        dataFrame = pd.concat([X, data.iloc[:, -1]], axis=1)
+        if(plus_or_minus != ""):
+            file_save = os.path.join(path_file, f"{file_name}_{plus_or_minus}.csv")
+        else:
+            file_save = os.path.join(path_file, f"{file_name}.csv")
+        dataFrame.to_csv(file_save,index=False)
+        return file_save
+    
     def Cross_weight(self,path_file:str,file_name:str, weight: list, h: float = 0,plus_or_minus:str = ""):
         """
         Cross weight for FKG
@@ -453,7 +477,7 @@ class FKG:
         """
         data = pd.read_csv(os.path.join(path_file,f"{file_name}.csv"))
         X_train = data.iloc[:, :-1].values
-        X_train = X_train * np.array(weight) + h
+        X_train = X_train * (np.array(weight) + h)
         X = pd.DataFrame(X_train)
         dataFrame = pd.concat([X, data.iloc[:, -1]], axis=1)
         if(plus_or_minus != ""):
@@ -462,7 +486,7 @@ class FKG:
             file_save = os.path.join(path_file, f"{file_name}.csv")
         dataFrame.to_csv(file_save,index=False)
         return file_save
-    
+
 
     def Generator_FKG(self,df,testdf,Modality = None):
         """
