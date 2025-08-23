@@ -8,7 +8,7 @@ project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))  # lên 2 
 if project_root not in sys.path:
     sys.path.append(project_root)
     
-from module.FIS.FIS import FIS
+from module.FIS.FIS_class import FIS
 from module.FKG.FKG_S_weight_backward import FKG
 from module.FKG.FKG_S import FKGS
 
@@ -26,47 +26,43 @@ startTime = time.time()
 for i in range(epoch):
     print("Epoch: ", i+1)
     path_file = os.path.join(project_root,'data\Dataset_diabetic\Fusion_feature_FT_selection')
+    file_weight = fkg_instance.Cross_weight(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight)
     
-    file_plus = fkg_instance.Cross_weight(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight,bias=fkg_instance.bias,h=1e-15,plus_or_minus="plus")
     print("__________Running FIS___________")
-    FIS(fileName="Diabetic Retinopathy Hoang Fusion FT Selection",
-        filePath=file_plus,
+    fis_instance = FIS(fileName="Diabetic Retinopathy Hoang Fusion FT Selection",
+        filePath=file_weight,
         cluster = [3] * 16 + [2])
         # cluster=[5,5,5,5,5,5,5,5,5,2])
     print("--------------------------------")
-
+    
     print("__________Running FKG___________")
     traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion FT Selection/FRB/TrainDataRule.csv'))
     testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion FT Selection/FRB/TestDataRule.csv'))
     base = [[int(float(x)) for x in row] for row in traindf.values]
     base = pd.DataFrame(base)
     test = [[int(float(x)) for x in row] for row in testdf.values]
-    loss_plus = fkg_instance.FKG_weight(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion FT Selection")
+    fkg_instance.Generator_FKG(df = base,testdf=test,Modality="Diabetic Retinopathy Hoang Fusion FT Selection")
     
-    file_minus = fkg_instance.Cross_weight(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight,bias=fkg_instance.bias,h=-1e-15,plus_or_minus="minus")
-    print("__________Running FIS___________")
-    FIS(fileName="Diabetic Retinopathy Hoang Fusion FT Selection",
-        filePath=file_minus,
-        cluster = [3] * 16 + [2])
-        # cluster=[5,5,5,5,5,5,5,5,5,2])
-    print("--------------------------------")
-
-    print("__________Running FKG___________")
-    traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion FT Selection/FRB/TrainDataRule.csv'))
-    testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion FT Selection/FRB/TestDataRule.csv'))
-    base = [[int(float(x)) for x in row] for row in traindf.values]
-    base = pd.DataFrame(base)
-    test = [[int(float(x)) for x in row] for row in testdf.values]
-    loss_minus = fkg_instance.FKG_weight(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion FT Selection")
+    print("__________Start plus weight___________")
+    file_plus = fkg_instance.Cross_weight(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight,h=1e-15,plus_or_minus="plus")
+    file_path_to_save = os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion FT Selection/FRB/WeightPlus.csv')
+    rules_plus = fis_instance.Generator_rule(file_path_to_gen=file_plus,file_path_to_save=file_path_to_save)
+    loss_plus = fkg_instance.FKG_weight(df = base,testdf=rules_plus,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion FT Selection")
+    
+    print("__________Start minus weight___________")
+    file_minus = fkg_instance.Cross_weight(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight,h=-1e-15,plus_or_minus="minus")
+    file_path_to_save = os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion FT Selection/FRB/WeightMinus.csv')
+    rules_minus = fis_instance.Generator_rule(file_path_to_gen=file_plus,file_path_to_save=file_path_to_save)
+    loss_minus = fkg_instance.FKG_weight(df = base,testdf=rules_minus,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion FT Selection")
     
     grad_w = (loss_plus - loss_minus) / (2)
     fkg_instance.loss = (loss_plus+loss_minus)/2
     fkg_instance.backward(grad_w=grad_w)
+    
     # Update weights after backward pass
     fkg_instance.Cross_weight(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight,bias=fkg_instance.bias)
-    # if fkg_instance.loss < 1e-15:
-    #     break
-    print(f"Loss of epoch {i}: ", fkg_instance.loss)
+    print(f"Loss of epoch {i+1}: ", fkg_instance.loss)
+    
 print("Best loss: ", fkg_instance.loss)
 endTime = time.time()
 print("Time to find best weight: ", endTime - startTime)

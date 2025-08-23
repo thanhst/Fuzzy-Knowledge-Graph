@@ -8,7 +8,7 @@ import random
 import time
 class FKG:
     print("FKG is running")
-    def __init__(self,weight,learning_rate,bias, h = 1e-5):
+    def __init__(self,weight,learning_rate, h = 1e-5):
         self.listAcc = []
         self.listPre = []
         self.listRe = []
@@ -19,7 +19,6 @@ class FKG:
         self.weight = weight
         self.learning_rate = learning_rate
         self.loss = 0
-        self.bias = bias
         self.h = h
         
     
@@ -407,25 +406,14 @@ class FKG:
         print("\n---Start---")
         base = traindf
         start = time.time()
-        A = fs.calculateA(base)
-        M = fs.calculateM(base)
-        B = fs.calculateB(base,A,M)
-        C = fs.calculateC(base,B,n_classes)
-        C_normal = min_max_normalize(C)
-        traint = time.time() - start
-        train_time.append(traint)
-        loss = self.FISA_fluence(base,C_normal,Te=test,n_classes=n_classes)
-        start = time.time()
+        loss = self.FISA_fluence(base,self.C_normal,Te=test,n_classes=n_classes)
         testt = time.time() - start
         test_time.append(testt)
-        total_time.append(traint+testt)
         print("---Finish---\n")
         print("="*30)
         print("| {:<15} | {:>10} |".format("Name", "Value"))
         print("="*30)
-        print("| {:<15} | {:>10.2f} s |".format("Train Time", train_time[0]))
         print("| {:<15} | {:>10.2f} s |".format("Test Time", test_time[0]))
-        print("| {:<15} | {:>10.2f} s |".format("Total Time", total_time[0]))
         print("="*30)
         print("| {:<15} | {:>10.2f} % |".format("Accuracy", self.listAcc[0]))
         print("| {:<15} | {:>10.2f} % |".format("Precision", sum(self.listPre) / len(self.listPre) if self.listPre else 0))
@@ -455,18 +443,17 @@ class FKG:
         loss = loss_function(predict_percent=value_tensor)
         return loss
 
-    def Cross_weight(self,path_file:str,file_name:str, weight: list, bias: float, h: float = 0,plus_or_minus:str = ""):
+    def Cross_weight(self,path_file:str,file_name:str, weight: list, h: float = 0,plus_or_minus:str = ""):
         """
         Cross weight for FKG
         :param path: Path to the file containing the data
         :param weight: Initial weights
-        :param bias: Initial bias
         :param learning_rate: Learning rate for gradient descent
         :param h: Small value for numerical gradient approximation
         """
         data = pd.read_csv(os.path.join(path_file,f"{file_name}.csv"))
         X_train = data.iloc[:, :-1].values
-        X_train = X_train * np.array(weight) + np.array(bias) + h
+        X_train = X_train * np.array(weight) + h
         X = pd.DataFrame(X_train)
         dataFrame = pd.concat([X, data.iloc[:, -1]], axis=1)
         if(plus_or_minus != ""):
@@ -475,6 +462,41 @@ class FKG:
             file_save = os.path.join(path_file, f"{file_name}.csv")
         dataFrame.to_csv(file_save,index=False)
         return file_save
+    
+
+    def Generator_FKG(self,df,testdf,Modality = None):
+        """
+        Generator for FKG
+        :param df: DataFrame containing the training data
+        :param testdf: DataFrame containing the test data
+        :param Turn: Not used in this implementation
+        :param Modality: Not used in this implementation
+        :param ran: Not used in this implementation
+        :param e: Not used in this implementation
+        :param folderPath: Not used in this implementation
+        """
+        base_dir = os.getcwd()
+        input_dir = os.path.join(base_dir,f"data/FKG/{Modality}/")
+        basedf = df.values.tolist()
+        traindf = [row[:] for row in basedf]
+        test = testdf
+        train_labels = df.iloc[:, -1]
+        test_labels = pd.DataFrame(testdf).iloc[:, -1]
+        all_labels = pd.concat([train_labels, test_labels], axis=0)
+        unique_labels = sorted(all_labels.unique())
+
+        n_classes = len(unique_labels)
+        
+        base = traindf
+        A = fs.calculateA(base)
+        M = fs.calculateM(base)
+        B = fs.calculateB(base,A,M)
+        C = fs.calculateC(base,B,n_classes)
+        C_normal = min_max_normalize(C)
+        
+        self.C_normal = C_normal
+        self.n_classes = n_classes
+        self.input_dir = input_dir
 
     
 def gaussian_normalize(C):
@@ -492,6 +514,10 @@ def min_max_normalize(C):
 def L1_normalize(x):
     """
     Normalize logits using softmax to convert them into probabilities.
+    Args:
+        x (array-like): Input array of logits.
+    Returns:
+        np.ndarray: Normalized probabilities.
     """
     x = np.array(x, dtype=float)
     if not np.isfinite(x).all() or x.sum() == 0:
