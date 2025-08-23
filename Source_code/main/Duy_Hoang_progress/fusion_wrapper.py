@@ -49,7 +49,6 @@ for i in range(epoch):
     file_plus = fkg_instance.Cross_weight(path_file=fis_file,file_name = fis_name,weight=fkg_instance.weight,h=1e-15,plus_or_minus="plus")
     file_path_to_save = os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion Wrapper Weight/FRB/WeightPlus.csv')
     rules_plus = fis_instance.Generator_rule(file_path_to_gen=file_plus,file_path_to_save=file_path_to_save)
-    print(rules_plus)
     loss_plus = fkg_instance.FKG_weight(df = rules_plus,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion Wrapper Weight")
 
     print("__________Start minus weight___________")
@@ -69,6 +68,11 @@ print("Best loss: ", fkg_instance.loss)
 
 endTime = time.time()
 print("Time to find best weight: ", endTime - startTime)
+traindf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion Wrapper Weight/FRB/TrainDataRule.csv'))
+testdf = pd.read_csv(os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion Wrapper Weight/FRB/TestDataRule.csv'))
+base = [[int(float(x)) for x in row] for row in traindf.values]
+base = pd.DataFrame(base)
+test = [[int(float(x)) for x in row] for row in testdf.values]
 fkg_instance.FKG(df = base,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion Wrapper Weight")
 print("--------------------------------")
 

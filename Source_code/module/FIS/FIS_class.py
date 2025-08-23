@@ -120,11 +120,6 @@ class FIS:
         df_Rule_List = pd.DataFrame(ruleList)
         df_Rule_List.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List.csv"), index=False)
 
-        df_rule_30 = self.Generator_rule_with_data(data=pd.DataFrame(test_data),model_folder=fileName)
-        df_rule_70 = df_Rule_List
-        df_rule_30.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TestDataRule.csv"),index=False)
-        df_rule_70.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TrainDataRule.csv"),index=False)
-
         df_Sigma = pd.DataFrame(sigma_M)
         df_Sigma.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Sigma_M.csv"), index=False)
 
@@ -155,6 +150,12 @@ class FIS:
             pickle.dump(model_data, file)
         
         self.model_name = fileName
+        
+        df_rule_30 = self.Generator_rule_with_data(data=pd.DataFrame(test_data),model_folder=fileName)
+        df_rule_70 = df_Rule_List
+        df_rule_30.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TestDataRule.csv"),index=False)
+        df_rule_70.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TrainDataRule.csv"),index=False)
+
 
         #Test file
         
@@ -236,7 +237,7 @@ class FIS:
         for i,r in data.iterrows():
             sample_input = r.values[0:label_index]
             label,rule = test_fis(sample_input,model_folder)
-            rule = np.append(rule, r.values[label_index]+1)
+            rule = np.append(rule, label)
             rule = rule.astype(int).tolist()
             rules.append(rule)
         df_rules = pd.DataFrame(rules)

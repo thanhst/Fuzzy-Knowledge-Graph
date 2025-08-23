@@ -31,7 +31,7 @@ def FIS_Test_file(Modality=None,Turn =None,fileName=None):
         membership_values = [GaussMF(r.values[label_index], label, len(center_vector), sigma, center_vector) for label in range(1, len(center_vector) + 1)]
         # print(f"Input: {input_data[i]}, Membership values: {membership_values}")
         true_labels.append(np.argmax(membership_values) + 1)
-        sample_input = r.values[1:label_index]
+        sample_input = r.values[0:label_index]
         label,rule = test_fis(sample_input,fileName)
         predict_labels.append(label)
         rule = np.append(rule, r.values[label_index])
