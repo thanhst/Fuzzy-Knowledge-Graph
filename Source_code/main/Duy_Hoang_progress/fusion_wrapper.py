@@ -26,7 +26,7 @@ path_file = os.path.join(project_root,'data\Dataset_diabetic\Fusion_feature_wrap
 fkg_instance = FKG(weight=[1]*8,learning_rate=0.01)
 for i in range(epoch):
     print("Epoch: ", i+1)
-    file_weight = fkg_instance.Cross_weight(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight,plus_or_minus="weight")
+    file_weight = fkg_instance.Cross_weight_with_i(path_file=path_file,file_name = "data_process_duy_hoang",weight=fkg_instance.weight,plus_or_minus="weight")
     print("__________Running FIS___________")
     fis_instance = FIS(fileName="Diabetic Retinopathy Hoang Fusion Wrapper Weight",
         filePath=file_weight,
@@ -46,13 +46,13 @@ for i in range(epoch):
     
     for j in range(len(fkg_instance.weight)):
         print("__________Start plus weight___________")
-        file_plus = fkg_instance.Cross_weight(path_file=fis_file,file_name = fis_name,weight=fkg_instance.weight,h=1e-15,plus_or_minus="plus",i = j)
+        file_plus = fkg_instance.Cross_weight_with_i(path_file=fis_file,file_name = fis_name,weight=fkg_instance.weight,h=1e-5,plus_or_minus="plus",i = j)
         file_path_to_save = os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion Wrapper Weight/FRB/WeightPlus.csv')
         rules_plus = fis_instance.Generator_rule(file_path_to_gen=file_plus,file_path_to_save=file_path_to_save)
         loss_plus = fkg_instance.FKG_weight(df = rules_plus,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion Wrapper Weight")
 
         print("__________Start minus weight___________")
-        file_minus = fkg_instance.Cross_weight(path_file=fis_file,file_name = fis_name,weight=fkg_instance.weight,h=-1e-15,plus_or_minus="minus",i=j)
+        file_minus = fkg_instance.Cross_weight_with_i(path_file=fis_file,file_name = fis_name,weight=fkg_instance.weight,h=-1e-5,plus_or_minus="minus",i=j)
         file_path_to_save = os.path.join(project_root,'data/FIS/output/Diabetic Retinopathy Hoang Fusion Wrapper Weight/FRB/WeightMinus.csv')
         rules_minus = fis_instance.Generator_rule(file_path_to_gen=file_plus,file_path_to_save=file_path_to_save)
         loss_minus = fkg_instance.FKG_weight(df = rules_minus,testdf=test,Turn=None,Modality="Diabetic Retinopathy Hoang Fusion Wrapper Weight")
@@ -62,7 +62,7 @@ for i in range(epoch):
         fkg_instance.backward(grad_w=grad_w)
     
         # Update weights after backward pass
-        print(f"Loss of epoch {i+1}: ", fkg_instance.loss)
+        print(f"Loss of epoch {i+1} and w[{j}]: ", fkg_instance.loss)
     
 print("Best loss: ", fkg_instance.loss)
 
