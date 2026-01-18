@@ -17,3 +17,13 @@ test
 result
 Linux_run
 Dataset3modal
+
+# Large binary files
+*.npz
+processed_features_*.npz
+*.npy
+
+# Ignore all CSV first, then keep only specific ones
+# *.csv
+# !Combination/csv_features/*.csv
+# !Source_code/**/*.csv
