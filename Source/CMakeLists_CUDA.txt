@@ -1,0 +1,65 @@
+cmake_minimum_required(VERSION 3.18)
+project(FisaModule LANGUAGES CXX CUDA)
+
+# CUDA configuration - keep C++ standard low for MinGW compatibility
+set(CMAKE_CUDA_STANDARD 11)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_86 -Xcompiler -fPIC")
+
+# Find Python
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+# Find pybind11 (skip OpenMP as it's not needed for GPU version)
+find_package(pybind11 CONFIG REQUIRED)
+
+# Get pybind11 cmake dir
+execute_process(COMMAND ${Python3_EXECUTABLE} -c 
+    "import pybind11; print(pybind11.get_cmake_dir())"
+    OUTPUT_VARIABLE PYBIND11_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+# Add definitions
+add_definitions(-DFUZZY_USE_CUDA=1)
+add_definitions(-DPy_LIMITED_API=0x03060000)
+
+# Find CUDA (disable OpenMP requirement)
+find_package(CUDAToolkit REQUIRED)
+message(STATUS "CUDA found: ${CUDAToolkit_VERSION}")
+
+# Source files
+set(SOURCES
+    Src/FKG.cpp
+    Src/FIS.cpp
+    Src/Utils.cpp
+    Python/bindings.cpp
+)
+
+# Create library
+add_library(fisa_module SHARED ${SOURCES})
+
+# Configure for Python
+set_target_properties(fisa_module PROPERTIES
+    PREFIX ""
+    SUFFIX ".pyd"
+    POSITION_INDEPENDENT_CODE ON
+)
+
+# Link libraries - skip OpenMP
+target_link_libraries(fisa_module PRIVATE
+    pybind11::module
+    CUDA::cuda_driver
+    CUDA::cudart
+)
+
+# Include directories
+target_include_directories(fisa_module PRIVATE
+    ${CMAKE_SOURCE_DIR}/Include
+    ${CUDAToolkit_INCLUDE_DIRS}
+)
+
+# Pass definitions
+target_compile_definitions(fisa_module PRIVATE
+    FUZZY_USE_CUDA=1
+)
+
+message(STATUS "Building FISA Module with CUDA ${CUDAToolkit_VERSION}")
+message(STATUS "CUDA Architecture: sm_86")

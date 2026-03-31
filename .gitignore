@@ -27,3 +27,24 @@ processed_features_*.npz
 # *.csv
 # !Combination/csv_features/*.csv
 # !Source_code/**/*.csv
+
+# Local build artifacts (new GPU/Source pipeline)
+Source/build*/
+Source/fisa_module.egg-info/
+Source/*.pyd
+GPU/Source/build_cuda/
+GPU/Source/Release/
+GPU/Source/*.pyd
+
+# Local helper/cache files
+.fisa_python_path.txt
+.msys2_mingw_bin.txt
+InstallationLog.txt
+
+# Local installers/archives
+msys2_installer.exe
+llvm-mingw.7z
+mingw64.7z
+
+# Generated outputs
+data/FKG/
