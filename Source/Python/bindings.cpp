@@ -109,6 +109,7 @@ void bind_fkg_class(py::module& m) {
              "Predict batch with specified threads", py::arg("inputs"), py::arg("numThreads") = 0)
         .def("get_base", &FKG::getBase, "Get base matrix")
         .def("get_A", &FKG::getA, "Get A matrix")
+        .def("get_M", &FKG::getM, "Get M matrix")
         .def("get_B", &FKG::getB, "Get B matrix")
         .def("get_C", &FKG::getC, "Get C matrix")
         .def("is_trained", &FKG::isTrained, "Check if trained")
