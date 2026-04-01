@@ -11,7 +11,13 @@
  */
 
 #include "FKG.h"
+#if FUZZY_USE_CUDA
+#include <cuda_runtime.h>
+#include "FKG_CUDA_Kernels.h"
+#endif
+#include <array>
 #include <cstddef>
+#include <cstring>
 #include <random>
 #include <algorithm>
 #include <numeric>
@@ -68,31 +74,162 @@ int combination(int k, int n) {
     return static_cast<int>(result);
 }
 
+namespace {
+
+struct Comb3 {
+    int a;
+    int b;
+    int c;
+};
+
+struct Comb4 {
+    int a;
+    int b;
+    int c;
+    int d;
+};
+
+inline std::vector<Comb3> buildComb3(int numFeatures) {
+    std::vector<Comb3> combinations;
+    combinations.reserve(static_cast<size_t>(combination(3, numFeatures)));
+    for (int a = 0; a < numFeatures - 2; ++a) {
+        for (int b = a + 1; b < numFeatures - 1; ++b) {
+            for (int c = b + 1; c < numFeatures; ++c) {
+                combinations.push_back(Comb3{a, b, c});
+            }
+        }
+    }
+    return combinations;
+}
+
+inline std::vector<Comb4> buildComb4(int numFeatures) {
+    std::vector<Comb4> combinations;
+    combinations.reserve(static_cast<size_t>(combination(4, numFeatures)));
+    for (int a = 0; a < numFeatures - 3; ++a) {
+        for (int b = a + 1; b < numFeatures - 2; ++b) {
+            for (int c = b + 1; c < numFeatures - 1; ++c) {
+                for (int d = c + 1; d < numFeatures; ++d) {
+                    combinations.push_back(Comb4{a, b, c, d});
+                }
+            }
+        }
+    }
+    return combinations;
+}
+
+inline uint64_t bitsOf(double value) {
+    uint64_t bits = 0;
+    std::memcpy(&bits, &value, sizeof(bits));
+    return bits;
+}
+
+struct Key4 {
+    uint64_t a;
+    uint64_t b;
+    uint64_t c;
+    uint64_t d;
+
+    bool operator==(const Key4& other) const {
+        return a == other.a && b == other.b && c == other.c && d == other.d;
+    }
+};
+
+struct Key2 {
+    uint64_t a;
+    uint64_t b;
+
+    bool operator==(const Key2& other) const {
+        return a == other.a && b == other.b;
+    }
+};
+
+struct Key3Class {
+    uint64_t a;
+    uint64_t b;
+    uint64_t c;
+    int label;
+
+    bool operator==(const Key3Class& other) const {
+        return a == other.a && b == other.b && c == other.c && label == other.label;
+    }
+};
+
+struct Key4Hash {
+    size_t operator()(const Key4& key) const {
+        size_t h = std::hash<uint64_t>{}(key.a);
+        h ^= std::hash<uint64_t>{}(key.b) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<uint64_t>{}(key.c) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<uint64_t>{}(key.d) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
+    }
+};
+
+struct Key2Hash {
+    size_t operator()(const Key2& key) const {
+        size_t h = std::hash<uint64_t>{}(key.a);
+        h ^= std::hash<uint64_t>{}(key.b) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
+    }
+};
+
+struct Key3ClassHash {
+    size_t operator()(const Key3Class& key) const {
+        size_t h = std::hash<uint64_t>{}(key.a);
+        h ^= std::hash<uint64_t>{}(key.b) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<uint64_t>{}(key.c) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<int>{}(key.label) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
+    }
+};
+
+inline int detectClassCount(const Matrix& base) {
+    std::set<int> labels;
+    for (const auto& row : base) {
+        labels.insert(static_cast<int>(row.back()));
+    }
+    return static_cast<int>(labels.size());
+}
+
+#if FUZZY_USE_CUDA
+struct CudaInferenceCacheHandle {
+    CUDA::FisaDeviceCache cache;
+};
+#endif
+
+} // namespace
+
 // ============================================================================
 // FKG Class Implementation
 // ============================================================================
 
-FKG::FKG() : n_classes_(2), trained_(false), useGPU_(false) {
+FKG::FKG() : n_classes_(2), trained_(false), useGPU_(false)
+#if FUZZY_USE_CUDA
+    , cudaInferenceCache_(nullptr)
+#endif
+{
     config_ = PerformanceConfig();
     metrics_ = PerformanceMetrics{0.0, 0, 1};
 }
 
 FKG::FKG(const PerformanceConfig& config) 
-    : n_classes_(2), trained_(false), config_(config), useGPU_(false) {
+    : n_classes_(2), trained_(false), config_(config), useGPU_(false)
+#if FUZZY_USE_CUDA
+    , cudaInferenceCache_(nullptr)
+#endif
+{
     metrics_ = PerformanceMetrics{0.0, 0, 1};
 }
 
-FKG::~FKG() {}
+FKG::~FKG() {
+#if FUZZY_USE_CUDA
+    invalidateGPUCache();
+#endif
+}
 
 void FKG::train(const Matrix& base) {
     auto start = std::chrono::high_resolution_clock::now();
-    
-    // Auto-detect number of classes
-    std::set<int> labels;
-    for (const auto& row : base) {
-        labels.insert(static_cast<int>(row.back()));
-    }
-    n_classes_ = static_cast<int>(labels.size());
+
+    n_classes_ = detectClassCount(base);
     train(base, n_classes_);
     
     auto end = std::chrono::high_resolution_clock::now();
@@ -100,28 +237,16 @@ void FKG::train(const Matrix& base) {
 }
 
 void FKG::train(const Matrix& base, int n_classes) {
+#if FUZZY_USE_CUDA
+    invalidateGPUCache();
+#endif
     base_ = base;
     n_classes_ = n_classes;
-
-    const bool useEffectiveGPU = isUsingGPU();
-
-    if (useEffectiveGPU) {
-        A_ = calculateA_GPU(base_);
-    } else {
-        A_ = calculateA_Parallel(base_);
-    }
-
-    M_ = calculateM(base_);
-
-    if (useEffectiveGPU) {
-        B_ = calculateB_GPU(base_, A_, M_);
-        C_ = calculateC_GPU(base_, B_, n_classes_);
-    } else {
-        B_ = calculateB_Parallel(base_, A_, M_);
-        C_ = calculateC_Parallel(base_, B_, n_classes_);
-    }
-
-    C_ = minMaxNormalize(C_);
+    ComputedMatrices matrices = computeMatrices(base_, n_classes_, isUsingGPU());
+    A_ = std::move(matrices.A);
+    M_ = std::move(matrices.M);
+    B_ = std::move(matrices.B);
+    C_ = std::move(matrices.C);
     
     trained_ = true;
     metrics_.numThreadsUsed = getOptimalThreadCount();
@@ -132,18 +257,61 @@ std::pair<int, double> FKG::predict(const std::vector<double>& input) const {
         return {1, 0.0};
     }
     if (isUsingGPU()) {
-        return fisaGPU(base_, C_, input, n_classes_);
+        return predictGPUCached(input);
     }
     return fisa(base_, C_, input, n_classes_);
 }
 
 std::vector<int> FKG::predictBatch(const Matrix& inputs) const {
+    if (!trained_ || inputs.empty()) {
+        return {};
+    }
+
+    if (isUsingGPU()) {
+        const auto gpuResults = predictBatchWithConfidenceGPUCached(inputs);
+        std::vector<int> classes;
+        classes.reserve(gpuResults.size());
+        for (const auto& item : gpuResults) {
+            classes.push_back(item.first);
+        }
+        return classes;
+    }
+
     return predictBatchParallel(inputs, getOptimalThreadCount());
+}
+
+std::vector<std::pair<int, double>> FKG::predictBatchWithConfidence(const Matrix& inputs) const {
+    if (!trained_ || inputs.empty()) {
+        return {};
+    }
+
+    if (isUsingGPU()) {
+        return predictBatchWithConfidenceGPUCached(inputs);
+    }
+
+    const int n = static_cast<int>(inputs.size());
+    std::vector<std::pair<int, double>> results(static_cast<size_t>(n));
+    int numThreads = getOptimalThreadCount();
+    #pragma omp parallel for num_threads(numThreads) schedule(dynamic, 1024)
+    for (int i = 0; i < n; ++i) {
+        results[static_cast<size_t>(i)] = fisa(base_, C_, inputs[static_cast<size_t>(i)], n_classes_);
+    }
+    return results;
 }
 
 std::vector<int> FKG::predictBatchParallel(const Matrix& inputs, int numThreads) const {
     if (!trained_ || inputs.empty()) {
         return {};
+    }
+
+    if (isUsingGPU()) {
+        const auto gpuResults = predictBatchWithConfidenceGPUCached(inputs);
+        std::vector<int> classes;
+        classes.reserve(gpuResults.size());
+        for (const auto& item : gpuResults) {
+            classes.push_back(item.first);
+        }
+        return classes;
     }
     
     int n = static_cast<int>(inputs.size());
@@ -165,42 +333,48 @@ std::vector<int> FKG::predictBatchParallel(const Matrix& inputs, int numThreads)
 // ============================================================================
 
 Matrix FKG::calculateA_Parallel(const Matrix& base) {
-    int row = static_cast<int>(base.size());
-    int colum = static_cast<int>(base[0].size());
-    int numComb = combination(4, colum - 1);
-    
+    if (base.empty() || base[0].empty()) {
+        return {};
+    }
+
+    const int row = static_cast<int>(base.size());
+    const int colum = static_cast<int>(base[0].size());
+    const int numFeatures = colum - 1;
+    const std::vector<Comb4> comb4 = buildComb4(numFeatures);
+    const int numComb = static_cast<int>(comb4.size());
+
     Matrix A(row, std::vector<double>(numComb, 0.0));
-    
-    int numThreads = getOptimalThreadCount();
-    
-    #pragma omp parallel for num_threads(numThreads) schedule(dynamic, 256)
-    for (int r1 = 0; r1 < row; r1++) {
-        std::vector<double> k(numComb, 0.0);
-        
-        int temp = 0;
-        for (int a = 0; a < colum - 3; a++) {
-            for (int b = a + 1; b < colum - 2; b++) {
-                for (int c = b + 1; c < colum - 1; c++) {
-                    // Use only feature columns (exclude last label column).
-                    for (int d = c + 1; d < colum - 1; d++) {
-                        for (int r2 = 0; r2 < row; r2++) {
-                            // Check 4-tuple match
-                            if (base[r1][a] == base[r2][a] && 
-                                base[r1][b] == base[r2][b] && 
-                                base[r1][c] == base[r2][c] &&
-                                base[r1][d] == base[r2][d]) {
-                                k[temp] += 1.0;
-                            }
-                        }
-                        // EXACT: k[temp] / row (divide by row count)
-                        A[r1][temp] = k[temp] / row;
-                        temp++;
-                    }
-                }
-            }
+    if (row == 0 || numComb == 0) {
+        return A;
+    }
+
+    const double invRows = 1.0 / static_cast<double>(row);
+    const int numThreads = getOptimalThreadCount();
+
+    #pragma omp parallel for num_threads(numThreads) schedule(dynamic, 1)
+    for (int combIdx = 0; combIdx < numComb; ++combIdx) {
+        const Comb4 comb = comb4[combIdx];
+
+        std::unordered_map<Key4, int, Key4Hash> counts;
+        counts.reserve(static_cast<size_t>(row) * 2);
+        std::vector<Key4> rowKeys(static_cast<size_t>(row));
+
+        for (int r = 0; r < row; ++r) {
+            const Key4 key{
+                bitsOf(base[r][comb.a]),
+                bitsOf(base[r][comb.b]),
+                bitsOf(base[r][comb.c]),
+                bitsOf(base[r][comb.d])
+            };
+            rowKeys[static_cast<size_t>(r)] = key;
+            ++counts[key];
+        }
+
+        for (int r = 0; r < row; ++r) {
+            A[r][combIdx] = static_cast<double>(counts[rowKeys[static_cast<size_t>(r)]]) * invRows;
         }
     }
-    
+
     return A;
 }
 
@@ -213,31 +387,39 @@ Matrix FKG::calculateA(const Matrix& base) {
 // ============================================================================
 
 Matrix FKG::calculateM(const Matrix& base) {
-    int row = static_cast<int>(base.size());
-    int colum = static_cast<int>(base[0].size());
-    
-    Matrix M(row, std::vector<double>(colum - 1, 0.0));
-    
-    int numThreads = getOptimalThreadCount();
-    
-    #pragma omp parallel for num_threads(numThreads) schedule(dynamic, 256)
-    for (int t1 = 0; t1 < row; t1++) {
-        std::vector<double> k(colum - 1, 0.0);
-        int temp = 0;
-        
-        for (int i = 0; i < colum - 1; i++) {
-            for (int t2 = 0; t2 < row; t2++) {
-                // Check attribute match AND class match
-                if (base[t1][i] == base[t2][i] && 
-                    base[t1][colum - 1] == base[t2][colum - 1]) {
-                    k[temp] += 1.0;
-                }
-            }
-            M[t1][temp] = k[temp] / row;
-            temp++;
+    if (base.empty() || base[0].empty()) {
+        return {};
+    }
+
+    const int row = static_cast<int>(base.size());
+    const int colum = static_cast<int>(base[0].size());
+    const int numFeatures = colum - 1;
+
+    Matrix M(row, std::vector<double>(numFeatures, 0.0));
+    if (row == 0 || numFeatures == 0) {
+        return M;
+    }
+
+    const double invRows = 1.0 / static_cast<double>(row);
+    const int numThreads = getOptimalThreadCount();
+
+    #pragma omp parallel for num_threads(numThreads) schedule(dynamic, 1)
+    for (int feature = 0; feature < numFeatures; ++feature) {
+        std::unordered_map<Key2, int, Key2Hash> counts;
+        counts.reserve(static_cast<size_t>(row) * 2);
+        std::vector<Key2> rowKeys(static_cast<size_t>(row));
+
+        for (int r = 0; r < row; ++r) {
+            const Key2 key{bitsOf(base[r][feature]), bitsOf(base[r][colum - 1])};
+            rowKeys[static_cast<size_t>(r)] = key;
+            ++counts[key];
+        }
+
+        for (int r = 0; r < row; ++r) {
+            M[r][feature] = static_cast<double>(counts[rowKeys[static_cast<size_t>(r)]]) * invRows;
         }
     }
-    
+
     return M;
 }
 
@@ -246,36 +428,33 @@ Matrix FKG::calculateM(const Matrix& base) {
 // ============================================================================
 
 Matrix FKG::calculateB_Parallel(const Matrix& base, const Matrix& A, const Matrix& M) {
-    int row = static_cast<int>(base.size());
-    int colum = static_cast<int>(base[0].size());
-    int numComb3 = combination(3, colum - 1);
-    
+    if (base.empty() || base[0].empty()) {
+        return {};
+    }
+
+    const int row = static_cast<int>(base.size());
+    const int colum = static_cast<int>(base[0].size());
+    const int numFeatures = colum - 1;
+    const std::vector<Comb3> comb3 = buildComb3(numFeatures);
+    const int numComb3 = static_cast<int>(comb3.size());
+
     Matrix B(row, std::vector<double>(numComb3, 0.0));
-    
-    int numThreads = getOptimalThreadCount();
-    
+    if (row == 0 || numComb3 == 0) {
+        return B;
+    }
+
+    const int numThreads = getOptimalThreadCount();
+
     #pragma omp parallel for num_threads(numThreads) schedule(dynamic, 256)
-    for (int r = 0; r < row; r++) {
-        int temp = 0;
-        
-        // Pre-compute sum(A[r]) for efficiency
-        double sumA = 0.0;
-        for (int j = 0; j < static_cast<int>(A[r].size()); j++) {
-            sumA += A[r][j];
-        }
-        
-        for (int a = 0; a < colum - 3; a++) {
-            for (int b = a + 1; b < colum - 2; b++) {
-                for (int c = b + 1; c < colum - 1; c++) {
-                    // EXACT: sum(A[r]) * min(M[r][a], M[r][b], M[r][c])
-                    double minM = std::min({M[r][a], M[r][b], M[r][c]});
-                    B[r][temp] = sumA * minM;
-                    temp++;
-                }
-            }
+    for (int r = 0; r < row; ++r) {
+        const double sumA = std::accumulate(A[r].begin(), A[r].end(), 0.0);
+        for (int combIdx = 0; combIdx < numComb3; ++combIdx) {
+            const Comb3 comb = comb3[combIdx];
+            const double minM = std::min({M[r][comb.a], M[r][comb.b], M[r][comb.c]});
+            B[r][combIdx] = sumA * minM;
         }
     }
-    
+
     return B;
 }
 
@@ -288,46 +467,95 @@ Matrix FKG::calculateB(const Matrix& base, const Matrix& A, const Matrix& M) {
 // ============================================================================
 
 Matrix FKG::calculateC_Parallel(const Matrix& base, const Matrix& B, int n_classes) {
-    int row = static_cast<int>(base.size());
-    int colum = static_cast<int>(base[0].size());
-    int cols = 6 * combination(3, colum - 1);  // EXACT: 6 * C(3, n-1)
-    
+    if (base.empty() || base[0].empty()) {
+        return {};
+    }
+
+    const int row = static_cast<int>(base.size());
+    const int colum = static_cast<int>(base[0].size());
+    const int numFeatures = colum - 1;
+    const std::vector<Comb3> comb3 = buildComb3(numFeatures);
+    const int numComb3 = static_cast<int>(comb3.size());
+    const int cols = 6 * numComb3;  // Keep exact legacy output shape.
+
     Matrix C(row, std::vector<double>(cols, 0.0));
-    
-    int numThreads = getOptimalThreadCount();
-    
-    #pragma omp parallel for num_threads(numThreads) schedule(dynamic, 256)
-    for (int r1 = 0; r1 < row; r1++) {
-        int temp = 0;
-        
-        // For each class
-        for (int i = 1; i <= n_classes; i++) {
-            for (int a = 0; a < colum - 3; a++) {
-                for (int b = a + 1; b < colum - 2; b++) {
-                    for (int c = b + 1; c < colum - 1; c++) {
-                        for (int r2 = 0; r2 < row; r2++) {
-                            // Check 3-tuple match AND class match
-                            if (base[r1][a] == base[r2][a] && 
-                                base[r1][b] == base[r2][b] && 
-                                base[r1][c] == base[r2][c] &&
-                                base[r2][colum - 1] == i) {
-                                // EXACT: C[r1][temp] += B[r2][temp % C(3, n-1)]
-                                int B_idx = temp % combination(3, colum - 1);
-                                C[r1][temp] += B[r2][B_idx];
-                            }
-                        }
-                        temp++;
-                    }
+    if (row == 0 || numComb3 == 0) {
+        return C;
+    }
+
+    const int classCount = std::max(0, std::min(n_classes, 6));
+    const int numThreads = getOptimalThreadCount();
+
+    #pragma omp parallel for num_threads(numThreads) schedule(dynamic, 1)
+    for (int combIdx = 0; combIdx < numComb3; ++combIdx) {
+        const Comb3 comb = comb3[combIdx];
+
+        std::unordered_map<Key3Class, double, Key3ClassHash> aggregated;
+        aggregated.reserve(static_cast<size_t>(row) * 2);
+
+        for (int r = 0; r < row; ++r) {
+            const Key3Class key{
+                bitsOf(base[r][comb.a]),
+                bitsOf(base[r][comb.b]),
+                bitsOf(base[r][comb.c]),
+                static_cast<int>(base[r][colum - 1])
+            };
+            aggregated[key] += B[r][combIdx];
+        }
+
+        for (int r = 0; r < row; ++r) {
+            const uint64_t v0 = bitsOf(base[r][comb.a]);
+            const uint64_t v1 = bitsOf(base[r][comb.b]);
+            const uint64_t v2 = bitsOf(base[r][comb.c]);
+            for (int label = 1; label <= classCount; ++label) {
+                const int cIndex = (label - 1) * numComb3 + combIdx;
+                if (cIndex >= cols) {
+                    continue;
                 }
+                const Key3Class key{v0, v1, v2, label};
+                auto it = aggregated.find(key);
+                C[r][cIndex] = (it != aggregated.end()) ? it->second : 0.0;
             }
         }
     }
-    
+
     return C;
 }
 
 Matrix FKG::calculateC(const Matrix& base, const Matrix& B, int n_classes) {
     return calculateC_Parallel(base, B, n_classes);
+}
+
+FKG::ComputedMatrices FKG::computeMatrices(const Matrix& base, int n_classes, bool prefer_gpu) {
+    ComputedMatrices result;
+    if (base.empty() || base[0].empty()) {
+        return result;
+    }
+
+    const int classCount = (n_classes > 0) ? n_classes : detectClassCount(base);
+
+#if FUZZY_USE_CUDA
+    if (prefer_gpu && isGPUAvailable()) {
+        std::string cudaError;
+        const cudaError_t status = CUDA::calculateABCM_GPU(
+            base, classCount, result.A, result.M, result.B, result.C, &cudaError);
+        if (status == cudaSuccess) {
+            result.C = minMaxNormalize(result.C);
+            return result;
+        }
+        std::cerr << "CUDA pipeline failed, falling back to CPU: "
+                  << cudaError << std::endl;
+    }
+#else
+    (void)prefer_gpu;
+#endif
+
+    result.A = calculateA_Parallel(base);
+    result.M = calculateM(base);
+    result.B = calculateB_Parallel(base, result.A, result.M);
+    result.C = calculateC_Parallel(base, result.B, classCount);
+    result.C = minMaxNormalize(result.C);
+    return result;
 }
 
 // ============================================================================
@@ -336,117 +564,113 @@ Matrix FKG::calculateC(const Matrix& base, const Matrix& B, int n_classes) {
 
 std::pair<int, double> FKG::fisa(const Matrix& base, const Matrix& C,
                                   const std::vector<double>& input, int n_classes) {
-    int colum = static_cast<int>(base[0].size());
-    int row = static_cast<int>(base.size());
-    int cols = combination(3, colum - 1);
-    
-    // EXACT: C_dict = {i: [0] * cols for i in range(1, n_classes + 1)}
-    std::vector<std::vector<double>> C_dict(n_classes + 1, std::vector<double>(cols, 0.0));
-    
-    int t = 0;
-    for (int a = 0; a < colum - 3; a++) {
-        for (int b = a + 1; b < colum - 2; b++) {
-            for (int c = b + 1; c < colum - 1; c++) {
-                for (int r = 0; r < row - 1; r++) {
-                    if (base[r][a] == input[a] && 
-                        base[r][b] == input[b] && 
-                        base[r][c] == input[c]) {
-                        int label = static_cast<int>(base[r][colum - 1]);
-                        if (label >= 1 && label <= n_classes) {
-                            C_dict[label][t] = C[r][t + (label - 1) * cols];
-                        }
+    if (base.empty() || base[0].empty()) {
+        return {1, 0.0};
+    }
+
+    const int colum = static_cast<int>(base[0].size());
+    const int row = static_cast<int>(base.size());
+    const int cols = combination(3, colum - 1);
+    if (cols <= 0 || n_classes <= 0) {
+        return {1, 0.0};
+    }
+
+    const std::vector<Comb3> comb3 = buildComb3(colum - 1);
+    std::vector<std::vector<double>> cByClass(static_cast<size_t>(n_classes + 1),
+                                              std::vector<double>(static_cast<size_t>(cols), 0.0));
+
+    for (int combIdx = 0; combIdx < cols; ++combIdx) {
+        const Comb3 comb = comb3[combIdx];
+        for (int r = 0; r < row - 1; ++r) {
+            if (base[r][comb.a] == input[comb.a] &&
+                base[r][comb.b] == input[comb.b] &&
+                base[r][comb.c] == input[comb.c]) {
+                const int label = static_cast<int>(base[r][colum - 1]);
+                if (label >= 1 && label <= n_classes) {
+                    const int cIndex = combIdx + (label - 1) * cols;
+                    if (cIndex < static_cast<int>(C[r].size())) {
+                        cByClass[static_cast<size_t>(label)][static_cast<size_t>(combIdx)] =
+                            C[r][cIndex];
                     }
                 }
-                t++;
             }
         }
     }
-    
-    // EXACT: D_dict[label] = max(vec) + min(vec)
-    std::unordered_map<int, double> D_dict;
-    for (int label = 1; label <= n_classes; label++) {
-        auto& vec = C_dict[label];
-        double maxVal = *std::max_element(vec.begin(), vec.end());
-        double minVal = *std::min_element(vec.begin(), vec.end());
-        D_dict[label] = maxVal + minVal;
-    }
-    
-    // EXACT: max_label = max(D_dict, key=D_dict.get)
+
     int bestClass = 1;
-    double maxD = D_dict[1];
-    for (int label = 2; label <= n_classes; label++) {
-        if (D_dict[label] > maxD) {
-            maxD = D_dict[label];
+    double maxD = std::numeric_limits<double>::lowest();
+    double sumD = 0.0;
+
+    for (int label = 1; label <= n_classes; ++label) {
+        const auto& vec = cByClass[static_cast<size_t>(label)];
+        const auto minmax = std::minmax_element(vec.begin(), vec.end());
+        const double d = *minmax.second + *minmax.first;
+        sumD += d;
+        if (d > maxD) {
+            maxD = d;
             bestClass = label;
         }
     }
-    
-    double sumD = 0.0;
-    for (int label = 1; label <= n_classes; label++) {
-        sumD += D_dict[label];
-    }
-    
-    double confidence = (sumD > 0) ? (maxD / sumD) : 0.0;
-    
+
+    const double confidence = (sumD > 0.0) ? (maxD / sumD) : 0.0;
     return {bestClass, confidence};
 }
 
 FKG::FISAResult FKG::FISAWithConfidence(const Matrix& base, const Matrix& C,
                                          const std::vector<double>& input, int n_classes) {
     FISAResult result;
-    
-    int colum = static_cast<int>(base[0].size());
-    int row = static_cast<int>(base.size());
-    int cols = combination(3, colum - 1);
-    
-    std::vector<std::vector<double>> C_dict(n_classes + 1, std::vector<double>(cols, 0.0));
-    
-    int t = 0;
-    for (int a = 0; a < colum - 3; a++) {
-        for (int b = a + 1; b < colum - 2; b++) {
-            for (int c = b + 1; c < colum - 1; c++) {
-                for (int r = 0; r < row - 1; r++) {
-                    if (base[r][a] == input[a] && 
-                        base[r][b] == input[b] && 
-                        base[r][c] == input[c]) {
-                        int label = static_cast<int>(base[r][colum - 1]);
-                        if (label >= 1 && label <= n_classes) {
-                            C_dict[label][t] = C[r][t + (label - 1) * cols];
-                        }
+    result.bestClass = 1;
+    result.confidence = 0.0;
+    result.D.assign(static_cast<size_t>(std::max(0, n_classes)), 0.0);
+
+    if (base.empty() || base[0].empty()) {
+        return result;
+    }
+
+    const int colum = static_cast<int>(base[0].size());
+    const int row = static_cast<int>(base.size());
+    const int cols = combination(3, colum - 1);
+    if (cols <= 0 || n_classes <= 0) {
+        return result;
+    }
+
+    const std::vector<Comb3> comb3 = buildComb3(colum - 1);
+    std::vector<std::vector<double>> cByClass(static_cast<size_t>(n_classes + 1),
+                                              std::vector<double>(static_cast<size_t>(cols), 0.0));
+
+    for (int combIdx = 0; combIdx < cols; ++combIdx) {
+        const Comb3 comb = comb3[combIdx];
+        for (int r = 0; r < row - 1; ++r) {
+            if (base[r][comb.a] == input[comb.a] &&
+                base[r][comb.b] == input[comb.b] &&
+                base[r][comb.c] == input[comb.c]) {
+                const int label = static_cast<int>(base[r][colum - 1]);
+                if (label >= 1 && label <= n_classes) {
+                    const int cIndex = combIdx + (label - 1) * cols;
+                    if (cIndex < static_cast<int>(C[r].size())) {
+                        cByClass[static_cast<size_t>(label)][static_cast<size_t>(combIdx)] =
+                            C[r][cIndex];
                     }
                 }
-                t++;
             }
         }
     }
-    
-    std::unordered_map<int, double> D_dict;
-    for (int label = 1; label <= n_classes; label++) {
-        auto& vec = C_dict[label];
-        double maxVal = *std::max_element(vec.begin(), vec.end());
-        double minVal = *std::min_element(vec.begin(), vec.end());
-        D_dict[label] = maxVal + minVal;
-    }
-    
-    result.D.resize(n_classes);
-    int bestClass = 1;
-    double maxD = D_dict[1];
-    for (int label = 1; label <= n_classes; label++) {
-        result.D[label - 1] = D_dict[label];
-        if (D_dict[label] > maxD) {
-            maxD = D_dict[label];
-            bestClass = label;
+
+    double maxD = std::numeric_limits<double>::lowest();
+    double sumD = 0.0;
+    for (int label = 1; label <= n_classes; ++label) {
+        const auto& vec = cByClass[static_cast<size_t>(label)];
+        const auto minmax = std::minmax_element(vec.begin(), vec.end());
+        const double d = *minmax.second + *minmax.first;
+        result.D[static_cast<size_t>(label - 1)] = d;
+        sumD += d;
+        if (d > maxD) {
+            maxD = d;
+            result.bestClass = label;
         }
     }
-    
-    double sumD = 0.0;
-    for (int label = 1; label <= n_classes; label++) {
-        sumD += D_dict[label];
-    }
-    
-    result.bestClass = bestClass;
-    result.confidence = (sumD > 0) ? (maxD / sumD) : 0.0;
-    
+
+    result.confidence = (sumD > 0.0) ? (maxD / sumD) : 0.0;
     return result;
 }
 
@@ -710,6 +934,14 @@ Matrix FKGS::samplingParallel(const Matrix& base, double ran, double e, int numT
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> dis(0, num - 1);
+
+    auto toIntRule = [](const std::vector<double>& row) {
+        std::vector<int> out(row.size(), 0);
+        for (size_t i = 0; i < row.size(); ++i) {
+            out[i] = static_cast<int>(std::llround(row[i]));
+        }
+        return out;
+    };
     
     while (static_cast<int>(R.size()) < targetSize) {
         int index = dis(gen);
@@ -741,8 +973,8 @@ Matrix FKGS::samplingParallel(const Matrix& base, double ran, double e, int numT
                 if (alreadyInList) continue;
                 
                 // Convert to int vectors for diff calculation
-                std::vector<int> r1(base[index].begin(), base[index].end());
-                std::vector<int> r2(base[i].begin(), base[i].end());
+                std::vector<int> r1 = toIntRule(base[index]);
+                std::vector<int> r2 = toIntRule(base[i]);
                 
                 if (diff(r1, r2) < 1.0 - e) {
                     T.push_back(i);
@@ -754,8 +986,8 @@ Matrix FKGS::samplingParallel(const Matrix& base, double ran, double e, int numT
             for (int i : T) {
                 bool temp = true;
                 for (int j = 0; j < static_cast<int>(R.size()); j++) {
-                    std::vector<int> r1(base[i].begin(), base[i].end());
-                    std::vector<int> r2(R[j].begin(), R[j].end());
+                    std::vector<int> r1 = toIntRule(base[i]);
+                    std::vector<int> r2 = toIntRule(R[j]);
                     
                     if (diff(r1, r2) >= 1.0 - e) {
                         temp = false;
@@ -781,6 +1013,98 @@ Matrix FKGS::samplingParallel(const Matrix& base, double ran, double e, int numT
 Matrix FKGS::sampling(const Matrix& base, double ran, double e) {
     return samplingParallel(base, ran, e, getOptimalThreadCount());
 }
+
+#if FUZZY_USE_CUDA
+void FKG::invalidateGPUCache() const {
+    if (cudaInferenceCache_ == nullptr) {
+        return;
+    }
+    CudaInferenceCacheHandle* handle =
+        reinterpret_cast<CudaInferenceCacheHandle*>(cudaInferenceCache_);
+    CUDA::destroyFisaDeviceCache(handle->cache);
+    delete handle;
+    cudaInferenceCache_ = nullptr;
+}
+
+bool FKG::ensureGPUCache() const {
+    if (cudaInferenceCache_ != nullptr) {
+        return true;
+    }
+    if (!trained_ || base_.empty() || C_.empty()) {
+        return false;
+    }
+
+    CudaInferenceCacheHandle* handle = new CudaInferenceCacheHandle();
+    std::string cudaError;
+    const cudaError_t status = CUDA::createFisaDeviceCache(base_, C_, n_classes_,
+                                                           handle->cache, &cudaError);
+    if (status != cudaSuccess) {
+        std::cerr << "CUDA cache init failed, fallback to CPU: " << cudaError << std::endl;
+        delete handle;
+        return false;
+    }
+    cudaInferenceCache_ = handle;
+    return true;
+}
+
+std::pair<int, double> FKG::predictGPUCached(const std::vector<double>& input) const {
+    if (!ensureGPUCache()) {
+        return fisa(base_, C_, input, n_classes_);
+    }
+
+    CudaInferenceCacheHandle* handle =
+        reinterpret_cast<CudaInferenceCacheHandle*>(cudaInferenceCache_);
+    int resultClass = 1;
+    double resultConfidence = 0.0;
+    std::string cudaError;
+    const cudaError_t status = CUDA::fisaGPUWithCache(handle->cache, input, resultClass,
+                                                      resultConfidence, nullptr, &cudaError);
+    if (status != cudaSuccess) {
+        std::cerr << "CUDA cached predict failed, fallback to CPU: " << cudaError << std::endl;
+        invalidateGPUCache();
+        return fisa(base_, C_, input, n_classes_);
+    }
+    return {resultClass, resultConfidence};
+}
+
+std::vector<std::pair<int, double>> FKG::predictBatchWithConfidenceGPUCached(
+    const Matrix& inputs) const {
+    if (!ensureGPUCache()) {
+        std::vector<std::pair<int, double>> cpuResults;
+        cpuResults.reserve(inputs.size());
+        for (const auto& input : inputs) {
+            cpuResults.push_back(fisa(base_, C_, input, n_classes_));
+        }
+        return cpuResults;
+    }
+
+    CudaInferenceCacheHandle* handle =
+        reinterpret_cast<CudaInferenceCacheHandle*>(cudaInferenceCache_);
+    std::vector<int> resultClasses;
+    std::vector<double> resultConfidences;
+    std::string cudaError;
+    const cudaError_t status = CUDA::fisaBatchGPUWithCache(handle->cache, inputs, resultClasses,
+                                                           resultConfidences, &cudaError);
+    if (status != cudaSuccess) {
+        std::cerr << "CUDA batch cached predict failed, fallback to CPU: "
+                  << cudaError << std::endl;
+        invalidateGPUCache();
+        std::vector<std::pair<int, double>> cpuResults;
+        cpuResults.reserve(inputs.size());
+        for (const auto& input : inputs) {
+            cpuResults.push_back(fisa(base_, C_, input, n_classes_));
+        }
+        return cpuResults;
+    }
+
+    std::vector<std::pair<int, double>> out;
+    out.reserve(resultClasses.size());
+    for (size_t i = 0; i < resultClasses.size(); ++i) {
+        out.emplace_back(resultClasses[i], resultConfidences[i]);
+    }
+    return out;
+}
+#endif
 
 // ============================================================================
 // GPU Interface (runtime fallback to CPU)
@@ -812,32 +1136,127 @@ bool FKG::isGPUAvailable() {
 }
 
 Matrix FKG::calculateA_GPU(const Matrix& base) {
+#if FUZZY_USE_CUDA
     if (!isGPUAvailable()) {
         return calculateA_Parallel(base);
     }
+    std::vector<std::vector<double>> A;
+    std::string cudaError;
+    cudaError_t err = CUDA::calculateA_GPU(base, A, &cudaError);
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error in calculateA_GPU, falling back to CPU: "
+                  << cudaError << std::endl;
+        return calculateA_Parallel(base);
+    }
+    return A;
+#else
     return calculateA_Parallel(base);
+#endif
+}
+
+Matrix FKG::calculateM_GPU(const Matrix& base) {
+#if FUZZY_USE_CUDA
+    if (!isGPUAvailable()) {
+        return calculateM(base);
+    }
+    std::vector<std::vector<double>> M;
+    std::string cudaError;
+    cudaError_t err = CUDA::calculateM_GPU(base, M, &cudaError);
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error in calculateM_GPU, falling back to CPU: "
+                  << cudaError << std::endl;
+        return calculateM(base);
+    }
+    return M;
+#else
+    return calculateM(base);
+#endif
 }
 
 Matrix FKG::calculateB_GPU(const Matrix& base, const Matrix& A, const Matrix& M) {
+#if FUZZY_USE_CUDA
     if (!isGPUAvailable()) {
         return calculateB_Parallel(base, A, M);
     }
+    int colum = static_cast<int>(base[0].size());
+    std::vector<std::vector<double>> B;
+    std::string cudaError;
+    cudaError_t err = CUDA::calculateB_GPU(A, M, B, colum, &cudaError);
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error in calculateB_GPU, falling back to CPU: "
+                  << cudaError << std::endl;
+        return calculateB_Parallel(base, A, M);
+    }
+    return B;
+#else
     return calculateB_Parallel(base, A, M);
+#endif
 }
 
 Matrix FKG::calculateC_GPU(const Matrix& base, const Matrix& B, int n_classes) {
+#if FUZZY_USE_CUDA
     if (!isGPUAvailable()) {
         return calculateC_Parallel(base, B, n_classes);
     }
+    int colum = static_cast<int>(base[0].size());
+    std::vector<std::vector<double>> C;
+    std::string cudaError;
+    cudaError_t err = CUDA::calculateC_GPU(base, B, C, colum, n_classes, &cudaError);
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error in calculateC_GPU, falling back to CPU: "
+                  << cudaError << std::endl;
+        return calculateC_Parallel(base, B, n_classes);
+    }
+    return C;
+#else
     return calculateC_Parallel(base, B, n_classes);
+#endif
 }
 
 std::pair<int, double> FKG::fisaGPU(const Matrix& base, const Matrix& C,
                                    const std::vector<double>& input, int n_classes) {
+#if FUZZY_USE_CUDA
     if (!isGPUAvailable()) {
         return fisa(base, C, input, n_classes);
     }
+    int result_class = 1;
+    double result_confidence = 0.0;
+    std::string cudaError;
+    cudaError_t err = CUDA::fisaGPU(base, C, input, n_classes, result_class, result_confidence,
+                                    nullptr, &cudaError);
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error in fisaGPU, falling back to CPU: "
+                  << cudaError << std::endl;
+        return fisa(base, C, input, n_classes);
+    }
+    return {result_class, result_confidence};
+#else
     return fisa(base, C, input, n_classes);
+#endif
+}
+
+FKG::FISAResult FKG::FISAWithConfidenceGPU(const Matrix& base, const Matrix& C,
+                                           const std::vector<double>& input, int n_classes) {
+#if FUZZY_USE_CUDA
+    if (!isGPUAvailable()) {
+        return FISAWithConfidence(base, C, input, n_classes);
+    }
+    FISAResult result;
+    result.bestClass = 1;
+    result.confidence = 0.0;
+
+    std::string cudaError;
+    cudaError_t err = CUDA::fisaGPU(base, C, input, n_classes, result.bestClass,
+                                    result.confidence, &result.D, &cudaError);
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error in FISAWithConfidenceGPU, falling back to CPU: "
+                  << cudaError << std::endl;
+        return FISAWithConfidence(base, C, input, n_classes);
+    }
+    return result;
+#else
+    return FISAWithConfidence(base, C, input, n_classes);
+#endif
 }
 
 bool FKG::verifyGPUvsCPU(const Matrix& testData, double tolerance) {
@@ -845,10 +1264,11 @@ bool FKG::verifyGPUvsCPU(const Matrix& testData, double tolerance) {
         return false;
     }
 
+    const bool originalUseGPU = getUseGPU();
+    setUseGPU(false);
     train(testData);
     std::vector<int> cpuPred = predictBatch(testData);
 
-    const bool originalUseGPU = getUseGPU();
     setUseGPU(true);
     train(testData);
     std::vector<int> gpuPred = predictBatch(testData);
@@ -894,9 +1314,12 @@ FKG::BenchmarkResult FKG::benchmark(const Matrix& testData) {
     result.resultsMatch = (cpuPred.size() == gpuPred.size());
     if (result.resultsMatch) {
         for (size_t i = 0; i < cpuPred.size(); i++) {
+            const double diff = std::abs(cpuPred[i] - gpuPred[i]);
+            if (diff > result.maxDiff) {
+                result.maxDiff = diff;
+            }
             if (cpuPred[i] != gpuPred[i]) {
                 result.resultsMatch = false;
-                break;
             }
         }
     }

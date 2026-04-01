@@ -46,6 +46,8 @@ if(USE_CUDA)
     check_language(CUDA)
     if(CMAKE_CUDA_COMPILER)
         enable_language(CUDA)
+        set(CMAKE_CUDA_STANDARD 14)
+        set(CMAKE_CUDA_STANDARD_REQUIRED ON)
         find_package(CUDAToolkit REQUIRED)
         list(REMOVE_ITEM GPU_COMPILE_DEFS FUZZY_USE_CUDA=0)
         list(APPEND GPU_COMPILE_DEFS FUZZY_USE_CUDA=1)
@@ -76,9 +78,16 @@ set(SOURCE_FILES
     Src/Utils.cpp
 )
 
+if(USE_CUDA AND CMAKE_CUDA_COMPILER)
+    list(APPEND SOURCE_FILES
+        Src/FKG_CUDA_Kernels.cu
+    )
+endif()
+
 set(HEADER_FILES
     Include/FKG.h
     Include/FIS.h
+    Include/FKG_CUDA_Kernels.h
     Include/Utils.h
 )
 
@@ -104,9 +113,19 @@ if(GPU_LINK_LIBS)
 endif()
 
 if(MSVC)
-    target_compile_options(fisa_module PRIVATE /O2 /DNDEBUG /D_CRT_SECURE_NO_WARNINGS)
+    target_compile_options(fisa_module PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:/O2 /DNDEBUG /D_CRT_SECURE_NO_WARNINGS>
+    )
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(fisa_module PRIVATE -O3 -ffast-math -funroll-loops -DNDEBUG)
+    target_compile_options(fisa_module PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:-O3 -ffast-math -funroll-loops -DNDEBUG>
+    )
+endif()
+
+if(USE_CUDA AND CMAKE_CUDA_COMPILER)
+    target_compile_options(fisa_module PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math -lineinfo>
+    )
 endif()
 
 if(MINGW)

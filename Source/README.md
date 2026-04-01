@@ -1,127 +1,105 @@
-# FISA Module - C++ Implementation
+﻿# FISA Module (FKG + FIS) - CPU/CUDA
 
-High-performance C++ implementation of Fuzzy Knowledge Graph (FKG) and Fuzzy Inference System (FIS) with parallel processing support.
+`fisa_module` is a Python extension (C++/CUDA) that provides:
 
-## Features
+- `fkg`: Fuzzy Knowledge Graph (A/M/B/C, FISA infer, CPU/GPU benchmark)
+- `fis`: Fuzzy Inference System (parallel CPU path)
 
-### FKG (Fuzzy Knowledge Graph)
-- `calculateA()` - 4-combination attribute matching matrix
-- `calculateM()` - Attribute matching with class labels
-- `calculateB()` - B matrix computation
-- `calculateC()` - Class-based scoring
-- `FISA()` - Fuzzy Inference System for FKG
-- `minMaxNormalize()` - Min-max normalization
-- `gaussianNormalize()` - Gaussian normalization
-- `sampling()` - Sampling for FKGS
+## Main points
 
-### FIS (Fuzzy Inference System)
-- `fcmFunction()` - Fuzzy C-Means clustering
-- `GaussMF()` - Gaussian Membership Function
-- `ruleGenerate()` - Rule generation using FCM
-- `ruleWeight()` - Rule weight calculation
-- `fuzzifyInput()` - Fuzzify input data
-- `matchRule()` - Match fuzzified input with rules
-- `testFIS()` - FIS inference
+- Real CUDA kernels implemented in `Source/Src/FKG_CUDA_Kernels.cu`.
+- End-to-end GPU matrix pipeline: `calculateABCM_GPU(...)`.
+- Cached GPU inference path to remove repeated setup overhead:
+  - `createFisaDeviceCache(...)`
+  - `fisaGPUWithCache(...)`
+  - `fisaBatchGPUWithCache(...)`
+- Batch inference API now available in Python:
+  - `FKG.predict_batch_with_confidence(inputs)`
 
-## Parallel Processing
+## Build
 
-The implementation uses OpenMP for parallel processing:
-- Parallel matrix operations
-- Parallel distance calculations
-- Parallel metric computations
+### Quick build by bat (recommended)
 
-## Requirements
+From project root:
 
-- C++17 compatible compiler
-- Python 3.7+
-- pybind11 >= 2.10.0
-- NumPy >= 1.19.0
-- OpenMP (optional, for parallel processing)
-
-## Installation
-
-### Using pip
-```bash
-pip install .
+```bat
+Bat run\Build_FKG_CUDA.bat --fallback-cpu
 ```
 
-### Using CMake directly
-```bash
+CPU-only build:
+
+```bat
+Build_FISA_CPU.bat
+```
+
+### Build with CMake
+
+CPU:
+
+```powershell
 cd Source
-mkdir build && cd build
-cmake ..
-make
+cmake -S . -B build_cpu -DUSE_CUDA=OFF -DUSE_GPU=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build_cpu --config Release -j 8
 ```
 
-### Development installation
-```bash
-pip install -e .[dev]
+CUDA:
+
+```powershell
+cd Source
+cmake -S . -B build_cuda -DUSE_CUDA=ON -DUSE_GPU=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build_cuda --config Release -j 8
 ```
 
-## Wheel Distribution
-
-Ban khong the co 1 wheel duy nhat cho moi may/OS/Python/GPU.
-Can phat hanh nhieu wheel theo target.
-
-- Build CPU wheel:
-```bat
-GPU\bat\Build_Wheel.bat cpu
-```
-
-- Build GPU wheel (CUDA):
-```bat
-GPU\bat\Build_Wheel.bat gpu
-```
-
-Output:
-- `dist/wheels/cpu/*.whl`
-- `dist/wheels/gpu/*.whl`
-
-Chi tiet release xem: `docs/WHEEL_RELEASE.md`.
-
-## Usage
-
-### Python API
+## Python quick usage
 
 ```python
-import numpy as np
-import fisa_module as fisa
+import fisa_module
 
-# FKG Example
-base = np.array([[1, 2, 3, 4, 1], 
-                 [1, 2, 3, 5, 2], 
-                 [2, 3, 4, 5, 2]], dtype=float)
+fkg = fisa_module.fkg.FKG()
+fkg.set_use_gpu(True)
+fkg.train(train_data, n_classes)
 
-# Calculate matrices
-A = fisa.fkg.calculateA(base)
-M = fisa.fkg.calculateM(base)
-B = fisa.fkg.calculateB(base, A, M)
-C = fisa.fkg.calculateC(base, B, n_classes=2)
+# Single sample
+pred_class, conf = fkg.predict(sample_features)
 
-# Normalize
-C_norm = fisa.fkg.min_max_normalize(C)
+# Batch (recommended for GPU)
+results = fkg.predict_batch_with_confidence(test_inputs)
+# results: list[(class_id, confidence)]
 
-# Predict
-input_sample = np.array([1, 2, 3, 4], dtype=float)
-predicted_class, confidence = fisa.fkg.FISA(base, C_norm, input_sample, n_classes=2)
-
-# FIS Example
-sigma_M = [1.0, 1.0, 1.0]
-centers = np.array([[0.0, 1.0], [0.0, 1.0], [0.0, 1.0]])
-rule_list = np.array([[1, 1, 1, 1], [2, 2, 2, 2]])
-input_data = np.array([0.5, 0.5, 0.5])
-
-predicted = fisa.fis.test_fis(input_data, rule_list, sigma_M, centers)
+A = fkg.get_A()
+M = fkg.get_M()
+B = fkg.get_B()
+C = fkg.get_C()
 ```
 
-## Performance
+## Tests
 
-The C++ implementation provides significant speedup over pure Python:
-- **calculateA**: ~10-50x faster with parallel processing
-- **calculateM**: ~5-20x faster
-- **FCM**: ~5-15x faster
-- **FISA**: ~20-100x faster
+Backend check:
 
-## License
+```bat
+Bat run\Test_Backend_GPU_CPU.bat [backend] [module_dir]
+```
 
-MIT License
+Python vs C++ CPU vs CUDA:
+
+```bat
+Bat run\Test_FKG_Python_vs_CPP_CUDA.bat [backend] [module_dir]
+```
+
+ICTA benchmark:
+
+```powershell
+python Source/tests/test_icta_gpu.py --backend gpu --module-dir source
+```
+
+Matrix consistency:
+
+```powershell
+python Source/tests/test_fkg_matrix_consistency.py
+```
+
+## Notes on GPU timing
+
+- First GPU train in a new process includes CUDA context initialization and can be much slower.
+- For realistic throughput, use warm process timing and batch inference API.
+- On current ICTA setup, GPU batch infer is significantly faster than CPU infer.

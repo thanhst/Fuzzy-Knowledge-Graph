@@ -69,64 +69,95 @@ void FIS::train(const Matrix& data) {
 }
 
 void FIS::trainParallel(const Matrix& data, int numThreads) {
-    int w = static_cast<int>(data[0].size());
-    
-    // Calculate min/max values with parallel reduction
-    min_vals_.assign(w - 1, std::numeric_limits<double>::max());
-    max_vals_.assign(w - 1, std::numeric_limits<double>::lowest());
-    
+    if (data.empty() || data[0].size() < 2) {
+        trained_ = false;
+        rules_.clear();
+        centers_.clear();
+        sigma_.clear();
+        min_vals_.clear();
+        max_vals_.clear();
+        return;
+    }
+
+    const int w = static_cast<int>(data[0].size());
+    const int rowCount = static_cast<int>(data.size());
+
+    // Calculate min/max values for all columns (features + label column for output FCM init).
+    min_vals_.assign(w, std::numeric_limits<double>::max());
+    max_vals_.assign(w, std::numeric_limits<double>::lowest());
+
     if (numThreads <= 0) numThreads = getOptimalThreadCount();
-    
-    // Parallel min/max computation
+
     #pragma omp parallel num_threads(numThreads)
     {
-        std::vector<double> local_mins(w - 1);
-        std::vector<double> local_maxs(w - 1);
-        
-        for (int i = 0; i < w - 1; i++) {
-            local_mins[i] = data[0][i];
-            local_maxs[i] = data[0][i];
+        std::vector<double> local_mins(static_cast<size_t>(w));
+        std::vector<double> local_maxs(static_cast<size_t>(w));
+
+        for (int i = 0; i < w; ++i) {
+            local_mins[static_cast<size_t>(i)] = data[0][i];
+            local_maxs[static_cast<size_t>(i)] = data[0][i];
         }
-        
+
         #pragma omp for schedule(dynamic, 256)
-        for (int r = 0; r < static_cast<int>(data.size()); r++) {
-            for (int i = 0; i < w - 1; i++) {
-                if (data[r][i] < local_mins[i]) local_mins[i] = data[r][i];
-                if (data[r][i] > local_maxs[i]) local_maxs[i] = data[r][i];
+        for (int r = 0; r < rowCount; ++r) {
+            for (int i = 0; i < w; ++i) {
+                if (data[r][i] < local_mins[static_cast<size_t>(i)]) {
+                    local_mins[static_cast<size_t>(i)] = data[r][i];
+                }
+                if (data[r][i] > local_maxs[static_cast<size_t>(i)]) {
+                    local_maxs[static_cast<size_t>(i)] = data[r][i];
+                }
             }
         }
-        
+
         #pragma omp critical
         {
-            for (int i = 0; i < w - 1; i++) {
-                if (local_mins[i] < min_vals_[i]) min_vals_[i] = local_mins[i];
-                if (local_maxs[i] > max_vals_[i]) max_vals_[i] = local_maxs[i];
+            for (int i = 0; i < w; ++i) {
+                if (local_mins[static_cast<size_t>(i)] < min_vals_[static_cast<size_t>(i)]) {
+                    min_vals_[static_cast<size_t>(i)] = local_mins[static_cast<size_t>(i)];
+                }
+                if (local_maxs[static_cast<size_t>(i)] > max_vals_[static_cast<size_t>(i)]) {
+                    max_vals_[static_cast<size_t>(i)] = local_maxs[static_cast<size_t>(i)];
+                }
             }
         }
     }
-    
-    // Use default clusters if not specified
+
+    // Ensure cluster vector has one value per column (including output/label column).
     if (n_clusters_.empty()) {
-        n_clusters_.resize(w - 1, 3);
+        n_clusters_.assign(static_cast<size_t>(w), 3);
+    } else if (static_cast<int>(n_clusters_.size()) < w) {
+        const int fallbackCluster = std::max(2, n_clusters_.back());
+        n_clusters_.resize(static_cast<size_t>(w), fallbackCluster);
     }
-    
-    // Generate rules with selected backend (GPU falls back internally if unavailable)
+
+    // Output cluster count should reflect class cardinality (at least 2).
+    std::unordered_set<int> labelSet;
+    labelSet.reserve(static_cast<size_t>(rowCount));
+    for (const auto& r : data) {
+        labelSet.insert(static_cast<int>(r.back()));
+    }
+    const int detectedOutputClusters = std::max(2, static_cast<int>(labelSet.size()));
+    n_clusters_[static_cast<size_t>(w - 1)] =
+        std::max(detectedOutputClusters, n_clusters_[static_cast<size_t>(w - 1)]);
+
     RuleGenerationResult result;
     if (isUsingGPU()) {
         result = ruleGenerateGPU(data, n_clusters_, min_vals_, max_vals_, m_, eps_, max_iter_);
     } else {
         result = ruleGenerate(data, n_clusters_, min_vals_, max_vals_, m_, eps_, max_iter_);
     }
+
     rules_ = result.rules;
     centers_ = result.centers;
-    
-    // Calculate sigma
-    sigma_.resize(w - 1);
+
+    // Sigma only applies to input features.
+    sigma_.resize(static_cast<size_t>(w - 1));
     #pragma omp parallel for num_threads(numThreads)
-    for (int i = 0; i < w - 1; i++) {
-        sigma_[i] = computeSigma(centers_[i]);
+    for (int i = 0; i < w - 1; ++i) {
+        sigma_[static_cast<size_t>(i)] = computeSigma(centers_[static_cast<size_t>(i)]);
     }
-    
+
     trained_ = true;
 }
 
@@ -351,52 +382,62 @@ FIS::RuleGenerationResult FIS::ruleGenerate(const Matrix& train_data,
                                             const std::vector<double>& min_vals,
                                             const std::vector<double>& max_vals,
                                             double m, double eps, int max_iter) {
-    int h = static_cast<int>(train_data.size());
-    int w = static_cast<int>(train_data[0].size());
-    
+    const int h = static_cast<int>(train_data.size());
+    const int w = static_cast<int>(train_data[0].size());
+
     RuleGenerationResult result;
     result.rules = Matrix(h, std::vector<double>(w, 0.0));
     result.centers.resize(w - 1);
-    
-    Matrix U_all;
-    int numThreads = getOptimalThreadCount();
-    
-    // Process each feature in parallel
+
+    Matrix U_output;
+    const int numThreads = getOptimalThreadCount();
+
+    auto buildInitCenters = [](double minVal, double maxVal, int c) {
+        std::vector<double> init;
+        c = std::max(1, c);
+        if (c == 1) {
+            init.push_back((minVal + maxVal) / 2.0);
+            return init;
+        }
+        if (c == 2) {
+            init = {minVal, maxVal};
+            return init;
+        }
+        if (c == 3) {
+            init = {minVal, (minVal + maxVal) / 2.0, maxVal};
+            return init;
+        }
+
+        const double seg = (maxVal - minVal) / static_cast<double>(c - 1);
+        init.reserve(static_cast<size_t>(c));
+        for (int j = 0; j < c; ++j) {
+            init.push_back(minVal + static_cast<double>(j) * seg);
+        }
+        return init;
+    };
+
+    // Process input features in parallel.
     #pragma omp parallel for num_threads(numThreads) schedule(dynamic)
-    for (int i = 0; i < w - 1; i++) {
+    for (int i = 0; i < w - 1; ++i) {
         std::vector<double> feature(h);
-        for (int j = 0; j < h; j++) {
+        for (int j = 0; j < h; ++j) {
             feature[j] = train_data[j][i];
         }
-        
-        std::vector<double> V_init;
-        int c = cluster[i];
-        
-        if (c == 3) {
-            V_init = {min_vals[i], (min_vals[i] + max_vals[i]) / 2.0, max_vals[i]};
-        } else if (c == 2) {
-            V_init = {min_vals[i], max_vals[i]};
-        } else if (c == 1) {
-            V_init = {(min_vals[i] + max_vals[i]) / 2.0};
-        } else {
-            double seg = (max_vals[i] - min_vals[i]) / (c - 1);
-            V_init.push_back(min_vals[i]);
-            for (int j = 1; j < c - 1; j++) {
-                V_init.push_back(min_vals[i] + j * seg);
-            }
-            V_init.push_back(max_vals[i]);
-        }
-        
+
+        const int clusterVal = (i < static_cast<int>(cluster.size())) ? cluster[i] : 3;
+        const int c = std::max(1, clusterVal);
+        const std::vector<double> V_init = buildInitCenters(min_vals[i], max_vals[i], c);
+
         Matrix centers;
         Matrix U;
         std::tie(centers, U) = fcmParallel(feature, c, V_init, m, eps, max_iter, numThreads);
-        
+
         result.centers[i] = centers[0];
-        
-        for (int j = 0; j < h; j++) {
+
+        for (int j = 0; j < h; ++j) {
             int maxIdx = 0;
             double maxVal = U[0][j];
-            for (int k = 1; k < c; k++) {
+            for (int k = 1; k < c; ++k) {
                 if (U[k][j] > maxVal) {
                     maxVal = U[k][j];
                     maxIdx = k;
@@ -404,29 +445,46 @@ FIS::RuleGenerationResult FIS::ruleGenerate(const Matrix& train_data,
             }
             result.rules[j][i] = maxIdx + 1;
         }
-        
-        if (i == w - 2) {
-            U_all = U;
-        }
     }
-    
-    // Process output class
+
+    // Process output label column independently (matches Python logic).
+    {
+        const int outputIdx = w - 1;
+        const int clusterOut =
+            (outputIdx < static_cast<int>(cluster.size())) ? cluster[outputIdx] : 2;
+        const int cOut = std::max(2, clusterOut);
+        std::vector<double> outputValues(h);
+        for (int j = 0; j < h; ++j) {
+            outputValues[j] = train_data[j][outputIdx];
+        }
+
+        const std::vector<double> V_init =
+            buildInitCenters(min_vals[outputIdx], max_vals[outputIdx], cOut);
+
+        Matrix outputCenters;
+        std::tie(outputCenters, U_output) =
+            fcmParallel(outputValues, cOut, V_init, m, eps, max_iter, numThreads);
+    }
+
     #pragma omp parallel for num_threads(numThreads)
-    for (int j = 0; j < h; j++) {
-        int c = cluster[w - 1];
+    for (int j = 0; j < h; ++j) {
+        const int c = static_cast<int>(U_output.size());
+        if (c <= 0) {
+            result.rules[j][w - 1] = 1.0;
+            continue;
+        }
         int maxIdx = 0;
-        double maxVal = U_all[0][j];
-        for (int k = 1; k < c; k++) {
-            if (U_all[k][j] > maxVal) {
-                maxVal = U_all[k][j];
+        double maxVal = U_output[0][j];
+        for (int k = 1; k < c; ++k) {
+            if (U_output[k][j] > maxVal) {
+                maxVal = U_output[k][j];
                 maxIdx = k;
             }
         }
         result.rules[j][w - 1] = maxIdx + 1;
     }
-    
-    result.U = U_all;
-    
+
+    result.U = U_output;
     return result;
 }
 

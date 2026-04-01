@@ -80,6 +80,19 @@ struct PerformanceConfig {
  */
 class FKG {
 public:
+    struct FISAResult {
+        int bestClass;
+        double confidence;
+        std::vector<double> D;
+    };
+
+    struct ComputedMatrices {
+        Matrix A;
+        Matrix M;
+        Matrix B;
+        Matrix C;
+    };
+
     FKG();
     explicit FKG(const PerformanceConfig& config);
     ~FKG();
@@ -89,6 +102,7 @@ public:
 
     std::pair<int, double> predict(const std::vector<double>& input) const;
     std::vector<int> predictBatch(const Matrix& inputs) const;
+    std::vector<std::pair<int, double>> predictBatchWithConfidence(const Matrix& inputs) const;
     
     // Parallel batch prediction with thread pool
     std::vector<int> predictBatchParallel(const Matrix& inputs, int numThreads = 0) const;
@@ -107,15 +121,13 @@ public:
     // FISA with full D values
     static std::pair<int, double> fisa(const Matrix& base, const Matrix& C,
                                        const std::vector<double>& input, int n_classes);
-    
-    struct FISAResult {
-        int bestClass;
-        double confidence;
-        std::vector<double> D;
-    };
-    
+
     static FISAResult FISAWithConfidence(const Matrix& base, const Matrix& C,
                                           const std::vector<double>& input, int n_classes);
+
+    // Build A/M/B/C in one optimized pass (C is returned already normalized).
+    static ComputedMatrices computeMatrices(const Matrix& base, int n_classes,
+                                            bool prefer_gpu = false);
     
     // SIMD-accelerated normalization
     static Matrix minMaxNormalize(const Matrix& C);
@@ -167,10 +179,13 @@ public:
     
     // GPU methods (fallback to CPU when GPU is unavailable)
     static Matrix calculateA_GPU(const Matrix& base);
+    static Matrix calculateM_GPU(const Matrix& base);
     static Matrix calculateB_GPU(const Matrix& base, const Matrix& A, const Matrix& M);
     static Matrix calculateC_GPU(const Matrix& base, const Matrix& B, int n_classes);
     static std::pair<int, double> fisaGPU(const Matrix& base, const Matrix& C,
                                           const std::vector<double>& input, int n_classes);
+    static FISAResult FISAWithConfidenceGPU(const Matrix& base, const Matrix& C,
+                                            const std::vector<double>& input, int n_classes);
     
     // Verification & Benchmarking
     bool verifyGPUvsCPU(const Matrix& testData, double tolerance = 1e-6);
@@ -207,6 +222,15 @@ private:
     // Pre-allocated buffers for parallel processing
     mutable std::vector<double> inputBuffer_;
     mutable std::vector<int> outputBuffer_;
+
+#if FUZZY_USE_CUDA
+    mutable void* cudaInferenceCache_;
+    void invalidateGPUCache() const;
+    bool ensureGPUCache() const;
+    std::pair<int, double> predictGPUCached(const std::vector<double>& input) const;
+    std::vector<std::pair<int, double>> predictBatchWithConfidenceGPUCached(
+        const Matrix& inputs) const;
+#endif
 };
 
 /**

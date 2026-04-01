@@ -93,6 +93,27 @@ void bind_fkg_class(py::module& m) {
         .def_readwrite("computeTimeMs", &FKG::PerformanceMetrics::computeTimeMs)
         .def_readwrite("memoryUsageBytes", &FKG::PerformanceMetrics::memoryUsageBytes)
         .def_readwrite("numThreadsUsed", &FKG::PerformanceMetrics::numThreadsUsed);
+
+    py::class_<FKG::FISAResult>(m, "FISAResult")
+        .def(py::init<>())
+        .def_readwrite("bestClass", &FKG::FISAResult::bestClass)
+        .def_readwrite("confidence", &FKG::FISAResult::confidence)
+        .def_readwrite("D", &FKG::FISAResult::D);
+
+    py::class_<FKG::ComputedMatrices>(m, "ComputedMatrices")
+        .def(py::init<>())
+        .def_readwrite("A", &FKG::ComputedMatrices::A)
+        .def_readwrite("M", &FKG::ComputedMatrices::M)
+        .def_readwrite("B", &FKG::ComputedMatrices::B)
+        .def_readwrite("C", &FKG::ComputedMatrices::C);
+
+    py::class_<FKG::BenchmarkResult>(m, "FKGBenchmarkResult")
+        .def(py::init<>())
+        .def_readwrite("gpuTimeMs", &FKG::BenchmarkResult::gpuTimeMs)
+        .def_readwrite("cpuTimeMs", &FKG::BenchmarkResult::cpuTimeMs)
+        .def_readwrite("speedup", &FKG::BenchmarkResult::speedup)
+        .def_readwrite("resultsMatch", &FKG::BenchmarkResult::resultsMatch)
+        .def_readwrite("maxDiff", &FKG::BenchmarkResult::maxDiff);
     
     py::class_<FKG>(m, "FKG")
         .def(py::init<>(), "Create FKG with default config")
@@ -105,6 +126,8 @@ void bind_fkg_class(py::module& m) {
              "Train FKG with specified classes", py::arg("base"), py::arg("n_classes"))
         .def("predict", &FKG::predict, "Predict single input")
         .def("predict_batch", &FKG::predictBatch, "Predict batch (auto parallel)")
+        .def("predict_batch_with_confidence", &FKG::predictBatchWithConfidence,
+             "Predict batch with confidence")
         .def("predict_batch_parallel", &FKG::predictBatchParallel, 
              "Predict batch with specified threads", py::arg("inputs"), py::arg("numThreads") = 0)
         .def("get_base", &FKG::getBase, "Get base matrix")
@@ -119,15 +142,28 @@ void bind_fkg_class(py::module& m) {
         // Static methods
         .def_static("calculateA", &FKG::calculateA, "Calculate A matrix")
         .def_static("calculateA_parallel", &FKG::calculateA_Parallel, "Calculate A matrix (parallel)")
+        .def_static("calculateA_gpu", &FKG::calculateA_GPU, "Calculate A matrix (GPU)")
         .def_static("calculateM", &FKG::calculateM, "Calculate M matrix")
+        .def_static("calculateM_gpu", &FKG::calculateM_GPU, "Calculate M matrix (GPU)")
         .def_static("calculateB", &FKG::calculateB, "Calculate B matrix")
         .def_static("calculateB_parallel", &FKG::calculateB_Parallel, "Calculate B matrix (parallel)")
+        .def_static("calculateB_gpu", &FKG::calculateB_GPU, "Calculate B matrix (GPU)")
         .def_static("calculateC", &FKG::calculateC, "Calculate C matrix")
         .def_static("calculateC_parallel", &FKG::calculateC_Parallel, "Calculate C matrix (parallel)")
+        .def_static("calculateC_gpu", &FKG::calculateC_GPU, "Calculate C matrix (GPU)")
+        .def_static("compute_matrices", &FKG::computeMatrices,
+             "Compute A/M/B/C with optional GPU acceleration",
+             py::arg("base"), py::arg("n_classes"), py::arg("prefer_gpu") = false)
         .def_static("fisa", &FKG::fisa, "FISA inference")
         .def_static("fisa_with_confidence", &FKG::FISAWithConfidence, "FISA with confidence")
+        .def_static("fisa_gpu", &FKG::fisaGPU, "FISA inference on GPU")
+        .def_static("fisa_with_confidence_gpu", &FKG::FISAWithConfidenceGPU,
+             "FISA with D-values on GPU")
         .def_static("min_max_normalize", &FKG::minMaxNormalize, "Min-max normalize")
-        .def_static("gaussian_normalize", &FKG::gaussianNormalize, "Gaussian normalize");
+        .def_static("gaussian_normalize", &FKG::gaussianNormalize, "Gaussian normalize")
+        .def("verify_gpu_vs_cpu", &FKG::verifyGPUvsCPU,
+             "Validate GPU predictions against CPU", py::arg("testData"), py::arg("tolerance") = 1e-6)
+        .def("benchmark", &FKG::benchmark, "Benchmark CPU vs GPU on given data");
     
     py::class_<FKGS, FKG>(m, "FKGS")
         .def(py::init<>(), "Create FKGS with defaults")
@@ -255,14 +291,6 @@ PYBIND11_MODULE(fisa_module, m) {
     // ============================================================================
     
     #if FUZZY_USE_GPU || FUZZY_USE_CUDA
-    py::class_<FKG::BenchmarkResult>(m, "FKGBenchmarkResult")
-        .def(py::init<>())
-        .def_readwrite("gpuTimeMs", &FKG::BenchmarkResult::gpuTimeMs)
-        .def_readwrite("cpuTimeMs", &FKG::BenchmarkResult::cpuTimeMs)
-        .def_readwrite("speedup", &FKG::BenchmarkResult::speedup)
-        .def_readwrite("resultsMatch", &FKG::BenchmarkResult::resultsMatch)
-        .def_readwrite("maxDiff", &FKG::BenchmarkResult::maxDiff);
-    
     // FIS GPU is not implemented yet, only FKG
     // py::class_<FIS::BenchmarkResult>(m, "FISBenchmarkResult")
     //     .def(py::init<>())

@@ -444,12 +444,19 @@ def main() -> int:
     train_ms = (time.perf_counter() - t0) * 1000.0
 
     t1 = time.perf_counter()
+    test_inputs = [row[:-1] for row in test]
     predicted = []
     confidences = []
-    for row in test:
-        pred, conf = fkg.predict(row[:-1])
-        predicted.append(int(pred))
-        confidences.append(float(conf))
+    if hasattr(fkg, "predict_batch_with_confidence"):
+        batch_results = fkg.predict_batch_with_confidence(test_inputs)
+        for pred, conf in batch_results:
+            predicted.append(int(pred))
+            confidences.append(float(conf))
+    else:
+        for row in test:
+            pred, conf = fkg.predict(row[:-1])
+            predicted.append(int(pred))
+            confidences.append(float(conf))
     infer_ms = (time.perf_counter() - t1) * 1000.0
 
     actual = [int(row[-1]) for row in test]

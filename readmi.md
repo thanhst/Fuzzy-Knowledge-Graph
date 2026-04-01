@@ -1,36 +1,87 @@
-﻿# Báo cáo tiến độ - nhánh thanh/GPU_version
+﻿# FKG CUDA Progress Report
 
-Cập nhật: 31/03/2026
+Updated: **2026-04-02**
 
-## Tóm tắt nhanh
-Mình vừa hoàn thành phần build module C++ sang `.pyd` cho Python, đồng thời test xong luồng chọn backend CPU/GPU có fallback an toàn.
+## 1) Scope
 
-## Đã làm xong những gì
-- Sửa API để chọn backend bằng biến đầu vào: `set_use_gpu`, `get_use_gpu`, `is_using_gpu`.
-- Bổ sung kiểm tra runtime:
-  - module có build kèm GPU hay không,
-  - máy có GPU khả dụng hay không.
-- Nếu yêu cầu GPU nhưng không đáp ứng điều kiện, hệ thống tự in thông báo và chuyển sang CPU.
-- Chuẩn hóa pipeline `.bat` cho build/test:
-  - `Build_FISA_CPU.bat`
-  - `Build_FISA_CUDA.bat`
-  - `Test_Backend_GPU_CPU.bat`
-- Fix lỗi crash trong `FKG::train` (tràn chỉ số khi tạo tổ hợp 4 thuộc tính).
+This update focuses on real CUDA execution for FKG and practical GPU optimization for train/infer flow in FIS-FKG pipeline.
 
-## Kết quả build và thử nghiệm
-- Build CPU: thành công.
-- File đầu ra: `Source/fisa_module.cp314-mingw_x86_64_msvcrt_gnu.pyd`.
-- Số bài test backend đã chạy: 2 bài.
-- Test `--backend cpu`: PASS.
-- Test `--backend gpu`: PASS theo đúng cơ chế fallback, có in thông báo chuyển sang CPU khi không có GPU/build GPU.
-- Test bộ ICTA (anh Đức Hoàng): đã chạy xong bằng script `Source/tests/test_icta_gpu.py`
-  - dataset: `Source_code/data/ICTA/ICTA.csv`
-  - backend request: `gpu`
-  - backend used: `gpu`
-  - GPU compiled/available: `True/True`
-  - train time: `153.948 ms`
-  - infer time: `39.825 ms` (231 mẫu test)
-  - accuracy: `65.80%`
+## 2) Completed updates
 
-## Trạng thái hiện tại
-Build vừa mới hoàn tất, test backend ổn định, và đã có kết quả chạy thực tế trên ICTA.
+- Implemented real CUDA kernels in `Source/Src/FKG_CUDA_Kernels.cu`.
+- Enabled CUDA build path in `Source/CMakeLists.txt`.
+- Added matrix and GPU APIs in C++ and Python bindings.
+- Added bat scripts under `Bat run/` for build and test automation.
+- Added comparison and consistency tests:
+  - `Source/tests/test_fkg_python_vs_cpp_cuda.py`
+  - `Source/tests/test_fkg_matrix_consistency.py`
+  - `Source/tests/test_icta_gpu.py`
+
+## 3) New optimization in this round
+
+### 3.1 GPU inference cache (major)
+
+Added persistent device cache for inference:
+
+- `createFisaDeviceCache(...)`
+- `destroyFisaDeviceCache(...)`
+- `fisaGPUWithCache(...)`
+- `fisaBatchGPUWithCache(...)`
+
+Cache keeps `base`, `C`, and `comb3` on GPU memory across predictions.
+
+### 3.2 Batch CUDA kernel for FISA
+
+Added `KernelFisaDBatch` so multiple samples are inferred in one GPU launch.
+This removes repeated per-sample launch/memory overhead.
+
+### 3.3 FKG runtime path updated
+
+`Source/Src/FKG.cpp` now:
+
+- builds/invalidates cache on train lifecycle,
+- uses cached GPU path for `predict(...)`,
+- uses cached batch path for `predictBatch(...)`,
+- exposes `predictBatchWithConfidence(...)`.
+
+### 3.4 Python API and ICTA test updated
+
+- `Source/Python/bindings.cpp` exposes `predict_batch_with_confidence`.
+- `Source/tests/test_icta_gpu.py` now uses batch inference when available.
+
+## 4) Measured results
+
+### ICTA script (`Source/tests/test_icta_gpu.py`, train=537, test=231)
+
+- GPU train time: `~1252.1 ms` (cold process, includes CUDA init)
+- GPU infer total: `~11.7 ms`
+- CPU train time: `~9.0 ms`
+- CPU infer total: `~29.5 ms`
+- Accuracy: same (`65.80%` in this run)
+
+### Same process repeated timing (GPU)
+
+- train[0]: `~878.5 ms` (cold init)
+- train[1]: `~10.3 ms`
+- train[2]: `~9.9 ms`
+- batch infer: `~8-11 ms` for 231 samples
+- old per-sample loop infer: `~529-561 ms` for 231 samples
+
+Conclusion: inference bottleneck is fixed; cold train still dominated by first CUDA context initialization.
+
+## 5) Updated files (this optimization round)
+
+- `Source/Src/FKG_CUDA_Kernels.cu`
+- `Source/Include/FKG_CUDA_Kernels.h`
+- `Source/Src/FKG.cpp`
+- `Source/Include/FKG.h`
+- `Source/Python/bindings.cpp`
+- `Source/tests/test_icta_gpu.py`
+- `Source/tests/test_fkg_python_vs_cpp_cuda.py`
+
+## 6) Remaining high-impact tasks
+
+- Add optional warmup stage before benchmark timing to separate cold init cost.
+- Reuse input/output device buffers for batch inference to reduce remaining allocations.
+- Add CUDA streams for overlap between H2D/D2H copy and compute.
+- Consider compact integer encoding for discrete data to reduce bandwidth.
