@@ -96,7 +96,7 @@ python Source/tests/test_icta_gpu.py --backend gpu --module-dir source
 Full flow benchmark (FIS + FKG, CPU vs GPU, ICTA + Feature Selection):
 
 ```powershell
-python Source/tests/test_fis_fkg_full_flow_gpu_cpu.py --dataset both --module-dir source
+python Source/tests/test_fis_fkg_full_flow_gpu_cpu.py --dataset both --module-dir source --warm-repeats 1
 ```
 
 Matrix consistency:
@@ -108,5 +108,6 @@ python Source/tests/test_fkg_matrix_consistency.py
 ## Notes on GPU timing
 
 - First GPU train in a new process includes CUDA context initialization and can be much slower.
-- For realistic throughput, use warm process timing and batch inference API.
+- Use `--warm-repeats` to report both cold and warm timings in one benchmark report.
+- For realistic throughput, compare warm timings and batch inference API behavior.
 - On current ICTA setup, GPU batch infer is significantly faster than CPU infer.

@@ -183,8 +183,17 @@ def set_backend(instance, use_gpu: bool) -> None:
         instance.setUseGPU(use_gpu)
 
 
-def run_one_backend(fisa_module, train_df, test_df, label_col: str, bins: int, use_gpu: bool):
+def run_one_backend(
+    fisa_module,
+    train_df,
+    test_df,
+    label_col: str,
+    bins: int,
+    use_gpu: bool,
+    warm_repeats: int,
+):
     backend_name = "gpu" if use_gpu else "cpu"
+    warm_repeats = max(1, int(warm_repeats))
 
     # -------------------------
     # FIS stage
@@ -208,11 +217,25 @@ def run_one_backend(fisa_module, train_df, test_df, label_col: str, bins: int, u
 
     t0 = time.perf_counter()
     fis.train(train_matrix)
-    fis_train_ms = (time.perf_counter() - t0) * 1000.0
+    fis_train_cold_ms = (time.perf_counter() - t0) * 1000.0
+
+    fis_train_warm_runs = []
+    for _ in range(warm_repeats):
+        tw = time.perf_counter()
+        fis.train(train_matrix)
+        fis_train_warm_runs.append((time.perf_counter() - tw) * 1000.0)
+    fis_train_warm_avg_ms = sum(fis_train_warm_runs) / len(fis_train_warm_runs)
 
     t1 = time.perf_counter()
     test_pred_clusters = [int(v) for v in fis.predict_batch(test_inputs)]
-    fis_infer_ms = (time.perf_counter() - t1) * 1000.0
+    fis_infer_cold_ms = (time.perf_counter() - t1) * 1000.0
+
+    fis_infer_warm_runs = []
+    for _ in range(warm_repeats):
+        tw = time.perf_counter()
+        _ = [int(v) for v in fis.predict_batch(test_inputs)]
+        fis_infer_warm_runs.append((time.perf_counter() - tw) * 1000.0)
+    fis_infer_warm_avg_ms = sum(fis_infer_warm_runs) / len(fis_infer_warm_runs)
 
     train_pred_clusters = [int(v) for v in fis.predict_batch(train_inputs)]
     fis_pred_labels = remap_fis_predictions(train_pred_clusters, train_labels, test_pred_clusters)
@@ -230,7 +253,14 @@ def run_one_backend(fisa_module, train_df, test_df, label_col: str, bins: int, u
 
     t2 = time.perf_counter()
     fkg.train(train_records, n_classes)
-    fkg_train_ms = (time.perf_counter() - t2) * 1000.0
+    fkg_train_cold_ms = (time.perf_counter() - t2) * 1000.0
+
+    fkg_train_warm_runs = []
+    for _ in range(warm_repeats):
+        tw = time.perf_counter()
+        fkg.train(train_records, n_classes)
+        fkg_train_warm_runs.append((time.perf_counter() - tw) * 1000.0)
+    fkg_train_warm_avg_ms = sum(fkg_train_warm_runs) / len(fkg_train_warm_runs)
 
     test_features = [row[:-1] for row in test_records]
     t3 = time.perf_counter()
@@ -241,7 +271,19 @@ def run_one_backend(fisa_module, train_df, test_df, label_col: str, bins: int, u
         fkg_pred_classes = [int(v) for v in fkg.predict_batch(test_features)]
     else:
         fkg_pred_classes = [int(fkg.predict(row)[0]) for row in test_features]
-    fkg_infer_ms = (time.perf_counter() - t3) * 1000.0
+    fkg_infer_cold_ms = (time.perf_counter() - t3) * 1000.0
+
+    fkg_infer_warm_runs = []
+    for _ in range(warm_repeats):
+        tw = time.perf_counter()
+        if hasattr(fkg, "predict_batch_with_confidence"):
+            _ = fkg.predict_batch_with_confidence(test_features)
+        elif hasattr(fkg, "predict_batch"):
+            _ = fkg.predict_batch(test_features)
+        else:
+            _ = [fkg.predict(row)[0] for row in test_features]
+        fkg_infer_warm_runs.append((time.perf_counter() - tw) * 1000.0)
+    fkg_infer_warm_avg_ms = sum(fkg_infer_warm_runs) / len(fkg_infer_warm_runs)
 
     fkg_pred_labels = [idx_to_label.get(cls, cls) for cls in fkg_pred_classes]
     fkg_true_labels = [idx_to_label[int(row[-1])] for row in test_records]
@@ -257,16 +299,34 @@ def run_one_backend(fisa_module, train_df, test_df, label_col: str, bins: int, u
             "fkg": "gpu" if fkg_using_gpu else "cpu",
         },
         "fis": {
-            "train_ms": fis_train_ms,
-            "infer_ms": fis_infer_ms,
-            "infer_per_sample_ms": fis_infer_ms / max(1, len(test_inputs)),
+            "train_ms": {
+                "cold": fis_train_cold_ms,
+                "warm_avg": fis_train_warm_avg_ms,
+                "warm_runs": fis_train_warm_runs,
+            },
+            "infer_ms": {
+                "cold_total": fis_infer_cold_ms,
+                "cold_per_sample": fis_infer_cold_ms / max(1, len(test_inputs)),
+                "warm_avg_total": fis_infer_warm_avg_ms,
+                "warm_avg_per_sample": fis_infer_warm_avg_ms / max(1, len(test_inputs)),
+                "warm_runs": fis_infer_warm_runs,
+            },
             "accuracy_pct": fis_acc,
             "pred_first10": fis_pred_labels[:10],
         },
         "fkg": {
-            "train_ms": fkg_train_ms,
-            "infer_ms": fkg_infer_ms,
-            "infer_per_sample_ms": fkg_infer_ms / max(1, len(test_features)),
+            "train_ms": {
+                "cold": fkg_train_cold_ms,
+                "warm_avg": fkg_train_warm_avg_ms,
+                "warm_runs": fkg_train_warm_runs,
+            },
+            "infer_ms": {
+                "cold_total": fkg_infer_cold_ms,
+                "cold_per_sample": fkg_infer_cold_ms / max(1, len(test_features)),
+                "warm_avg_total": fkg_infer_warm_avg_ms,
+                "warm_avg_per_sample": fkg_infer_warm_avg_ms / max(1, len(test_features)),
+                "warm_runs": fkg_infer_warm_runs,
+            },
             "accuracy_pct": fkg_acc,
             "pred_first10": fkg_pred_labels[:10],
         },
@@ -325,6 +385,8 @@ def main() -> int:
     parser.add_argument("--dataset", choices=["icta", "feature_selection", "both"], default="both")
     parser.add_argument("--module-dir", choices=["auto", "source", "gpu"], default="source")
     parser.add_argument("--bins", type=int, default=6, help="Bins for FKG discretization.")
+    parser.add_argument("--warm-repeats", type=int, default=1,
+                        help="Number of warm runs after cold run (per train/infer stage).")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--test-ratio", type=float, default=0.3)
     parser.add_argument("--icta-csv", default=str(project_root() / "Source_code" / "data" / "ICTA" / "ICTA.csv"))
@@ -368,8 +430,14 @@ def main() -> int:
         test_df = ds["test_df"]
         label_col = ds["label_col"]
 
-        cpu_result = run_one_backend(fisa_module, train_df, test_df, label_col, args.bins, use_gpu=False)
-        gpu_result = run_one_backend(fisa_module, train_df, test_df, label_col, args.bins, use_gpu=True)
+        cpu_result = run_one_backend(
+            fisa_module, train_df, test_df, label_col, args.bins, use_gpu=False,
+            warm_repeats=args.warm_repeats
+        )
+        gpu_result = run_one_backend(
+            fisa_module, train_df, test_df, label_col, args.bins, use_gpu=True,
+            warm_repeats=args.warm_repeats
+        )
 
         fis_match = accuracy(gpu_result["_fis_predictions"], cpu_result["_fis_predictions"])
         fkg_match = accuracy(gpu_result["_fkg_predictions"], cpu_result["_fkg_predictions"])
