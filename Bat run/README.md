@@ -1,26 +1,35 @@
-# Bat run
+# Bat Run Scripts
 
-Thư mục này chứa các script `.bat` chính để build/test FKG-FIS (CPU/CUDA) theo pipeline mới.
+This folder contains the main Windows `.bat` scripts for building and testing FIS/FKG CPU-CUDA flows.
 
-## Scripts
+## Build scripts
 
 - `Build_FKG_CUDA.bat`
-  - Build module `fisa_module` với CUDA (NVIDIA + MSVC).
-  - Có hỗ trợ `--fallback-cpu` để tự chuyển qua build CPU nếu máy thiếu CUDA/MSVC.
+  - Build `fisa_module` with CUDA backend.
+  - Supports `--fallback-cpu` when CUDA/MSVC is unavailable.
 - `Build_FISA_CUDA.bat`
-  - Alias gọi `Build_FKG_CUDA.bat`.
-- `Test_Backend_GPU_CPU.bat [backend] [module_dir]`
-  - Kiểm tra runtime backend (`auto|cpu|gpu`).
-- `Test_FKG_Python_vs_CPP_CUDA.bat [backend] [module_dir]`
-  - So sánh Python thuần vs C++ CPU vs CUDA về thời gian, accuracy, sai khác ma trận A/B/C/M.
-- `Run_Full_GPU_Validation.bat`
-  - Chạy full pipeline: build, smoke test, consistency test, benchmark.
+  - Alias wrapper to CUDA build flow.
 
-## Ví dụ chạy nhanh
+## Test scripts
+
+- `Test_Backend_GPU_CPU.bat [backend] [module_dir]`
+  - Check runtime backend resolution (`auto|cpu|gpu`).
+- `Test_FKG_Python_vs_CPP_CUDA.bat [backend] [module_dir]`
+  - Compare pure Python vs C++ CPU vs CUDA for FKG.
+- `Test_FIS_FKG_Full_Flow.bat [dataset] [module_dir] [bins]`
+  - Run full FIS + FKG CPU/GPU benchmark.
+  - `dataset`: `icta | feature_selection | both`
+  - default: `both`
+- `Run_Full_GPU_Validation.bat`
+  - Full validation pipeline (build + smoke + consistency + benchmark).
+
+## Quick start
 
 ```bat
 Bat run\Build_FKG_CUDA.bat --fallback-cpu
 Bat run\Test_Backend_GPU_CPU.bat gpu source
 Bat run\Test_FKG_Python_vs_CPP_CUDA.bat auto source
+Bat run\Test_FIS_FKG_Full_Flow.bat both source 6
 Bat run\Run_Full_GPU_Validation.bat
 ```
+

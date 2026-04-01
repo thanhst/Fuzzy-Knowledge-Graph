@@ -1,89 +1,117 @@
-﻿# Bao cao tien do cap nhat FKG CUDA + FIS-FKG
+# FIS-FKG CUDA Progress Report
 
-Cap nhat: **2026-04-02**
+Updated: **2026-04-02**
 
-## 1) Tong quan
+## 1) What was implemented
 
-Da chuyen FKG sang CUDA kernel thuc te va toi uu lai luong infer GPU theo huong batch + cache de giam overhead.
+This update completes real CUDA execution for both **FKG** and **FIS** in the `Source/` codebase.
 
-## 2) Noi dung da cap nhat
+- FKG CUDA kernels were already implemented and optimized (including cached batch inference).
+- FIS now has real CUDA kernels for:
+  - 1D FCM membership update
+  - center update
+  - objective computation
+  - GPU-based rule generation pipeline
 
-- Viet CUDA kernel that trong `Source/Src/FKG_CUDA_Kernels.cu` cho cac buoc A/M/B/C/FISA.
-- Bat build CUDA trong `Source/CMakeLists.txt`.
-- Them API C++/Python cho duong infer nhanh:
-  - `createFisaDeviceCache(...)`
-  - `destroyFisaDeviceCache(...)`
-  - `fisaGPUWithCache(...)`
-  - `fisaBatchGPUWithCache(...)`
-  - `FKG.predict_batch_with_confidence(...)`
-- Cap nhat `Source/Src/FKG.cpp` de:
-  - quan ly vong doi GPU cache,
-  - predict GPU theo cache,
-  - predict batch GPU de tan dung thong luong.
-- Sap xep script chay/build vao thu muc `Bat run/`.
-- Bo sung test so sanh va test consistency:
-  - `Source/tests/test_fkg_python_vs_cpp_cuda.py`
-  - `Source/tests/test_fkg_matrix_consistency.py`
-  - `Source/tests/test_icta_gpu.py`
+## 2) New FIS CUDA components
 
-## 3) Ket qua do toc do (ICTA)
+Added files:
 
-Cau hinh test:
+- `Source/Include/FIS_CUDA_Kernels.h`
+- `Source/Src/FIS_CUDA_Kernels.cu`
 
-- Train: 537 mau
-- Test: 231 mau
-- Dataset: `Source_code/data/ICTA/ICTA.csv`
+Integrated into:
 
-Retest moi nhat:
+- `Source/Src/FIS.cpp`
+  - `FIS::fcmGPU(...)` now calls CUDA kernel wrapper (`fcm1DGPU`).
+  - `FIS::ruleGenerateGPU(...)` now calls CUDA pipeline wrapper (`ruleGenerateFIS_GPU`).
+  - Safe CPU fallback remains active when CUDA fails or is unavailable.
 
-- GPU (cold process):
-  - Train: `953.422 ms`
-  - Infer tong: `10.559 ms` (`0.046 ms/mau`)
-- CPU:
-  - Train: `39.347 ms`
-  - Infer tong: `28.558 ms` (`0.124 ms/mau`)
+Build updates:
 
-Warm-run trong cung process GPU:
+- `Source/CMakeLists.txt` includes `Src/FIS_CUDA_Kernels.cu` and `Include/FIS_CUDA_Kernels.h`.
+- `Source/CMakeLists_CUDA.txt` also includes `Src/FIS_CUDA_Kernels.cu`.
 
-- `train[0] = 847.008 ms` (co chi phi khoi tao CUDA context)
-- `train[1] = 9.100 ms`
-- `train[2] = 9.995 ms`
-- `infer batch = 8.088 - 10.041 ms` / 231 mau
+## 3) Full-flow benchmark script (FIS + FKG)
 
-Ket luan:
+Added:
 
-- Nut that infer da duoc xu ly (GPU infer nhanh hon CPU ro ret).
-- Train GPU lan dau van bi anh huong boi khoi tao CUDA context.
+- `Source/tests/test_fis_fkg_full_flow_gpu_cpu.py`
 
-## 4) Huong dan chay nhanh
+This script runs both **CPU and GPU** flows for:
 
-Build CUDA:
+- FIS train/infer
+- FKG train/infer
 
-```bat
-Bat run\Build_FKG_CUDA.bat --fallback-cpu
-```
+Datasets:
 
-Test backend CPU/GPU:
+- ICTA
+- Diabetic Retinopathy Feature FT Selection
 
-```bat
-Bat run\Test_Backend_GPU_CPU.bat gpu source
-```
+Convenience batch files:
 
-Test ICTA:
+- `Bat run/Test_FIS_FKG_Full_Flow.bat`
+- `Test_FIS_FKG_Full_Flow.bat`
+
+## 4) Latest benchmark results
+
+Command used:
 
 ```powershell
-python Source/tests/test_icta_gpu.py --backend gpu --module-dir source --csv Source_code/data/ICTA/ICTA.csv
+python Source/tests/test_fis_fkg_full_flow_gpu_cpu.py --dataset both --module-dir source --bins 6 --test-ratio 0.3 --seed 42 --out-json result/full_flow_benchmark_compact.json
 ```
 
-Test so sanh Python vs C++ CPU vs CUDA:
+### ICTA (train=537, test=231)
 
-```bat
-Bat run\Test_FKG_Python_vs_CPP_CUDA.bat auto source
-```
+- FIS CPU:
+  - train: `74.76 ms`
+  - infer: `1.22 ms`
+  - accuracy: `64.94%`
+- FIS GPU:
+  - train: `1426.93 ms` (cold GPU context overhead)
+  - infer: `1.27 ms`
+  - accuracy: `64.94%`
+- FKG CPU:
+  - train: `6.66 ms`
+  - infer: `25.95 ms`
+  - accuracy: `65.37%`
+- FKG GPU:
+  - train: `13.14 ms`
+  - infer: `7.79 ms`
+  - accuracy: `65.37%`
+- CPU/GPU prediction match:
+  - FIS: `100%`
+  - FKG: `100%`
 
-## 5) Ke hoach toi uu tiep
+### Feature Selection dataset (train=21274, test=9118)
 
-- Them warmup mode trong benchmark de tach cold-start.
-- Tai su dung buffer input/output tren GPU cho infer lap.
-- Nghien cuu stream + overlap copy/compute cho batch lon.
-- Neu can throughput cao hon nua: xem xet toi uu layout du lieu roi rac (int packing).
+- FIS CPU:
+  - train: `1145.00 ms`
+  - infer: `73.99 ms`
+  - accuracy: `91.42%`
+- FIS GPU:
+  - train: `18042.80 ms`
+  - infer: `122.13 ms`
+  - accuracy: `91.42%`
+- FKG CPU:
+  - train: `3403.68 ms`
+  - infer: `75522.03 ms`
+  - accuracy: `59.71%`
+- FKG GPU:
+  - train: `55565.85 ms`
+  - infer: `11726.41 ms`
+  - accuracy: `59.71%`
+- CPU/GPU prediction match:
+  - FIS: `100%`
+  - FKG: `100%`
+
+## 5) Notes
+
+- FIS CUDA is now functional and numerically consistent with CPU.
+- On current datasets, FIS GPU train is slower than CPU due iterative kernel-launch overhead and cold-start cost.
+- FKG GPU remains clearly beneficial for inference throughput in both datasets.
+- Further FIS GPU optimization should focus on:
+  - reducing per-iteration kernel launch overhead,
+  - fusing FCM kernels,
+  - keeping convergence checks on device when possible.
+

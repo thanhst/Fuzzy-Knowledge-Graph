@@ -3,11 +3,12 @@
 `fisa_module` is a Python extension (C++/CUDA) that provides:
 
 - `fkg`: Fuzzy Knowledge Graph (A/M/B/C, FISA infer, CPU/GPU benchmark)
-- `fis`: Fuzzy Inference System (parallel CPU path)
+- `fis`: Fuzzy Inference System (CPU/GPU FCM + rule generation)
 
 ## Main points
 
 - Real CUDA kernels implemented in `Source/Src/FKG_CUDA_Kernels.cu`.
+- Real CUDA kernels implemented in `Source/Src/FIS_CUDA_Kernels.cu`.
 - End-to-end GPU matrix pipeline: `calculateABCM_GPU(...)`.
 - Cached GPU inference path to remove repeated setup overhead:
   - `createFisaDeviceCache(...)`
@@ -90,6 +91,12 @@ ICTA benchmark:
 
 ```powershell
 python Source/tests/test_icta_gpu.py --backend gpu --module-dir source
+```
+
+Full flow benchmark (FIS + FKG, CPU vs GPU, ICTA + Feature Selection):
+
+```powershell
+python Source/tests/test_fis_fkg_full_flow_gpu_cpu.py --dataset both --module-dir source
 ```
 
 Matrix consistency:

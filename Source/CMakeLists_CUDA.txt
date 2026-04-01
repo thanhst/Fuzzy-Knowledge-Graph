@@ -30,6 +30,8 @@ set(SOURCES
     Src/FKG.cpp
     Src/FIS.cpp
     Src/Utils.cpp
+    Src/FKG_CUDA_Kernels.cu
+    Src/FIS_CUDA_Kernels.cu
     Python/bindings.cpp
 )
 

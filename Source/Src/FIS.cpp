@@ -12,12 +12,16 @@
  */
 
 #include "FIS.h"
+#if FUZZY_USE_CUDA
+#include "FIS_CUDA_Kernels.h"
+#endif
 #include <algorithm>
 #include <cmath>
 #include <unordered_set>
 #include <atomic>
 #include <chrono>
 #include <limits>
+#include <iostream>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -735,6 +739,18 @@ std::pair<Matrix, Matrix> FIS::fcmGPU(const std::vector<double>& X, int C,
     if (!isGPUAvailable()) {
         return fcmParallel(X, C, V_init, m, eps, max_iter);
     }
+#if FUZZY_USE_CUDA
+    Matrix centers;
+    Matrix U;
+    std::string cudaError;
+    const cudaError_t status = CUDA::fcm1DGPU(X, C, V_init, m, eps, max_iter,
+                                              centers, U, &cudaError);
+    if (status == cudaSuccess) {
+        return {centers, U};
+    }
+    std::cerr << "CUDA error in FIS::fcmGPU, falling back to CPU: "
+              << cudaError << std::endl;
+#endif
     return fcmParallel(X, C, V_init, m, eps, max_iter);
 }
 
@@ -746,6 +762,19 @@ FIS::RuleGenerationResult FIS::ruleGenerateGPU(const Matrix& data,
     if (!isGPUAvailable()) {
         return ruleGenerate(data, cluster, min_vals, max_vals, m, eps, max_iter);
     }
+#if FUZZY_USE_CUDA
+    RuleGenerationResult result;
+    std::string cudaError;
+    const cudaError_t status = CUDA::ruleGenerateFIS_GPU(data, cluster, min_vals, max_vals,
+                                                          m, eps, max_iter,
+                                                          result.rules, result.centers, result.U,
+                                                          &cudaError);
+    if (status == cudaSuccess) {
+        return result;
+    }
+    std::cerr << "CUDA error in FIS::ruleGenerateGPU, falling back to CPU: "
+              << cudaError << std::endl;
+#endif
     return ruleGenerate(data, cluster, min_vals, max_vals, m, eps, max_iter);
 }
 

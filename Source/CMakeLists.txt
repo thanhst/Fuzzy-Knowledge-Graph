@@ -81,6 +81,7 @@ set(SOURCE_FILES
 if(USE_CUDA AND CMAKE_CUDA_COMPILER)
     list(APPEND SOURCE_FILES
         Src/FKG_CUDA_Kernels.cu
+        Src/FIS_CUDA_Kernels.cu
     )
 endif()
 
@@ -88,6 +89,7 @@ set(HEADER_FILES
     Include/FKG.h
     Include/FIS.h
     Include/FKG_CUDA_Kernels.h
+    Include/FIS_CUDA_Kernels.h
     Include/Utils.h
 )
 
