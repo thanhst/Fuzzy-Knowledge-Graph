@@ -1,87 +1,89 @@
-﻿# FKG CUDA Progress Report
+﻿# Bao cao tien do cap nhat FKG CUDA + FIS-FKG
 
-Updated: **2026-04-02**
+Cap nhat: **2026-04-02**
 
-## 1) Scope
+## 1) Tong quan
 
-This update focuses on real CUDA execution for FKG and practical GPU optimization for train/infer flow in FIS-FKG pipeline.
+Da chuyen FKG sang CUDA kernel thuc te va toi uu lai luong infer GPU theo huong batch + cache de giam overhead.
 
-## 2) Completed updates
+## 2) Noi dung da cap nhat
 
-- Implemented real CUDA kernels in `Source/Src/FKG_CUDA_Kernels.cu`.
-- Enabled CUDA build path in `Source/CMakeLists.txt`.
-- Added matrix and GPU APIs in C++ and Python bindings.
-- Added bat scripts under `Bat run/` for build and test automation.
-- Added comparison and consistency tests:
+- Viet CUDA kernel that trong `Source/Src/FKG_CUDA_Kernels.cu` cho cac buoc A/M/B/C/FISA.
+- Bat build CUDA trong `Source/CMakeLists.txt`.
+- Them API C++/Python cho duong infer nhanh:
+  - `createFisaDeviceCache(...)`
+  - `destroyFisaDeviceCache(...)`
+  - `fisaGPUWithCache(...)`
+  - `fisaBatchGPUWithCache(...)`
+  - `FKG.predict_batch_with_confidence(...)`
+- Cap nhat `Source/Src/FKG.cpp` de:
+  - quan ly vong doi GPU cache,
+  - predict GPU theo cache,
+  - predict batch GPU de tan dung thong luong.
+- Sap xep script chay/build vao thu muc `Bat run/`.
+- Bo sung test so sanh va test consistency:
   - `Source/tests/test_fkg_python_vs_cpp_cuda.py`
   - `Source/tests/test_fkg_matrix_consistency.py`
   - `Source/tests/test_icta_gpu.py`
 
-## 3) New optimization in this round
+## 3) Ket qua do toc do (ICTA)
 
-### 3.1 GPU inference cache (major)
+Cau hinh test:
 
-Added persistent device cache for inference:
+- Train: 537 mau
+- Test: 231 mau
+- Dataset: `Source_code/data/ICTA/ICTA.csv`
 
-- `createFisaDeviceCache(...)`
-- `destroyFisaDeviceCache(...)`
-- `fisaGPUWithCache(...)`
-- `fisaBatchGPUWithCache(...)`
+Retest moi nhat:
 
-Cache keeps `base`, `C`, and `comb3` on GPU memory across predictions.
+- GPU (cold process):
+  - Train: `953.422 ms`
+  - Infer tong: `10.559 ms` (`0.046 ms/mau`)
+- CPU:
+  - Train: `39.347 ms`
+  - Infer tong: `28.558 ms` (`0.124 ms/mau`)
 
-### 3.2 Batch CUDA kernel for FISA
+Warm-run trong cung process GPU:
 
-Added `KernelFisaDBatch` so multiple samples are inferred in one GPU launch.
-This removes repeated per-sample launch/memory overhead.
+- `train[0] = 847.008 ms` (co chi phi khoi tao CUDA context)
+- `train[1] = 9.100 ms`
+- `train[2] = 9.995 ms`
+- `infer batch = 8.088 - 10.041 ms` / 231 mau
 
-### 3.3 FKG runtime path updated
+Ket luan:
 
-`Source/Src/FKG.cpp` now:
+- Nut that infer da duoc xu ly (GPU infer nhanh hon CPU ro ret).
+- Train GPU lan dau van bi anh huong boi khoi tao CUDA context.
 
-- builds/invalidates cache on train lifecycle,
-- uses cached GPU path for `predict(...)`,
-- uses cached batch path for `predictBatch(...)`,
-- exposes `predictBatchWithConfidence(...)`.
+## 4) Huong dan chay nhanh
 
-### 3.4 Python API and ICTA test updated
+Build CUDA:
 
-- `Source/Python/bindings.cpp` exposes `predict_batch_with_confidence`.
-- `Source/tests/test_icta_gpu.py` now uses batch inference when available.
+```bat
+Bat run\Build_FKG_CUDA.bat --fallback-cpu
+```
 
-## 4) Measured results
+Test backend CPU/GPU:
 
-### ICTA script (`Source/tests/test_icta_gpu.py`, train=537, test=231)
+```bat
+Bat run\Test_Backend_GPU_CPU.bat gpu source
+```
 
-- GPU train time: `~1252.1 ms` (cold process, includes CUDA init)
-- GPU infer total: `~11.7 ms`
-- CPU train time: `~9.0 ms`
-- CPU infer total: `~29.5 ms`
-- Accuracy: same (`65.80%` in this run)
+Test ICTA:
 
-### Same process repeated timing (GPU)
+```powershell
+python Source/tests/test_icta_gpu.py --backend gpu --module-dir source --csv Source_code/data/ICTA/ICTA.csv
+```
 
-- train[0]: `~878.5 ms` (cold init)
-- train[1]: `~10.3 ms`
-- train[2]: `~9.9 ms`
-- batch infer: `~8-11 ms` for 231 samples
-- old per-sample loop infer: `~529-561 ms` for 231 samples
+Test so sanh Python vs C++ CPU vs CUDA:
 
-Conclusion: inference bottleneck is fixed; cold train still dominated by first CUDA context initialization.
+```bat
+Bat run\Test_FKG_Python_vs_CPP_CUDA.bat auto source
+```
 
-## 5) Updated files (this optimization round)
+## 5) Ke hoach toi uu tiep
 
-- `Source/Src/FKG_CUDA_Kernels.cu`
-- `Source/Include/FKG_CUDA_Kernels.h`
-- `Source/Src/FKG.cpp`
-- `Source/Include/FKG.h`
-- `Source/Python/bindings.cpp`
-- `Source/tests/test_icta_gpu.py`
-- `Source/tests/test_fkg_python_vs_cpp_cuda.py`
-
-## 6) Remaining high-impact tasks
-
-- Add optional warmup stage before benchmark timing to separate cold init cost.
-- Reuse input/output device buffers for batch inference to reduce remaining allocations.
-- Add CUDA streams for overlap between H2D/D2H copy and compute.
-- Consider compact integer encoding for discrete data to reduce bandwidth.
+- Them warmup mode trong benchmark de tach cold-start.
+- Tai su dung buffer input/output tren GPU cho infer lap.
+- Nghien cuu stream + overlap copy/compute cho batch lon.
+- Neu can throughput cao hon nua: xem xet toi uu layout du lieu roi rac (int packing).
