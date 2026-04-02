@@ -9,8 +9,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <cmath>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Fuzzy {
@@ -153,6 +155,139 @@ inline bool validateRectangular(const Matrix& matrix, int* rows, int* cols) {
 
 constexpr int kBlockSize = 256;
 
+struct HostLookupKey {
+    int combLabel;
+    int v0;
+    int v1;
+    int v2;
+
+    bool operator==(const HostLookupKey& other) const {
+        return combLabel == other.combLabel &&
+               v0 == other.v0 &&
+               v1 == other.v1 &&
+               v2 == other.v2;
+    }
+};
+
+struct HostLookupKeyHash {
+    size_t operator()(const HostLookupKey& key) const {
+        size_t h = std::hash<int>{}(key.combLabel);
+        h ^= std::hash<int>{}(key.v0) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<int>{}(key.v1) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<int>{}(key.v2) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
+    }
+};
+
+struct HostLookupEntry {
+    int4 key;
+    double value;
+};
+
+inline int roundToIntSafe(double value) {
+    return static_cast<int>(std::llround(value));
+}
+
+inline bool isNearlyInteger(double value, double tol = 1e-8) {
+    return std::abs(value - static_cast<double>(roundToIntSafe(value))) <= tol;
+}
+
+inline bool compareInt4(const int4& a, const int4& b) {
+    if (a.x != b.x) return a.x < b.x;
+    if (a.y != b.y) return a.y < b.y;
+    if (a.z != b.z) return a.z < b.z;
+    return a.w < b.w;
+}
+
+inline bool buildFisaLookupTable(const Matrix& base, const Matrix& C,
+                                 const std::vector<int3>& comb3,
+                                 int nClasses, int fullCols,
+                                 std::vector<int4>* outKeys,
+                                 std::vector<double>* outValues) {
+    if (outKeys == nullptr || outValues == nullptr) {
+        return false;
+    }
+    outKeys->clear();
+    outValues->clear();
+
+    if (base.empty() || base[0].size() < 2 || C.empty()) {
+        return false;
+    }
+
+    const int rows = static_cast<int>(base.size());
+    const int cols = static_cast<int>(base[0].size());
+    const int numComb3 = static_cast<int>(comb3.size());
+    if (rows <= 1 || numComb3 <= 0 || nClasses <= 0) {
+        return false;
+    }
+
+    std::unordered_map<HostLookupKey, double, HostLookupKeyHash> lookup;
+    lookup.reserve(static_cast<size_t>(std::max(1024, rows * std::max(1, nClasses))));
+
+    for (int r = 0; r < rows - 1; ++r) {
+        const double rawLabel = base[static_cast<size_t>(r)][static_cast<size_t>(cols - 1)];
+        if (!isNearlyInteger(rawLabel)) {
+            return false;
+        }
+        const int label = roundToIntSafe(rawLabel);
+        if (label < 1 || label > nClasses) {
+            continue;
+        }
+
+        for (int combIdx = 0; combIdx < numComb3; ++combIdx) {
+            const int3 comb = comb3[static_cast<size_t>(combIdx)];
+            const double rawV0 = base[static_cast<size_t>(r)][static_cast<size_t>(comb.x)];
+            const double rawV1 = base[static_cast<size_t>(r)][static_cast<size_t>(comb.y)];
+            const double rawV2 = base[static_cast<size_t>(r)][static_cast<size_t>(comb.z)];
+            if (!isNearlyInteger(rawV0) || !isNearlyInteger(rawV1) || !isNearlyInteger(rawV2)) {
+                return false;
+            }
+
+            const int combLabel = (label - 1) * numComb3 + combIdx;
+            if (combLabel < 0 || combLabel >= fullCols) {
+                continue;
+            }
+
+            const HostLookupKey key{
+                combLabel,
+                roundToIntSafe(rawV0),
+                roundToIntSafe(rawV1),
+                roundToIntSafe(rawV2)
+            };
+            // Keep last-row overwrite behavior to match legacy implementation.
+            lookup[key] = C[static_cast<size_t>(r)][static_cast<size_t>(combLabel)];
+        }
+    }
+
+    if (lookup.empty()) {
+        return false;
+    }
+
+    std::vector<HostLookupEntry> entries;
+    entries.reserve(lookup.size());
+    for (const auto& item : lookup) {
+        HostLookupEntry entry{};
+        entry.key.x = item.first.combLabel;
+        entry.key.y = item.first.v0;
+        entry.key.z = item.first.v1;
+        entry.key.w = item.first.v2;
+        entry.value = item.second;
+        entries.push_back(entry);
+    }
+
+    std::sort(entries.begin(), entries.end(), [](const HostLookupEntry& lhs, const HostLookupEntry& rhs) {
+        return compareInt4(lhs.key, rhs.key);
+    });
+
+    outKeys->reserve(entries.size());
+    outValues->reserve(entries.size());
+    for (const auto& entry : entries) {
+        outKeys->push_back(entry.key);
+        outValues->push_back(entry.value);
+    }
+    return true;
+}
+
 // (r1, comb4)
 __global__ void KernelCalculateA(const double* base, const int4* comb4, int numComb4,
                                  int rows, int cols, double invRows, double* outA) {
@@ -283,6 +418,33 @@ __global__ void KernelCalculateC(const double* base, const double* inB, const in
     outC[r1 * fullCols + localCol] = sum;
 }
 
+__device__ int compareInt4Device(const int4& key, int x, int y, int z, int w) {
+    if (key.x != x) return (key.x < x) ? -1 : 1;
+    if (key.y != y) return (key.y < y) ? -1 : 1;
+    if (key.z != z) return (key.z < z) ? -1 : 1;
+    if (key.w != w) return (key.w < w) ? -1 : 1;
+    return 0;
+}
+
+__device__ double lookupFisaValue(const int4* keys, const double* values, int count,
+                                  int combLabel, int v0, int v1, int v2) {
+    int lo = 0;
+    int hi = count - 1;
+    while (lo <= hi) {
+        const int mid = lo + ((hi - lo) >> 1);
+        const int cmp = compareInt4Device(keys[mid], combLabel, v0, v1, v2);
+        if (cmp == 0) {
+            return values[mid];
+        }
+        if (cmp < 0) {
+            lo = mid + 1;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    return 0.0;
+}
+
 // (label)
 __global__ void KernelFisaD(const double* base, const double* C, const double* input,
                             const int3* comb3, int numComb3, int rows, int cols,
@@ -315,6 +477,40 @@ __global__ void KernelFisaD(const double* base, const double* C, const double* i
             }
         }
 
+        if (!initialized) {
+            maxVal = value;
+            minVal = value;
+            initialized = true;
+        } else {
+            maxVal = fmax(maxVal, value);
+            minVal = fmin(minVal, value);
+        }
+    }
+
+    outD[classIdx] = initialized ? (maxVal + minVal) : 0.0;
+}
+
+// (label) optimized path with prebuilt lookup table.
+__global__ void KernelFisaDLookup(const int4* lookupKeys, const double* lookupValues, int lookupSize,
+                                  const double* input, const int3* comb3, int numComb3,
+                                  int nClasses, double* outD) {
+    const int classIdx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (classIdx >= nClasses) {
+        return;
+    }
+
+    bool initialized = false;
+    double maxVal = 0.0;
+    double minVal = 0.0;
+
+    for (int combIdx = 0; combIdx < numComb3; ++combIdx) {
+        const int3 comb = comb3[combIdx];
+        const int v0 = __double2int_rn(input[comb.x]);
+        const int v1 = __double2int_rn(input[comb.y]);
+        const int v2 = __double2int_rn(input[comb.z]);
+        const int combLabel = classIdx * numComb3 + combIdx;
+
+        const double value = lookupFisaValue(lookupKeys, lookupValues, lookupSize, combLabel, v0, v1, v2);
         if (!initialized) {
             maxVal = value;
             minVal = value;
@@ -365,6 +561,45 @@ __global__ void KernelFisaDBatch(const double* base, const double* C, const doub
             }
         }
 
+        if (!initialized) {
+            maxVal = value;
+            minVal = value;
+            initialized = true;
+        } else {
+            maxVal = fmax(maxVal, value);
+            minVal = fmin(minVal, value);
+        }
+    }
+
+    outD[idx] = initialized ? (maxVal + minVal) : 0.0;
+}
+
+// (sample, label) optimized path with prebuilt lookup table.
+__global__ void KernelFisaDBatchLookup(const int4* lookupKeys, const double* lookupValues, int lookupSize,
+                                       const double* inputs, const int3* comb3, int numComb3,
+                                       int nClasses, int featureCount, int numInputs, double* outD) {
+    const int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    const int total = numInputs * nClasses;
+    if (idx >= total) {
+        return;
+    }
+
+    const int sampleIdx = idx / nClasses;
+    const int classIdx = idx - sampleIdx * nClasses;
+    const double* input = inputs + static_cast<size_t>(sampleIdx) * static_cast<size_t>(featureCount);
+
+    bool initialized = false;
+    double maxVal = 0.0;
+    double minVal = 0.0;
+
+    for (int combIdx = 0; combIdx < numComb3; ++combIdx) {
+        const int3 comb = comb3[combIdx];
+        const int v0 = __double2int_rn(input[comb.x]);
+        const int v1 = __double2int_rn(input[comb.y]);
+        const int v2 = __double2int_rn(input[comb.z]);
+        const int combLabel = classIdx * numComb3 + combIdx;
+
+        const double value = lookupFisaValue(lookupKeys, lookupValues, lookupSize, combLabel, v0, v1, v2);
         if (!initialized) {
             maxVal = value;
             minVal = value;
@@ -746,50 +981,15 @@ cudaError_t createFisaDeviceCache(const Matrix& base, const Matrix& C, int n_cla
         return cudaErrorInvalidValue;
     }
 
-    const std::vector<double> hBase = flattenMatrix(base);
-    const std::vector<double> hC = flattenMatrix(C);
     const std::vector<int3> hComb3 = buildComb3(numFeatures);
 
     double* dBase = nullptr;
     double* dC = nullptr;
     int3* dComb3 = nullptr;
 
-    cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&dBase), hBase.size() * sizeof(double));
-    if (err != cudaSuccess) {
-        setError(error_message, "cudaMalloc(cache.base)", err);
-        return err;
-    }
-
-    err = cudaMalloc(reinterpret_cast<void**>(&dC), hC.size() * sizeof(double));
-    if (err != cudaSuccess) {
-        setError(error_message, "cudaMalloc(cache.C)", err);
-        cudaFree(dBase);
-        return err;
-    }
-
-    err = cudaMalloc(reinterpret_cast<void**>(&dComb3), hComb3.size() * sizeof(int3));
+    cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&dComb3), hComb3.size() * sizeof(int3));
     if (err != cudaSuccess) {
         setError(error_message, "cudaMalloc(cache.comb3)", err);
-        cudaFree(dC);
-        cudaFree(dBase);
-        return err;
-    }
-
-    err = cudaMemcpy(dBase, hBase.data(), hBase.size() * sizeof(double), cudaMemcpyHostToDevice);
-    if (err != cudaSuccess) {
-        setError(error_message, "cudaMemcpy(cache.base)", err);
-        cudaFree(dComb3);
-        cudaFree(dC);
-        cudaFree(dBase);
-        return err;
-    }
-
-    err = cudaMemcpy(dC, hC.data(), hC.size() * sizeof(double), cudaMemcpyHostToDevice);
-    if (err != cudaSuccess) {
-        setError(error_message, "cudaMemcpy(cache.C)", err);
-        cudaFree(dComb3);
-        cudaFree(dC);
-        cudaFree(dBase);
         return err;
     }
 
@@ -797,23 +997,122 @@ cudaError_t createFisaDeviceCache(const Matrix& base, const Matrix& C, int n_cla
     if (err != cudaSuccess) {
         setError(error_message, "cudaMemcpy(cache.comb3)", err);
         cudaFree(dComb3);
-        cudaFree(dC);
-        cudaFree(dBase);
         return err;
+    }
+
+    int4* dLookupKeys = nullptr;
+    double* dLookupValues = nullptr;
+    int lookupSize = 0;
+    int useLookup = 0;
+
+    std::vector<int4> hLookupKeys;
+    std::vector<double> hLookupValues;
+    if (buildFisaLookupTable(base, C, hComb3, activeClassCount, cCols, &hLookupKeys, &hLookupValues) &&
+        !hLookupKeys.empty() &&
+        hLookupKeys.size() == hLookupValues.size()) {
+        cudaError_t lookupErr =
+            cudaMalloc(reinterpret_cast<void**>(&dLookupKeys), hLookupKeys.size() * sizeof(int4));
+        if (lookupErr == cudaSuccess) {
+            lookupErr = cudaMalloc(reinterpret_cast<void**>(&dLookupValues),
+                                   hLookupValues.size() * sizeof(double));
+        }
+        if (lookupErr == cudaSuccess) {
+            lookupErr = cudaMemcpy(dLookupKeys, hLookupKeys.data(),
+                                   hLookupKeys.size() * sizeof(int4),
+                                   cudaMemcpyHostToDevice);
+        }
+        if (lookupErr == cudaSuccess) {
+            lookupErr = cudaMemcpy(dLookupValues, hLookupValues.data(),
+                                   hLookupValues.size() * sizeof(double),
+                                   cudaMemcpyHostToDevice);
+        }
+        if (lookupErr == cudaSuccess) {
+            lookupSize = static_cast<int>(hLookupKeys.size());
+            useLookup = (lookupSize > 0) ? 1 : 0;
+        } else {
+            if (dLookupValues != nullptr) {
+                cudaFree(dLookupValues);
+                dLookupValues = nullptr;
+            }
+            if (dLookupKeys != nullptr) {
+                cudaFree(dLookupKeys);
+                dLookupKeys = nullptr;
+            }
+            lookupSize = 0;
+            useLookup = 0;
+        }
+    }
+
+    if (useLookup == 0) {
+        const std::vector<double> hBase = flattenMatrix(base);
+        const std::vector<double> hC = flattenMatrix(C);
+
+        err = cudaMalloc(reinterpret_cast<void**>(&dBase), hBase.size() * sizeof(double));
+        if (err != cudaSuccess) {
+            setError(error_message, "cudaMalloc(cache.base)", err);
+            if (dLookupValues != nullptr) cudaFree(dLookupValues);
+            if (dLookupKeys != nullptr) cudaFree(dLookupKeys);
+            cudaFree(dComb3);
+            return err;
+        }
+
+        err = cudaMalloc(reinterpret_cast<void**>(&dC), hC.size() * sizeof(double));
+        if (err != cudaSuccess) {
+            setError(error_message, "cudaMalloc(cache.C)", err);
+            cudaFree(dBase);
+            if (dLookupValues != nullptr) cudaFree(dLookupValues);
+            if (dLookupKeys != nullptr) cudaFree(dLookupKeys);
+            cudaFree(dComb3);
+            return err;
+        }
+
+        err = cudaMemcpy(dBase, hBase.data(), hBase.size() * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            setError(error_message, "cudaMemcpy(cache.base)", err);
+            cudaFree(dC);
+            cudaFree(dBase);
+            if (dLookupValues != nullptr) cudaFree(dLookupValues);
+            if (dLookupKeys != nullptr) cudaFree(dLookupKeys);
+            cudaFree(dComb3);
+            return err;
+        }
+
+        err = cudaMemcpy(dC, hC.data(), hC.size() * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            setError(error_message, "cudaMemcpy(cache.C)", err);
+            cudaFree(dC);
+            cudaFree(dBase);
+            if (dLookupValues != nullptr) cudaFree(dLookupValues);
+            if (dLookupKeys != nullptr) cudaFree(dLookupKeys);
+            cudaFree(dComb3);
+            return err;
+        }
     }
 
     cache.dBase = dBase;
     cache.dC = dC;
     cache.dComb3 = dComb3;
+    cache.dLookupKeys = dLookupKeys;
+    cache.dLookupValues = dLookupValues;
     cache.rows = rows;
     cache.cols = cols;
     cache.fullCols = cCols;
     cache.numComb3 = numComb3;
     cache.nClasses = activeClassCount;
+    cache.lookupSize = lookupSize;
+    cache.useLookup = useLookup;
     return cudaSuccess;
 }
 
 void destroyFisaDeviceCache(FisaDeviceCache& cache) {
+    if (cache.dLookupValues != nullptr) {
+        cudaFree(cache.dLookupValues);
+        cache.dLookupValues = nullptr;
+    }
+    if (cache.dLookupKeys != nullptr) {
+        cudaFree(cache.dLookupKeys);
+        cache.dLookupKeys = nullptr;
+    }
     if (cache.dComb3 != nullptr) {
         cudaFree(cache.dComb3);
         cache.dComb3 = nullptr;
@@ -831,15 +1130,23 @@ void destroyFisaDeviceCache(FisaDeviceCache& cache) {
     cache.fullCols = 0;
     cache.numComb3 = 0;
     cache.nClasses = 0;
+    cache.lookupSize = 0;
+    cache.useLookup = 0;
 }
 
 cudaError_t fisaGPUWithCache(const FisaDeviceCache& cache, const std::vector<double>& input,
                              int& result_class, double& result_confidence,
                              std::vector<double>* d_values, std::string* error_message) {
-    if (cache.dBase == nullptr || cache.dC == nullptr || cache.dComb3 == nullptr ||
+    if (cache.dComb3 == nullptr ||
         cache.rows <= 0 || cache.cols <= 1 || cache.numComb3 <= 0 || cache.nClasses <= 0) {
         if (error_message != nullptr) {
             *error_message = "FISA device cache is not initialized.";
+        }
+        return cudaErrorInvalidResourceHandle;
+    }
+    if (cache.useLookup == 0 && (cache.dBase == nullptr || cache.dC == nullptr)) {
+        if (error_message != nullptr) {
+            *error_message = "FISA cache missing base/C tensors.";
         }
         return cudaErrorInvalidResourceHandle;
     }
@@ -850,6 +1157,16 @@ cudaError_t fisaGPUWithCache(const FisaDeviceCache& cache, const std::vector<dou
             *error_message = "Input sample size must match cache feature count.";
         }
         return cudaErrorInvalidValue;
+    }
+    bool canUseLookup = (cache.useLookup != 0 && cache.dLookupKeys != nullptr &&
+                         cache.dLookupValues != nullptr && cache.lookupSize > 0);
+    if (canUseLookup) {
+        for (double v : input) {
+            if (!isNearlyInteger(v)) {
+                canUseLookup = false;
+                break;
+            }
+        }
     }
 
     DeviceBuffer<double> dInput;
@@ -874,10 +1191,17 @@ cudaError_t fisaGPUWithCache(const FisaDeviceCache& cache, const std::vector<dou
         return err;
     }
 
-    KernelFisaD<<<(cache.nClasses + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-        cache.dBase, cache.dC, dInput.get(), cache.dComb3, cache.numComb3, cache.rows,
-        cache.cols, cache.nClasses, cache.fullCols, dD.get());
-    err = checkCudaKernel("KernelFisaD", error_message);
+    if (canUseLookup) {
+        KernelFisaDLookup<<<(cache.nClasses + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
+            cache.dLookupKeys, cache.dLookupValues, cache.lookupSize, dInput.get(),
+            cache.dComb3, cache.numComb3, cache.nClasses, dD.get());
+        err = checkCudaKernel("KernelFisaDLookup", error_message);
+    } else {
+        KernelFisaD<<<(cache.nClasses + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
+            cache.dBase, cache.dC, dInput.get(), cache.dComb3, cache.numComb3, cache.rows,
+            cache.cols, cache.nClasses, cache.fullCols, dD.get());
+        err = checkCudaKernel("KernelFisaD", error_message);
+    }
     if (err != cudaSuccess) {
         return err;
     }
@@ -918,16 +1242,24 @@ cudaError_t fisaBatchGPUWithCache(const FisaDeviceCache& cache, const Matrix& in
         return cudaSuccess;
     }
 
-    if (cache.dBase == nullptr || cache.dC == nullptr || cache.dComb3 == nullptr ||
+    if (cache.dComb3 == nullptr ||
         cache.rows <= 0 || cache.cols <= 1 || cache.numComb3 <= 0 || cache.nClasses <= 0) {
         if (error_message != nullptr) {
             *error_message = "FISA device cache is not initialized.";
         }
         return cudaErrorInvalidResourceHandle;
     }
+    if (cache.useLookup == 0 && (cache.dBase == nullptr || cache.dC == nullptr)) {
+        if (error_message != nullptr) {
+            *error_message = "FISA cache missing base/C tensors.";
+        }
+        return cudaErrorInvalidResourceHandle;
+    }
 
     const int numInputs = static_cast<int>(inputs.size());
     const int featureCount = cache.cols - 1;
+    bool canUseLookup = (cache.useLookup != 0 && cache.dLookupKeys != nullptr &&
+                         cache.dLookupValues != nullptr && cache.lookupSize > 0);
     std::vector<double> hInputs;
     hInputs.resize(static_cast<size_t>(numInputs) * static_cast<size_t>(featureCount), 0.0);
 
@@ -937,6 +1269,14 @@ cudaError_t fisaBatchGPUWithCache(const FisaDeviceCache& cache, const Matrix& in
                 *error_message = "All input rows must match cache feature count.";
             }
             return cudaErrorInvalidValue;
+        }
+        if (canUseLookup) {
+            for (double v : inputs[static_cast<size_t>(i)]) {
+                if (!isNearlyInteger(v)) {
+                    canUseLookup = false;
+                    break;
+                }
+            }
         }
         std::memcpy(hInputs.data() + static_cast<size_t>(i) * static_cast<size_t>(featureCount),
                     inputs[static_cast<size_t>(i)].data(),
@@ -965,10 +1305,17 @@ cudaError_t fisaBatchGPUWithCache(const FisaDeviceCache& cache, const Matrix& in
     }
 
     const int totalThreads = numInputs * cache.nClasses;
-    KernelFisaDBatch<<<(totalThreads + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-        cache.dBase, cache.dC, dInputs.get(), cache.dComb3, cache.numComb3, cache.rows,
-        cache.cols, cache.nClasses, cache.fullCols, numInputs, dBatchD.get());
-    err = checkCudaKernel("KernelFisaDBatch", error_message);
+    if (canUseLookup) {
+        KernelFisaDBatchLookup<<<(totalThreads + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
+            cache.dLookupKeys, cache.dLookupValues, cache.lookupSize, dInputs.get(),
+            cache.dComb3, cache.numComb3, cache.nClasses, featureCount, numInputs, dBatchD.get());
+        err = checkCudaKernel("KernelFisaDBatchLookup", error_message);
+    } else {
+        KernelFisaDBatch<<<(totalThreads + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
+            cache.dBase, cache.dC, dInputs.get(), cache.dComb3, cache.numComb3, cache.rows,
+            cache.cols, cache.nClasses, cache.fullCols, numInputs, dBatchD.get());
+        err = checkCudaKernel("KernelFisaDBatch", error_message);
+    }
     if (err != cudaSuccess) {
         return err;
     }

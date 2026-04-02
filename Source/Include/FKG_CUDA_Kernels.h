@@ -28,11 +28,15 @@ struct FisaDeviceCache {
     double* dBase = nullptr;
     double* dC = nullptr;
     int3* dComb3 = nullptr;
+    int4* dLookupKeys = nullptr;
+    double* dLookupValues = nullptr;
     int rows = 0;
     int cols = 0;
     int fullCols = 0;
     int numComb3 = 0;
     int nClasses = 0;
+    int lookupSize = 0;
+    int useLookup = 0;
 };
 
 // Compute each matrix independently.

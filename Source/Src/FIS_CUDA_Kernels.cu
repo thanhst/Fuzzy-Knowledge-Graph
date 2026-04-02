@@ -112,7 +112,7 @@ constexpr int kBlockSize = 256;
 // idx = i * C + j
 __global__ void KernelUpdateMembership(const double* X, const double* centers,
                                        int N, int C, double exponent, double eps,
-                                       double* U, double* dist) {
+                                       int useSquareExponent, double* U) {
     const int idx = blockIdx.x * blockDim.x + threadIdx.x;
     const int total = N * C;
     if (idx >= total) {
@@ -132,10 +132,14 @@ __global__ void KernelUpdateMembership(const double* X, const double* centers,
         if (dik < eps) {
             dik = eps;
         }
-        denom += pow(dij / dik, exponent);
+        const double ratio = dij / dik;
+        if (useSquareExponent != 0) {
+            denom += ratio * ratio;
+        } else {
+            denom += pow(ratio, exponent);
+        }
     }
 
-    dist[idx] = dij;
     U[idx] = (denom > 0.0) ? (1.0 / denom) : 0.0;
 }
 
@@ -162,6 +166,7 @@ __global__ void KernelNormalizeMembership(double* U, int N, int C) {
 // idx = cluster j
 __global__ void KernelUpdateCenters(const double* X, const double* U,
                                     int N, int C, double m,
+                                    int useSquareM,
                                     const double* centersPrev,
                                     double* centersNext) {
     const int j = blockIdx.x * blockDim.x + threadIdx.x;
@@ -173,7 +178,7 @@ __global__ void KernelUpdateCenters(const double* X, const double* U,
     double denominator = 0.0;
     for (int i = 0; i < N; ++i) {
         const double u = U[i * C + j];
-        const double um = pow(u, m);
+        const double um = (useSquareM != 0) ? (u * u) : pow(u, m);
         numerator += um * X[i];
         denominator += um;
     }
@@ -181,22 +186,30 @@ __global__ void KernelUpdateCenters(const double* X, const double* U,
     centersNext[j] = (denominator > 0.0) ? (numerator / denominator) : centersPrev[j];
 }
 
-// idx = i
-__global__ void KernelObjectivePerSample(const double* U, const double* dist,
-                                         int N, int C, double m, double* objective) {
+// Block-reduced max center shift. Host reduces partial maxima.
+__global__ void KernelMaxCenterShiftPartial(const double* centersPrev,
+                                            const double* centersNext,
+                                            int C, double* partialMax) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i >= N) {
-        return;
+    double local = 0.0;
+    if (i < C) {
+        local = fabs(centersNext[i] - centersPrev[i]);
     }
 
-    const int offset = i * C;
-    double sum = 0.0;
-    for (int j = 0; j < C; ++j) {
-        const double u = U[offset + j];
-        const double d = dist[offset + j];
-        sum += pow(u, m) * (d * d);
+    __shared__ double sdata[kBlockSize];
+    sdata[threadIdx.x] = local;
+    __syncthreads();
+
+    for (int stride = kBlockSize / 2; stride > 0; stride >>= 1) {
+        if (threadIdx.x < stride) {
+            sdata[threadIdx.x] = fmax(sdata[threadIdx.x], sdata[threadIdx.x + stride]);
+        }
+        __syncthreads();
     }
-    objective[i] = sum;
+
+    if (threadIdx.x == 0) {
+        partialMax[blockIdx.x] = sdata[0];
+    }
 }
 
 } // namespace
@@ -233,8 +246,7 @@ cudaError_t fcm1DGPU(const std::vector<double>& X, int C,
     DeviceBuffer<double> dCentersA;
     DeviceBuffer<double> dCentersB;
     DeviceBuffer<double> dU;
-    DeviceBuffer<double> dDist;
-    DeviceBuffer<double> dObjective;
+    DeviceBuffer<double> dCenterShiftPartial;
 
     cudaError_t err = dX.allocate(static_cast<size_t>(N));
     if (err != cudaSuccess) { setError(error_message, "cudaMalloc(X)", err); return err; }
@@ -244,10 +256,9 @@ cudaError_t fcm1DGPU(const std::vector<double>& X, int C,
     if (err != cudaSuccess) { setError(error_message, "cudaMalloc(VB)", err); return err; }
     err = dU.allocate(static_cast<size_t>(N) * static_cast<size_t>(C));
     if (err != cudaSuccess) { setError(error_message, "cudaMalloc(U)", err); return err; }
-    err = dDist.allocate(static_cast<size_t>(N) * static_cast<size_t>(C));
-    if (err != cudaSuccess) { setError(error_message, "cudaMalloc(dist)", err); return err; }
-    err = dObjective.allocate(static_cast<size_t>(N));
-    if (err != cudaSuccess) { setError(error_message, "cudaMalloc(objective)", err); return err; }
+    const int centerBlocks = (C + kBlockSize - 1) / kBlockSize;
+    err = dCenterShiftPartial.allocate(static_cast<size_t>(centerBlocks));
+    if (err != cudaSuccess) { setError(error_message, "cudaMalloc(centerShiftPartial)", err); return err; }
 
     err = cudaMemcpy(dX.get(), X.data(), static_cast<size_t>(N) * sizeof(double), cudaMemcpyHostToDevice);
     if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(X)", err); return err; }
@@ -258,17 +269,18 @@ cudaError_t fcm1DGPU(const std::vector<double>& X, int C,
     double* currentCenters = dCentersA.get();
     double* nextCenters = dCentersB.get();
     const double exponent = 2.0 / (m - 1.0);
-    double J_prev = std::numeric_limits<double>::infinity();
+    const int useSquareExponent = (std::abs(exponent - 2.0) <= 1e-12) ? 1 : 0;
+    const int useSquareM = (std::abs(m - 2.0) <= 1e-12) ? 1 : 0;
     bool converged = false;
 
-    std::vector<double> hObjective(static_cast<size_t>(N), 0.0);
+    std::vector<double> hCenterShiftPartial(static_cast<size_t>(centerBlocks), 0.0);
     std::vector<double> hCenters(static_cast<size_t>(C), 0.0);
     std::vector<double> hU(static_cast<size_t>(N) * static_cast<size_t>(C), 0.0);
 
     const int totalNC = N * C;
     for (int iter = 0; iter < max_iter; ++iter) {
         KernelUpdateMembership<<<(totalNC + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-            dX.get(), currentCenters, N, C, exponent, eps, dU.get(), dDist.get());
+            dX.get(), currentCenters, N, C, exponent, eps, useSquareExponent, dU.get());
         err = checkKernel("KernelUpdateMembership", error_message);
         if (err != cudaSuccess) {
             return err;
@@ -282,28 +294,34 @@ cudaError_t fcm1DGPU(const std::vector<double>& X, int C,
         }
 
         KernelUpdateCenters<<<(C + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-            dX.get(), dU.get(), N, C, m, currentCenters, nextCenters);
+            dX.get(), dU.get(), N, C, m, useSquareM, currentCenters, nextCenters);
         err = checkKernel("KernelUpdateCenters", error_message);
         if (err != cudaSuccess) {
             return err;
         }
 
-        KernelObjectivePerSample<<<(N + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-            dU.get(), dDist.get(), N, C, m, dObjective.get());
-        err = checkKernel("KernelObjectivePerSample", error_message);
+        KernelMaxCenterShiftPartial<<<centerBlocks, kBlockSize>>>(
+            currentCenters, nextCenters, C, dCenterShiftPartial.get());
+        err = checkKernel("KernelMaxCenterShiftPartial", error_message);
         if (err != cudaSuccess) {
             return err;
         }
 
-        err = cudaMemcpy(hObjective.data(), dObjective.get(), static_cast<size_t>(N) * sizeof(double),
+        err = cudaMemcpy(hCenterShiftPartial.data(), dCenterShiftPartial.get(),
+                         static_cast<size_t>(centerBlocks) * sizeof(double),
                          cudaMemcpyDeviceToHost);
         if (err != cudaSuccess) {
-            setError(error_message, "cudaMemcpy(objective)", err);
+            setError(error_message, "cudaMemcpy(centerShiftPartial)", err);
             return err;
         }
-        const double J = std::accumulate(hObjective.begin(), hObjective.end(), 0.0);
+        double maxShift = 0.0;
+        for (double value : hCenterShiftPartial) {
+            if (value > maxShift) {
+                maxShift = value;
+            }
+        }
 
-        if (std::abs(J - J_prev) < eps) {
+        if (maxShift < eps) {
             err = cudaMemcpy(hCenters.data(), nextCenters, static_cast<size_t>(C) * sizeof(double),
                              cudaMemcpyDeviceToHost);
             if (err != cudaSuccess) {
@@ -321,7 +339,6 @@ cudaError_t fcm1DGPU(const std::vector<double>& X, int C,
             break;
         }
 
-        J_prev = J;
         std::swap(currentCenters, nextCenters);
     }
 
@@ -469,4 +486,3 @@ cudaError_t ruleGenerateFIS_GPU(const Matrix& data,
 } // namespace Fuzzy
 
 #endif // FUZZY_USE_CUDA
-

@@ -28,6 +28,7 @@
 #include <chrono>
 #include <atomic>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 
 #ifdef _OPENMP
@@ -536,15 +537,41 @@ FKG::ComputedMatrices FKG::computeMatrices(const Matrix& base, int n_classes, bo
 
 #if FUZZY_USE_CUDA
     if (prefer_gpu && isGPUAvailable()) {
-        std::string cudaError;
-        const cudaError_t status = CUDA::calculateABCM_GPU(
-            base, classCount, result.A, result.M, result.B, result.C, &cudaError);
-        if (status == cudaSuccess) {
-            result.C = minMaxNormalize(result.C);
-            return result;
+        const int rows = static_cast<int>(base.size());
+        const int cols = static_cast<int>(base[0].size());
+        const int numFeatures = std::max(0, cols - 1);
+        const int numComb4 = combination(4, numFeatures);
+        const int numComb3 = combination(3, numFeatures);
+
+        // Current CUDA train kernels for A/M/C are row-scan heavy.
+        // For large datasets, OpenMP hash-based CPU path is significantly faster.
+        const long long estimatedGpuWork =
+            static_cast<long long>(rows) *
+            static_cast<long long>(std::max(1, numComb4 + numComb3)) *
+            static_cast<long long>(rows);
+        const long long kGpuTrainWorkThreshold = 2500000000LL;
+
+        bool forceGpuTrain = false;
+        const char* forceGpuTrainEnv = std::getenv("FISA_FORCE_GPU_TRAIN");
+        if (forceGpuTrainEnv != nullptr) {
+            forceGpuTrain = (std::string(forceGpuTrainEnv) == "1");
         }
-        std::cerr << "CUDA pipeline failed, falling back to CPU: "
-                  << cudaError << std::endl;
+
+        if (forceGpuTrain || estimatedGpuWork <= kGpuTrainWorkThreshold) {
+            std::string cudaError;
+            const cudaError_t status = CUDA::calculateABCM_GPU(
+                base, classCount, result.A, result.M, result.B, result.C, &cudaError);
+            if (status == cudaSuccess) {
+                result.C = minMaxNormalize(result.C);
+                return result;
+            }
+            std::cerr << "CUDA pipeline failed, falling back to CPU: "
+                      << cudaError << std::endl;
+        } else {
+            std::cerr << "Adaptive backend: using CPU matrix build for FKG train "
+                      << "(estimated GPU brute-force cost too high; set FISA_FORCE_GPU_TRAIN=1 to override)."
+                      << std::endl;
+        }
     }
 #else
     (void)prefer_gpu;

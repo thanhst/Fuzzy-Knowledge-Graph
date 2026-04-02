@@ -119,3 +119,64 @@ Benchmark report file:
   - reducing per-iteration kernel launch overhead,
   - fusing FCM kernels,
   - keeping convergence checks on device when possible.
+
+## 6) 2026-04-02 Optimization Pass (Current Update)
+
+### Implemented optimizations
+
+- **FIS CUDA objective reduction optimization**
+  - Reworked convergence logic to use **center-shift** (`max |V_next - V_prev|`) on GPU instead of full objective-vector host transfer every iteration.
+  - Added CUDA fast paths for common case `m=2`:
+    - membership denominator uses `ratio * ratio` instead of `pow(...)`
+    - center update uses `u * u` instead of `pow(u, m)`
+  - This significantly reduces FIS GPU training overhead while preserving predictions and accuracy.
+
+- **FKG CUDA cached lookup inference path**
+  - Added an optional prebuilt lookup table in `FisaDeviceCache`:
+    - `dLookupKeys`, `dLookupValues`, `lookupSize`, `useLookup`.
+  - Added optimized kernels:
+    - `KernelFisaDLookup`
+    - `KernelFisaDBatchLookup`
+  - The optimized path removes the expensive row scan in FISA inference (`for r in rows`) and uses binary-search lookup instead.
+  - Cache initialization now skips uploading full `base`/`C` tensors when lookup mode is available, reducing cold-path overhead and GPU memory pressure.
+  - CPU/GPU prediction consistency remains unchanged.
+
+- **FKG adaptive train backend**
+  - Added a pragmatic backend selector in `FKG::computeMatrices(...)`:
+    - If estimated GPU brute-force work is too high, it uses the CPU hash/OpenMP path for matrix construction.
+    - GPU inference cache/path remains active.
+  - Override available via environment variable:
+    - `FISA_FORCE_GPU_TRAIN=1` (forces legacy full GPU matrix build).
+  - This prevents extreme train-time regressions on large datasets.
+
+### Validation after this update
+
+Command examples:
+
+```powershell
+python Source/tests/test_fis_fkg_full_flow_gpu_cpu.py --dataset feature_selection --module-dir source --bins 6 --warm-repeats 1 --out-json result/full_flow_feature_after_opt_v5.json
+python Source/tests/test_fis_fkg_full_flow_gpu_cpu.py --dataset icta --module-dir source --bins 6 --warm-repeats 1 --out-json result/full_flow_icta_after_opt_v5.json
+```
+
+Note: timings vary between runs depending on GPU clocks and cold-start state; compare trends, not a single run.
+
+Feature Selection (train=21274, test=9118):
+
+- FIS CPU: train `1246.71 ms`, infer cold/warm `90.31 / 100.88 ms`, acc `91.42%`
+- FIS GPU: train `2611.92 ms`, infer cold/warm `81.88 / 73.30 ms`, acc `91.42%`
+- FKG CPU: train `3673.25 ms`, infer cold/warm `78281.07 / 77808.23 ms`, acc `59.71%`
+- FKG GPU: train `3621.70 ms`, infer cold/warm `4022.69 / 20.64 ms`, acc `59.71%`
+- CPU/GPU prediction match: FIS `100%`, FKG `100%`
+
+ICTA (train=537, test=231):
+
+- FIS CPU: train `105.55 ms`, infer cold/warm `5.06 / 1.27 ms`, acc `64.94%`
+- FIS GPU: train `1049.64 ms`, infer cold/warm `1.39 / 1.33 ms`, acc `64.94%`
+- FKG CPU: train `8.47 ms`, infer cold/warm `27.99 / 27.47 ms`, acc `65.37%`
+- FKG GPU: train `12.60 ms`, infer cold/warm `13.84 / 0.70 ms`, acc `65.37%`
+- CPU/GPU prediction match: FIS `100%`, FKG `100%`
+
+### Remaining bottleneck
+
+- The true full-GPU FKG train path (`A/M/C` brute-force row scan) is still not efficient on large datasets.
+- Next high-impact step is still replacing it with a GPU `sort/reduce-by-key` (or CUB/Thrust) matrix construction pipeline.
