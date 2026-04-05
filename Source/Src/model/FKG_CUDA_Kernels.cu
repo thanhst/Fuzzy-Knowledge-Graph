@@ -22,7 +22,7 @@ namespace {
 template <typename T>
 class DeviceBuffer {
 public:
-    DeviceBuffer() : ptr_(nullptr), count_(0) {}
+    DeviceBuffer() : ptr_(nullptr), size_(0), capacity_(0) {}
     ~DeviceBuffer() {
         if (ptr_ != nullptr) {
             cudaFree(ptr_);
@@ -33,21 +33,34 @@ public:
     DeviceBuffer& operator=(const DeviceBuffer&) = delete;
 
     cudaError_t allocate(size_t count) {
-        count_ = count;
-        if (count_ == 0) {
-            ptr_ = nullptr;
+        size_ = count;
+        if (size_ == 0) {
             return cudaSuccess;
         }
-        return cudaMalloc(reinterpret_cast<void**>(&ptr_), count_ * sizeof(T));
+        if (ptr_ != nullptr && capacity_ >= size_) {
+            return cudaSuccess;
+        }
+        if (ptr_ != nullptr) {
+            cudaFree(ptr_);
+            ptr_ = nullptr;
+            capacity_ = 0;
+        }
+        cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&ptr_), size_ * sizeof(T));
+        if (err == cudaSuccess) {
+            capacity_ = size_;
+        }
+        return err;
     }
 
     T* get() { return ptr_; }
     const T* get() const { return ptr_; }
-    size_t size() const { return count_; }
+    size_t size() const { return size_; }
+    size_t capacity() const { return capacity_; }
 
 private:
     T* ptr_;
-    size_t count_;
+    size_t size_;
+    size_t capacity_;
 };
 
 inline void setError(std::string* error_message, const char* stage, cudaError_t err) {
@@ -58,6 +71,121 @@ inline void setError(std::string* error_message, const char* stage, cudaError_t 
     oss << stage << ": " << cudaGetErrorString(err);
     *error_message = oss.str();
 }
+
+inline cudaError_t ensureDeviceCapacity(double** ptr,
+                                        size_t* capacity,
+                                        size_t required,
+                                        const char* stage,
+                                        std::string* error_message) {
+    if (required == 0) {
+        return cudaSuccess;
+    }
+    if (*ptr != nullptr && *capacity >= required) {
+        return cudaSuccess;
+    }
+    if (*ptr != nullptr) {
+        cudaError_t freeErr = cudaFree(*ptr);
+        if (freeErr != cudaSuccess) {
+            setError(error_message, "cudaFree(reallocate)", freeErr);
+            return freeErr;
+        }
+        *ptr = nullptr;
+        *capacity = 0;
+    }
+    cudaError_t err = cudaMalloc(reinterpret_cast<void**>(ptr), required * sizeof(double));
+    if (err != cudaSuccess) {
+        setError(error_message, stage, err);
+        return err;
+    }
+    *capacity = required;
+    return cudaSuccess;
+}
+
+inline cudaError_t ensurePinnedCapacity(double** ptr,
+                                        size_t* capacity,
+                                        size_t required,
+                                        const char* stage,
+                                        std::string* error_message) {
+    if (required == 0) {
+        return cudaSuccess;
+    }
+    if (*ptr != nullptr && *capacity >= required) {
+        return cudaSuccess;
+    }
+    if (*ptr != nullptr) {
+        cudaError_t freeErr = cudaFreeHost(*ptr);
+        if (freeErr != cudaSuccess) {
+            setError(error_message, "cudaFreeHost(reallocate)", freeErr);
+            return freeErr;
+        }
+        *ptr = nullptr;
+        *capacity = 0;
+    }
+    cudaError_t err = cudaMallocHost(reinterpret_cast<void**>(ptr), required * sizeof(double));
+    if (err != cudaSuccess) {
+        setError(error_message, stage, err);
+        return err;
+    }
+    *capacity = required;
+    return cudaSuccess;
+}
+
+struct CudaEvent {
+    cudaEvent_t handle = nullptr;
+
+    ~CudaEvent() {
+        if (handle != nullptr) {
+            cudaEventDestroy(handle);
+            handle = nullptr;
+        }
+    }
+
+    cudaError_t ensure() {
+        if (handle != nullptr) {
+            return cudaSuccess;
+        }
+        return cudaEventCreateWithFlags(&handle, cudaEventDisableTiming);
+    }
+};
+
+struct CudaStream {
+    cudaStream_t handle = nullptr;
+
+    ~CudaStream() {
+        if (handle != nullptr) {
+            cudaStreamDestroy(handle);
+            handle = nullptr;
+        }
+    }
+
+    cudaError_t ensure() {
+        if (handle != nullptr) {
+            return cudaSuccess;
+        }
+        return cudaStreamCreateWithFlags(&handle, cudaStreamNonBlocking);
+    }
+};
+
+struct ABCMWorkspace {
+    DeviceBuffer<double> dBase;
+    DeviceBuffer<int4> dComb4;
+    DeviceBuffer<int3> dComb3;
+    DeviceBuffer<double> dA;
+    DeviceBuffer<double> dM;
+    DeviceBuffer<double> dRowSumA;
+    DeviceBuffer<double> dB;
+    DeviceBuffer<double> dC;
+
+    std::vector<int4> hComb4;
+    std::vector<int3> hComb3;
+    int combFeatures = -1;
+
+    CudaStream streamMain;
+    CudaStream streamSecondary;
+    CudaEvent eventBaseReady;
+    CudaEvent eventAReady;
+    CudaEvent eventMReady;
+};
 
 inline int combination(int k, int n) {
     if (k < 0 || n < 0 || k > n) {
@@ -653,95 +781,205 @@ cudaError_t runABCM(const Matrix& base, int n_classes,
         return cudaErrorInvalidValue;
     }
 
+    const bool needA = (outA != nullptr) || (outB != nullptr) || (outC != nullptr);
+    const bool needM = (outM != nullptr) || (outB != nullptr) || (outC != nullptr);
+    const bool needB = (outB != nullptr) || (outC != nullptr);
+    const bool needC = (outC != nullptr);
+
     const std::vector<double> hBase = flattenMatrix(base);
-    const std::vector<int4> hComb4 = buildComb4(numFeatures);
-    const std::vector<int3> hComb3 = buildComb3(numFeatures);
 
-    DeviceBuffer<double> dBase;
-    DeviceBuffer<int4> dComb4;
-    DeviceBuffer<int3> dComb3;
-    DeviceBuffer<double> dA;
-    DeviceBuffer<double> dM;
-    DeviceBuffer<double> dRowSumA;
-    DeviceBuffer<double> dB;
-    DeviceBuffer<double> dC;
+    static thread_local ABCMWorkspace workspace;
+    cudaError_t err = workspace.streamMain.ensure();
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaStreamCreate(main)", err);
+        return err;
+    }
+    err = workspace.streamSecondary.ensure();
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaStreamCreate(secondary)", err);
+        return err;
+    }
+    err = workspace.eventBaseReady.ensure();
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaEventCreate(baseReady)", err);
+        return err;
+    }
+    err = workspace.eventAReady.ensure();
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaEventCreate(AReady)", err);
+        return err;
+    }
+    err = workspace.eventMReady.ensure();
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaEventCreate(MReady)", err);
+        return err;
+    }
 
-    cudaError_t err = cudaSuccess;
+    const bool rebuildComb = (workspace.combFeatures != numFeatures);
+    if (rebuildComb) {
+        workspace.hComb4 = buildComb4(numFeatures);
+        workspace.hComb3 = buildComb3(numFeatures);
+        workspace.combFeatures = numFeatures;
+    }
 
-    err = dBase.allocate(static_cast<size_t>(rows) * static_cast<size_t>(cols));
+    err = workspace.dBase.allocate(static_cast<size_t>(rows) * static_cast<size_t>(cols));
     if (err != cudaSuccess) { setError(error_message, "cudaMalloc(base)", err); return err; }
-    err = dComb4.allocate(hComb4.size());
+    err = workspace.dComb4.allocate(workspace.hComb4.size());
     if (err != cudaSuccess) { setError(error_message, "cudaMalloc(comb4)", err); return err; }
-    err = dComb3.allocate(hComb3.size());
+    err = workspace.dComb3.allocate(workspace.hComb3.size());
     if (err != cudaSuccess) { setError(error_message, "cudaMalloc(comb3)", err); return err; }
-    err = dA.allocate(static_cast<size_t>(rows) * static_cast<size_t>(numComb4));
-    if (err != cudaSuccess) { setError(error_message, "cudaMalloc(A)", err); return err; }
-    err = dM.allocate(static_cast<size_t>(rows) * static_cast<size_t>(numFeatures));
-    if (err != cudaSuccess) { setError(error_message, "cudaMalloc(M)", err); return err; }
-    err = dRowSumA.allocate(static_cast<size_t>(rows));
-    if (err != cudaSuccess) { setError(error_message, "cudaMalloc(sumA)", err); return err; }
-    err = dB.allocate(static_cast<size_t>(rows) * static_cast<size_t>(numComb3));
-    if (err != cudaSuccess) { setError(error_message, "cudaMalloc(B)", err); return err; }
-    err = dC.allocate(static_cast<size_t>(rows) * static_cast<size_t>(fullColsC));
-    if (err != cudaSuccess) { setError(error_message, "cudaMalloc(C)", err); return err; }
+    if (needA) {
+        err = workspace.dA.allocate(static_cast<size_t>(rows) * static_cast<size_t>(numComb4));
+        if (err != cudaSuccess) { setError(error_message, "cudaMalloc(A)", err); return err; }
+    }
+    if (needM) {
+        err = workspace.dM.allocate(static_cast<size_t>(rows) * static_cast<size_t>(numFeatures));
+        if (err != cudaSuccess) { setError(error_message, "cudaMalloc(M)", err); return err; }
+    }
+    if (needB) {
+        err = workspace.dRowSumA.allocate(static_cast<size_t>(rows));
+        if (err != cudaSuccess) { setError(error_message, "cudaMalloc(sumA)", err); return err; }
+        err = workspace.dB.allocate(static_cast<size_t>(rows) * static_cast<size_t>(numComb3));
+        if (err != cudaSuccess) { setError(error_message, "cudaMalloc(B)", err); return err; }
+    }
+    if (needC) {
+        err = workspace.dC.allocate(static_cast<size_t>(rows) * static_cast<size_t>(fullColsC));
+        if (err != cudaSuccess) { setError(error_message, "cudaMalloc(C)", err); return err; }
+    }
 
-    err = cudaMemcpy(dBase.get(), hBase.data(),
-                     static_cast<size_t>(rows) * static_cast<size_t>(cols) * sizeof(double),
-                     cudaMemcpyHostToDevice);
+    err = cudaMemcpyAsync(workspace.dBase.get(), hBase.data(),
+                          static_cast<size_t>(rows) * static_cast<size_t>(cols) * sizeof(double),
+                          cudaMemcpyHostToDevice,
+                          workspace.streamMain.handle);
     if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(base)", err); return err; }
 
-    err = cudaMemcpy(dComb4.get(), hComb4.data(), hComb4.size() * sizeof(int4), cudaMemcpyHostToDevice);
-    if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(comb4)", err); return err; }
-    err = cudaMemcpy(dComb3.get(), hComb3.data(), hComb3.size() * sizeof(int3), cudaMemcpyHostToDevice);
-    if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(comb3)", err); return err; }
+    if (rebuildComb) {
+        err = cudaMemcpyAsync(workspace.dComb4.get(),
+                              workspace.hComb4.data(),
+                              workspace.hComb4.size() * sizeof(int4),
+                              cudaMemcpyHostToDevice,
+                              workspace.streamMain.handle);
+        if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(comb4)", err); return err; }
+
+        err = cudaMemcpyAsync(workspace.dComb3.get(),
+                              workspace.hComb3.data(),
+                              workspace.hComb3.size() * sizeof(int3),
+                              cudaMemcpyHostToDevice,
+                              workspace.streamMain.handle);
+        if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(comb3)", err); return err; }
+    }
+
+    err = cudaEventRecord(workspace.eventBaseReady.handle, workspace.streamMain.handle);
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaEventRecord(baseReady)", err);
+        return err;
+    }
 
     const double invRows = 1.0 / static_cast<double>(rows);
 
-    const int totalA = rows * numComb4;
-    KernelCalculateA<<<(totalA + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-        dBase.get(), dComb4.get(), numComb4, rows, cols, invRows, dA.get());
-    err = checkCudaKernel("KernelCalculateA", error_message);
-    if (err != cudaSuccess) { return err; }
+    if (needA) {
+        err = cudaStreamWaitEvent(workspace.streamMain.handle, workspace.eventBaseReady.handle, 0);
+        if (err != cudaSuccess) { setError(error_message, "cudaStreamWaitEvent(A)", err); return err; }
 
-    const int totalM = rows * numFeatures;
-    KernelCalculateM<<<(totalM + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-        dBase.get(), rows, cols, invRows, dM.get());
-    err = checkCudaKernel("KernelCalculateM", error_message);
-    if (err != cudaSuccess) { return err; }
+        const int totalA = rows * numComb4;
+        KernelCalculateA<<<(totalA + kBlockSize - 1) / kBlockSize, kBlockSize, 0, workspace.streamMain.handle>>>(
+            workspace.dBase.get(), workspace.dComb4.get(), numComb4, rows, cols, invRows, workspace.dA.get());
+        err = checkCudaKernel("KernelCalculateA", error_message);
+        if (err != cudaSuccess) { return err; }
 
-    KernelRowSum<<<(rows + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-        dA.get(), rows, numComb4, dRowSumA.get());
-    err = checkCudaKernel("KernelRowSum", error_message);
-    if (err != cudaSuccess) { return err; }
+        err = cudaEventRecord(workspace.eventAReady.handle, workspace.streamMain.handle);
+        if (err != cudaSuccess) { setError(error_message, "cudaEventRecord(AReady)", err); return err; }
+    }
 
-    const int totalB = rows * numComb3;
-    KernelCalculateB<<<(totalB + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-        dM.get(), dRowSumA.get(), dComb3.get(), numComb3, rows, numFeatures, dB.get());
-    err = checkCudaKernel("KernelCalculateB", error_message);
-    if (err != cudaSuccess) { return err; }
+    if (needM) {
+        err = cudaStreamWaitEvent(workspace.streamSecondary.handle, workspace.eventBaseReady.handle, 0);
+        if (err != cudaSuccess) { setError(error_message, "cudaStreamWaitEvent(M)", err); return err; }
 
-    err = cudaMemset(dC.get(), 0, static_cast<size_t>(rows) * static_cast<size_t>(fullColsC) * sizeof(double));
-    if (err != cudaSuccess) { setError(error_message, "cudaMemset(C)", err); return err; }
+        const int totalM = rows * numFeatures;
+        KernelCalculateM<<<(totalM + kBlockSize - 1) / kBlockSize, kBlockSize, 0, workspace.streamSecondary.handle>>>(
+            workspace.dBase.get(), rows, cols, invRows, workspace.dM.get());
+        err = checkCudaKernel("KernelCalculateM", error_message);
+        if (err != cudaSuccess) { return err; }
 
-    const int totalC = rows * activeClassCount * numComb3;
-    KernelCalculateC<<<(totalC + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-        dBase.get(), dB.get(), dComb3.get(), numComb3, rows, cols, activeClassCount, fullColsC, dC.get());
-    err = checkCudaKernel("KernelCalculateC", error_message);
-    if (err != cudaSuccess) { return err; }
+        err = cudaEventRecord(workspace.eventMReady.handle, workspace.streamSecondary.handle);
+        if (err != cudaSuccess) { setError(error_message, "cudaEventRecord(MReady)", err); return err; }
+    }
 
-    std::vector<double> hA(static_cast<size_t>(rows) * static_cast<size_t>(numComb4));
-    std::vector<double> hM(static_cast<size_t>(rows) * static_cast<size_t>(numFeatures));
-    std::vector<double> hB(static_cast<size_t>(rows) * static_cast<size_t>(numComb3));
-    std::vector<double> hC(static_cast<size_t>(rows) * static_cast<size_t>(fullColsC));
+    if (needB) {
+        err = cudaStreamWaitEvent(workspace.streamMain.handle, workspace.eventAReady.handle, 0);
+        if (err != cudaSuccess) { setError(error_message, "cudaStreamWaitEvent(A->B)", err); return err; }
+        err = cudaStreamWaitEvent(workspace.streamMain.handle, workspace.eventMReady.handle, 0);
+        if (err != cudaSuccess) { setError(error_message, "cudaStreamWaitEvent(M->B)", err); return err; }
 
-    err = cudaMemcpy(hA.data(), dA.get(), hA.size() * sizeof(double), cudaMemcpyDeviceToHost);
-    if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(A)", err); return err; }
-    err = cudaMemcpy(hM.data(), dM.get(), hM.size() * sizeof(double), cudaMemcpyDeviceToHost);
-    if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(M)", err); return err; }
-    err = cudaMemcpy(hB.data(), dB.get(), hB.size() * sizeof(double), cudaMemcpyDeviceToHost);
-    if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(B)", err); return err; }
-    err = cudaMemcpy(hC.data(), dC.get(), hC.size() * sizeof(double), cudaMemcpyDeviceToHost);
-    if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(C)", err); return err; }
+        KernelRowSum<<<(rows + kBlockSize - 1) / kBlockSize, kBlockSize, 0, workspace.streamMain.handle>>>(
+            workspace.dA.get(), rows, numComb4, workspace.dRowSumA.get());
+        err = checkCudaKernel("KernelRowSum", error_message);
+        if (err != cudaSuccess) { return err; }
+
+        const int totalB = rows * numComb3;
+        KernelCalculateB<<<(totalB + kBlockSize - 1) / kBlockSize, kBlockSize, 0, workspace.streamMain.handle>>>(
+            workspace.dM.get(), workspace.dRowSumA.get(), workspace.dComb3.get(),
+            numComb3, rows, numFeatures, workspace.dB.get());
+        err = checkCudaKernel("KernelCalculateB", error_message);
+        if (err != cudaSuccess) { return err; }
+    }
+
+    if (needC) {
+        err = cudaMemsetAsync(workspace.dC.get(), 0,
+                              static_cast<size_t>(rows) * static_cast<size_t>(fullColsC) * sizeof(double),
+                              workspace.streamMain.handle);
+        if (err != cudaSuccess) { setError(error_message, "cudaMemset(C)", err); return err; }
+
+        const int totalC = rows * activeClassCount * numComb3;
+        KernelCalculateC<<<(totalC + kBlockSize - 1) / kBlockSize, kBlockSize, 0, workspace.streamMain.handle>>>(
+            workspace.dBase.get(), workspace.dB.get(), workspace.dComb3.get(),
+            numComb3, rows, cols, activeClassCount, fullColsC, workspace.dC.get());
+        err = checkCudaKernel("KernelCalculateC", error_message);
+        if (err != cudaSuccess) { return err; }
+    }
+
+    std::vector<double> hA;
+    std::vector<double> hM;
+    std::vector<double> hB;
+    std::vector<double> hC;
+
+    if (outA != nullptr) {
+        hA.resize(static_cast<size_t>(rows) * static_cast<size_t>(numComb4), 0.0);
+        err = cudaMemcpyAsync(hA.data(), workspace.dA.get(), hA.size() * sizeof(double),
+                              cudaMemcpyDeviceToHost, workspace.streamMain.handle);
+        if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(A)", err); return err; }
+    }
+
+    if (outM != nullptr) {
+        if (!needB) {
+            err = cudaStreamWaitEvent(workspace.streamMain.handle, workspace.eventMReady.handle, 0);
+            if (err != cudaSuccess) { setError(error_message, "cudaStreamWaitEvent(M->copy)", err); return err; }
+        }
+        hM.resize(static_cast<size_t>(rows) * static_cast<size_t>(numFeatures), 0.0);
+        err = cudaMemcpyAsync(hM.data(), workspace.dM.get(), hM.size() * sizeof(double),
+                              cudaMemcpyDeviceToHost, workspace.streamMain.handle);
+        if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(M)", err); return err; }
+    }
+
+    if (outB != nullptr) {
+        hB.resize(static_cast<size_t>(rows) * static_cast<size_t>(numComb3), 0.0);
+        err = cudaMemcpyAsync(hB.data(), workspace.dB.get(), hB.size() * sizeof(double),
+                              cudaMemcpyDeviceToHost, workspace.streamMain.handle);
+        if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(B)", err); return err; }
+    }
+
+    if (outC != nullptr) {
+        hC.resize(static_cast<size_t>(rows) * static_cast<size_t>(fullColsC), 0.0);
+        err = cudaMemcpyAsync(hC.data(), workspace.dC.get(), hC.size() * sizeof(double),
+                              cudaMemcpyDeviceToHost, workspace.streamMain.handle);
+        if (err != cudaSuccess) { setError(error_message, "cudaMemcpy(C)", err); return err; }
+    }
+
+    err = cudaStreamSynchronize(workspace.streamMain.handle);
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaStreamSynchronize(runABCM)", err);
+        return err;
+    }
 
     if (outA != nullptr) {
         reshapeMatrix(hA, rows, numComb4, *outA);
@@ -986,14 +1224,22 @@ cudaError_t createFisaDeviceCache(const Matrix& base, const Matrix& C, int n_cla
     double* dBase = nullptr;
     double* dC = nullptr;
     int3* dComb3 = nullptr;
+    CudaStream cacheStream;
 
-    cudaError_t err = cudaMalloc(reinterpret_cast<void**>(&dComb3), hComb3.size() * sizeof(int3));
+    cudaError_t err = cacheStream.ensure();
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaStreamCreate(cache)", err);
+        return err;
+    }
+
+    err = cudaMalloc(reinterpret_cast<void**>(&dComb3), hComb3.size() * sizeof(int3));
     if (err != cudaSuccess) {
         setError(error_message, "cudaMalloc(cache.comb3)", err);
         return err;
     }
 
-    err = cudaMemcpy(dComb3, hComb3.data(), hComb3.size() * sizeof(int3), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(dComb3, hComb3.data(), hComb3.size() * sizeof(int3),
+                     cudaMemcpyHostToDevice);
     if (err != cudaSuccess) {
         setError(error_message, "cudaMemcpy(cache.comb3)", err);
         cudaFree(dComb3);
@@ -1066,7 +1312,8 @@ cudaError_t createFisaDeviceCache(const Matrix& base, const Matrix& C, int n_cla
             return err;
         }
 
-        err = cudaMemcpy(dBase, hBase.data(), hBase.size() * sizeof(double), cudaMemcpyHostToDevice);
+        err = cudaMemcpy(dBase, hBase.data(), hBase.size() * sizeof(double),
+                         cudaMemcpyHostToDevice);
         if (err != cudaSuccess) {
             setError(error_message, "cudaMemcpy(cache.base)", err);
             cudaFree(dC);
@@ -1077,7 +1324,8 @@ cudaError_t createFisaDeviceCache(const Matrix& base, const Matrix& C, int n_cla
             return err;
         }
 
-        err = cudaMemcpy(dC, hC.data(), hC.size() * sizeof(double), cudaMemcpyHostToDevice);
+        err = cudaMemcpy(dC, hC.data(), hC.size() * sizeof(double),
+                         cudaMemcpyHostToDevice);
         if (err != cudaSuccess) {
             setError(error_message, "cudaMemcpy(cache.C)", err);
             cudaFree(dC);
@@ -1094,6 +1342,8 @@ cudaError_t createFisaDeviceCache(const Matrix& base, const Matrix& C, int n_cla
     cache.dComb3 = dComb3;
     cache.dLookupKeys = dLookupKeys;
     cache.dLookupValues = dLookupValues;
+    cache.stream = cacheStream.handle;
+    cacheStream.handle = nullptr;
     cache.rows = rows;
     cache.cols = cols;
     cache.fullCols = cCols;
@@ -1101,10 +1351,46 @@ cudaError_t createFisaDeviceCache(const Matrix& base, const Matrix& C, int n_cla
     cache.nClasses = activeClassCount;
     cache.lookupSize = lookupSize;
     cache.useLookup = useLookup;
+    cache.dInput = nullptr;
+    cache.dD = nullptr;
+    cache.dBatchInputs = nullptr;
+    cache.dBatchD = nullptr;
+    cache.hPinnedD = nullptr;
+    cache.hPinnedBatchD = nullptr;
+    cache.inputCapacity = 0;
+    cache.dCapacity = 0;
+    cache.batchInputCapacity = 0;
+    cache.batchDCapacity = 0;
+    cache.pinnedDCapacity = 0;
+    cache.pinnedBatchDCapacity = 0;
     return cudaSuccess;
 }
 
 void destroyFisaDeviceCache(FisaDeviceCache& cache) {
+    if (cache.hPinnedBatchD != nullptr) {
+        cudaFreeHost(cache.hPinnedBatchD);
+        cache.hPinnedBatchD = nullptr;
+    }
+    if (cache.hPinnedD != nullptr) {
+        cudaFreeHost(cache.hPinnedD);
+        cache.hPinnedD = nullptr;
+    }
+    if (cache.dBatchD != nullptr) {
+        cudaFree(cache.dBatchD);
+        cache.dBatchD = nullptr;
+    }
+    if (cache.dBatchInputs != nullptr) {
+        cudaFree(cache.dBatchInputs);
+        cache.dBatchInputs = nullptr;
+    }
+    if (cache.dD != nullptr) {
+        cudaFree(cache.dD);
+        cache.dD = nullptr;
+    }
+    if (cache.dInput != nullptr) {
+        cudaFree(cache.dInput);
+        cache.dInput = nullptr;
+    }
     if (cache.dLookupValues != nullptr) {
         cudaFree(cache.dLookupValues);
         cache.dLookupValues = nullptr;
@@ -1125,6 +1411,10 @@ void destroyFisaDeviceCache(FisaDeviceCache& cache) {
         cudaFree(cache.dBase);
         cache.dBase = nullptr;
     }
+    if (cache.stream != nullptr) {
+        cudaStreamDestroy(reinterpret_cast<cudaStream_t>(cache.stream));
+        cache.stream = nullptr;
+    }
     cache.rows = 0;
     cache.cols = 0;
     cache.fullCols = 0;
@@ -1132,9 +1422,15 @@ void destroyFisaDeviceCache(FisaDeviceCache& cache) {
     cache.nClasses = 0;
     cache.lookupSize = 0;
     cache.useLookup = 0;
+    cache.inputCapacity = 0;
+    cache.dCapacity = 0;
+    cache.batchInputCapacity = 0;
+    cache.batchDCapacity = 0;
+    cache.pinnedDCapacity = 0;
+    cache.pinnedBatchDCapacity = 0;
 }
 
-cudaError_t fisaGPUWithCache(const FisaDeviceCache& cache, const std::vector<double>& input,
+cudaError_t fisaGPUWithCache(FisaDeviceCache& cache, const std::vector<double>& input,
                              int& result_class, double& result_confidence,
                              std::vector<double>* d_values, std::string* error_message) {
     if (cache.dComb3 == nullptr ||
@@ -1169,56 +1465,80 @@ cudaError_t fisaGPUWithCache(const FisaDeviceCache& cache, const std::vector<dou
         }
     }
 
-    DeviceBuffer<double> dInput;
-    DeviceBuffer<double> dD;
-    std::vector<double> hD(static_cast<size_t>(cache.nClasses), 0.0);
+    if (cache.stream == nullptr) {
+        cudaStream_t stream = nullptr;
+        cudaError_t streamErr = cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking);
+        if (streamErr != cudaSuccess) {
+            setError(error_message, "cudaStreamCreate(cache)", streamErr);
+            return streamErr;
+        }
+        cache.stream = stream;
+    }
+    cudaStream_t stream = reinterpret_cast<cudaStream_t>(cache.stream);
 
-    cudaError_t err = dInput.allocate(static_cast<size_t>(featureCount));
+    cudaError_t err = ensureDeviceCapacity(&cache.dInput, &cache.inputCapacity,
+                                           static_cast<size_t>(featureCount),
+                                           "cudaMalloc(cache.input)", error_message);
     if (err != cudaSuccess) {
-        setError(error_message, "cudaMalloc(input)", err);
         return err;
     }
-    err = dD.allocate(static_cast<size_t>(cache.nClasses));
+    err = ensureDeviceCapacity(&cache.dD, &cache.dCapacity,
+                               static_cast<size_t>(cache.nClasses),
+                               "cudaMalloc(cache.D)", error_message);
     if (err != cudaSuccess) {
-        setError(error_message, "cudaMalloc(D)", err);
+        return err;
+    }
+    err = ensurePinnedCapacity(&cache.hPinnedD, &cache.pinnedDCapacity,
+                               static_cast<size_t>(cache.nClasses),
+                               "cudaMallocHost(cache.hD)", error_message);
+    if (err != cudaSuccess) {
         return err;
     }
 
-    err = cudaMemcpy(dInput.get(), input.data(), static_cast<size_t>(featureCount) * sizeof(double),
-                     cudaMemcpyHostToDevice);
+    err = cudaMemcpyAsync(cache.dInput, input.data(),
+                          static_cast<size_t>(featureCount) * sizeof(double),
+                          cudaMemcpyHostToDevice, stream);
     if (err != cudaSuccess) {
         setError(error_message, "cudaMemcpy(input)", err);
         return err;
     }
 
     if (canUseLookup) {
-        KernelFisaDLookup<<<(cache.nClasses + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-            cache.dLookupKeys, cache.dLookupValues, cache.lookupSize, dInput.get(),
-            cache.dComb3, cache.numComb3, cache.nClasses, dD.get());
+        KernelFisaDLookup<<<(cache.nClasses + kBlockSize - 1) / kBlockSize, kBlockSize, 0, stream>>>(
+            cache.dLookupKeys, cache.dLookupValues, cache.lookupSize, cache.dInput,
+            cache.dComb3, cache.numComb3, cache.nClasses, cache.dD);
         err = checkCudaKernel("KernelFisaDLookup", error_message);
     } else {
-        KernelFisaD<<<(cache.nClasses + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-            cache.dBase, cache.dC, dInput.get(), cache.dComb3, cache.numComb3, cache.rows,
-            cache.cols, cache.nClasses, cache.fullCols, dD.get());
+        KernelFisaD<<<(cache.nClasses + kBlockSize - 1) / kBlockSize, kBlockSize, 0, stream>>>(
+            cache.dBase, cache.dC, cache.dInput, cache.dComb3, cache.numComb3, cache.rows,
+            cache.cols, cache.nClasses, cache.fullCols, cache.dD);
         err = checkCudaKernel("KernelFisaD", error_message);
     }
     if (err != cudaSuccess) {
         return err;
     }
 
-    err = cudaMemcpy(hD.data(), dD.get(), hD.size() * sizeof(double), cudaMemcpyDeviceToHost);
+    err = cudaMemcpyAsync(cache.hPinnedD, cache.dD, static_cast<size_t>(cache.nClasses) * sizeof(double),
+                          cudaMemcpyDeviceToHost, stream);
     if (err != cudaSuccess) {
         setError(error_message, "cudaMemcpy(D)", err);
         return err;
     }
+    err = cudaStreamSynchronize(stream);
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaStreamSynchronize(fisaGPUWithCache)", err);
+        return err;
+    }
+
+    const double* hD = cache.hPinnedD;
 
     int best = 1;
     double maxD = hD[0];
     double sumD = hD[0];
     for (int classIdx = 1; classIdx < cache.nClasses; ++classIdx) {
-        sumD += hD[static_cast<size_t>(classIdx)];
-        if (hD[static_cast<size_t>(classIdx)] > maxD) {
-            maxD = hD[static_cast<size_t>(classIdx)];
+        sumD += hD[classIdx];
+        if (hD[classIdx] > maxD) {
+            maxD = hD[classIdx];
             best = classIdx + 1;
         }
     }
@@ -1226,12 +1546,12 @@ cudaError_t fisaGPUWithCache(const FisaDeviceCache& cache, const std::vector<dou
     result_class = best;
     result_confidence = (sumD > 0.0) ? (maxD / sumD) : 0.0;
     if (d_values != nullptr) {
-        d_values->assign(hD.begin(), hD.end());
+        d_values->assign(hD, hD + cache.nClasses);
     }
     return cudaSuccess;
 }
 
-cudaError_t fisaBatchGPUWithCache(const FisaDeviceCache& cache, const Matrix& inputs,
+cudaError_t fisaBatchGPUWithCache(FisaDeviceCache& cache, const Matrix& inputs,
                                   std::vector<int>& result_classes,
                                   std::vector<double>& result_confidences,
                                   std::string* error_message) {
@@ -1283,22 +1603,37 @@ cudaError_t fisaBatchGPUWithCache(const FisaDeviceCache& cache, const Matrix& in
                     static_cast<size_t>(featureCount) * sizeof(double));
     }
 
-    DeviceBuffer<double> dInputs;
-    DeviceBuffer<double> dBatchD;
-    std::vector<double> hBatchD(static_cast<size_t>(numInputs) * static_cast<size_t>(cache.nClasses), 0.0);
+    if (cache.stream == nullptr) {
+        cudaStream_t stream = nullptr;
+        cudaError_t streamErr = cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking);
+        if (streamErr != cudaSuccess) {
+            setError(error_message, "cudaStreamCreate(cache)", streamErr);
+            return streamErr;
+        }
+        cache.stream = stream;
+    }
+    cudaStream_t stream = reinterpret_cast<cudaStream_t>(cache.stream);
 
-    cudaError_t err = dInputs.allocate(hInputs.size());
+    const size_t requiredInput = hInputs.size();
+    const size_t requiredBatchD = static_cast<size_t>(numInputs) * static_cast<size_t>(cache.nClasses);
+    cudaError_t err = ensureDeviceCapacity(&cache.dBatchInputs, &cache.batchInputCapacity,
+                                           requiredInput, "cudaMalloc(cache.batchInputs)", error_message);
     if (err != cudaSuccess) {
-        setError(error_message, "cudaMalloc(inputs)", err);
         return err;
     }
-    err = dBatchD.allocate(hBatchD.size());
+    err = ensureDeviceCapacity(&cache.dBatchD, &cache.batchDCapacity,
+                               requiredBatchD, "cudaMalloc(cache.batchD)", error_message);
     if (err != cudaSuccess) {
-        setError(error_message, "cudaMalloc(batchD)", err);
+        return err;
+    }
+    err = ensurePinnedCapacity(&cache.hPinnedBatchD, &cache.pinnedBatchDCapacity,
+                               requiredBatchD, "cudaMallocHost(cache.hBatchD)", error_message);
+    if (err != cudaSuccess) {
         return err;
     }
 
-    err = cudaMemcpy(dInputs.get(), hInputs.data(), hInputs.size() * sizeof(double), cudaMemcpyHostToDevice);
+    err = cudaMemcpyAsync(cache.dBatchInputs, hInputs.data(), hInputs.size() * sizeof(double),
+                          cudaMemcpyHostToDevice, stream);
     if (err != cudaSuccess) {
         setError(error_message, "cudaMemcpy(inputs)", err);
         return err;
@@ -1306,25 +1641,32 @@ cudaError_t fisaBatchGPUWithCache(const FisaDeviceCache& cache, const Matrix& in
 
     const int totalThreads = numInputs * cache.nClasses;
     if (canUseLookup) {
-        KernelFisaDBatchLookup<<<(totalThreads + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-            cache.dLookupKeys, cache.dLookupValues, cache.lookupSize, dInputs.get(),
-            cache.dComb3, cache.numComb3, cache.nClasses, featureCount, numInputs, dBatchD.get());
+        KernelFisaDBatchLookup<<<(totalThreads + kBlockSize - 1) / kBlockSize, kBlockSize, 0, stream>>>(
+            cache.dLookupKeys, cache.dLookupValues, cache.lookupSize, cache.dBatchInputs,
+            cache.dComb3, cache.numComb3, cache.nClasses, featureCount, numInputs, cache.dBatchD);
         err = checkCudaKernel("KernelFisaDBatchLookup", error_message);
     } else {
-        KernelFisaDBatch<<<(totalThreads + kBlockSize - 1) / kBlockSize, kBlockSize>>>(
-            cache.dBase, cache.dC, dInputs.get(), cache.dComb3, cache.numComb3, cache.rows,
-            cache.cols, cache.nClasses, cache.fullCols, numInputs, dBatchD.get());
+        KernelFisaDBatch<<<(totalThreads + kBlockSize - 1) / kBlockSize, kBlockSize, 0, stream>>>(
+            cache.dBase, cache.dC, cache.dBatchInputs, cache.dComb3, cache.numComb3, cache.rows,
+            cache.cols, cache.nClasses, cache.fullCols, numInputs, cache.dBatchD);
         err = checkCudaKernel("KernelFisaDBatch", error_message);
     }
     if (err != cudaSuccess) {
         return err;
     }
 
-    err = cudaMemcpy(hBatchD.data(), dBatchD.get(), hBatchD.size() * sizeof(double), cudaMemcpyDeviceToHost);
+    err = cudaMemcpyAsync(cache.hPinnedBatchD, cache.dBatchD,
+                          requiredBatchD * sizeof(double), cudaMemcpyDeviceToHost, stream);
     if (err != cudaSuccess) {
         setError(error_message, "cudaMemcpy(batchD)", err);
         return err;
     }
+    err = cudaStreamSynchronize(stream);
+    if (err != cudaSuccess) {
+        setError(error_message, "cudaStreamSynchronize(fisaBatchGPUWithCache)", err);
+        return err;
+    }
+    const double* hBatchD = cache.hPinnedBatchD;
 
     result_classes.resize(static_cast<size_t>(numInputs), 1);
     result_confidences.resize(static_cast<size_t>(numInputs), 0.0);

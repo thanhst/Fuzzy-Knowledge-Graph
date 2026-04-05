@@ -73,15 +73,15 @@ elseif(USE_GPU)
 endif()
 
 set(SOURCE_FILES
-    Src/FKG.cpp
-    Src/FIS.cpp
-    Src/Utils.cpp
+    Src/model/FKG.cpp
+    Src/model/FIS.cpp
+    Src/model/Utils.cpp
 )
 
 if(USE_CUDA AND CMAKE_CUDA_COMPILER)
     list(APPEND SOURCE_FILES
-        Src/FKG_CUDA_Kernels.cu
-        Src/FIS_CUDA_Kernels.cu
+        Src/model/FKG_CUDA_Kernels.cu
+        Src/model/FIS_CUDA_Kernels.cu
     )
 endif()
 

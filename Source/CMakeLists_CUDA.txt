@@ -27,11 +27,11 @@ message(STATUS "CUDA found: ${CUDAToolkit_VERSION}")
 
 # Source files
 set(SOURCES
-    Src/FKG.cpp
-    Src/FIS.cpp
-    Src/Utils.cpp
-    Src/FKG_CUDA_Kernels.cu
-    Src/FIS_CUDA_Kernels.cu
+    Src/model/FKG.cpp
+    Src/model/FIS.cpp
+    Src/model/Utils.cpp
+    Src/model/FKG_CUDA_Kernels.cu
+    Src/model/FIS_CUDA_Kernels.cu
     Python/bindings.cpp
 )
 

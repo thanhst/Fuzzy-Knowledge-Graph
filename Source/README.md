@@ -7,8 +7,8 @@
 
 ## Main points
 
-- Real CUDA kernels implemented in `Source/Src/FKG_CUDA_Kernels.cu`.
-- Real CUDA kernels implemented in `Source/Src/FIS_CUDA_Kernels.cu`.
+- Real CUDA kernels implemented in `Source/Src/model/FKG_CUDA_Kernels.cu`.
+- Real CUDA kernels implemented in `Source/Src/model/FIS_CUDA_Kernels.cu`.
 - End-to-end GPU matrix pipeline: `calculateABCM_GPU(...)`.
 - Cached GPU inference path to remove repeated setup overhead:
   - `createFisaDeviceCache(...)`

@@ -8,6 +8,7 @@
 
 #if FUZZY_USE_CUDA
 
+#include <cstddef>
 #include <cuda_runtime.h>
 #include <string>
 #include <vector>
@@ -30,6 +31,13 @@ struct FisaDeviceCache {
     int3* dComb3 = nullptr;
     int4* dLookupKeys = nullptr;
     double* dLookupValues = nullptr;
+    double* dInput = nullptr;
+    double* dD = nullptr;
+    double* dBatchInputs = nullptr;
+    double* dBatchD = nullptr;
+    double* hPinnedD = nullptr;
+    double* hPinnedBatchD = nullptr;
+    void* stream = nullptr; // cudaStream_t
     int rows = 0;
     int cols = 0;
     int fullCols = 0;
@@ -37,6 +45,12 @@ struct FisaDeviceCache {
     int nClasses = 0;
     int lookupSize = 0;
     int useLookup = 0;
+    std::size_t inputCapacity = 0;
+    std::size_t dCapacity = 0;
+    std::size_t batchInputCapacity = 0;
+    std::size_t batchDCapacity = 0;
+    std::size_t pinnedDCapacity = 0;
+    std::size_t pinnedBatchDCapacity = 0;
 };
 
 // Compute each matrix independently.
@@ -65,12 +79,12 @@ cudaError_t createFisaDeviceCache(const Matrix& base, const Matrix& C, int n_cla
 
 void destroyFisaDeviceCache(FisaDeviceCache& cache);
 
-cudaError_t fisaGPUWithCache(const FisaDeviceCache& cache, const std::vector<double>& input,
+cudaError_t fisaGPUWithCache(FisaDeviceCache& cache, const std::vector<double>& input,
                              int& result_class, double& result_confidence,
                              std::vector<double>* d_values = nullptr,
                              std::string* error_message = nullptr);
 
-cudaError_t fisaBatchGPUWithCache(const FisaDeviceCache& cache, const Matrix& inputs,
+cudaError_t fisaBatchGPUWithCache(FisaDeviceCache& cache, const Matrix& inputs,
                                   std::vector<int>& result_classes,
                                   std::vector<double>& result_confidences,
                                   std::string* error_message = nullptr);
