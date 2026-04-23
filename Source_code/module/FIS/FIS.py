@@ -1,3 +1,4 @@
+import pandas as pd
 def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,cluster = []):
     import numpy as np
     import pandas as pd
@@ -108,8 +109,8 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     df_Rule_List = pd.DataFrame(ruleList)
     df_Rule_List.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List.csv"), index=False)
 
-    df_rule_30 = df_Rule_List.sample(frac=0.3,random_state=None)
-    df_rule_70 = df_Rule_List.sample(frac=0.7,random_state=None)
+    df_rule_30 = Generator_rule_with_data(data=pd.DataFrame(test_data),model_file=os.path.join(base_dir,f"models/{fileName}/fuzzy_model.pkl"))
+    df_rule_70 = df_Rule_List
     df_rule_30.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TestDataRule.csv"),index=False)
     df_rule_70.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TrainDataRule.csv"),index=False)
 
@@ -156,6 +157,73 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     print("| {:<15} | {:>10.2f} s |".format("Test Time", testTime))
     print("| {:<15} | {:>10.2f} s |".format("Total Time", totalTime))
     print("="*30)
+
+def Generator_rule(file_path_to_gen:str,file_path_to_save:str):
+    import numpy as np
+    import pandas as pd
+    from module.Test_FIS.FIS_Test_file import load_model, test_fis
+    import os
+    from module.Membership_Function.GaussMF import GaussMF
+    from module.Test_FIS.Test import test_fis
+
+    """
+    Generate rules from the given file and save them to a new file.
+    
+    :param file_path_to_gen: Path to the file containing data to generate rules.
+    :param file_path_to_save: Path to save the generated rules.
+    """
+    
+    data = pd.read_csv(file_path_to_gen)
+    data_values = data.values
+    h, w = data_values.shape
+    col_num = w - 1
+    rules = []
+    label_index = data.shape[1]-1
+    for i,r in data.iterrows():
+        sample_input = r.values[0:label_index]
+        label,rule = test_fis(sample_input,self.model_name)
+        rule = np.append(rule, r.values[label_index]+1)
+        rule = rule.astype(int).tolist()
+        rules.append(rule)
+        
+    rules_int = [[int(float(x)) for x in row] for row in rules]
+    df_rules = pd.DataFrame(rules_int)
+    save_dir = os.path.dirname(file_path_to_save)
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    df_rules.to_csv(file_path_to_save, index=False)
+    print(f"[INFO] Generated {len(rules)} rules saved to {file_path_to_save}")
+    return pd.DataFrame(rules_int)
+
+def Generator_rule_with_data(data:pd.DataFrame,model_file:str):
+    import numpy as np
+    import pandas as pd
+    from module.Test_FIS.FIS_Test_file import load_model, test_fis
+    import os
+    from module.Membership_Function.GaussMF import GaussMF
+    from module.Test_FIS.Test import test_fis
+
+    """
+    Generate rules from the given file and save them to a new file.
+    
+    :param file_path_to_gen: Path to the file containing data to generate rules.
+    :param file_path_to_save: Path to save the generated rules.
+    """
+    
+    data = data
+    data_values = data.values
+    h, w = data_values.shape
+    col_num = w - 1
+    rules = []
+    label_index = data.shape[1]-1
+    for i,r in data.iterrows():
+        sample_input = r.values[0:label_index]
+        label,rule = test_fis(sample_input,model_file)
+        rule = np.append(rule, r.values[label_index]+1)
+        rule = rule.astype(int).tolist()
+        rules.append(rule)
+    df_rules = pd.DataFrame(rules)
+    return df_rules
     
 
 

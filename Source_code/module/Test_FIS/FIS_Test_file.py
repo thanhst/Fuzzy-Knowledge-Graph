@@ -8,6 +8,7 @@ from module.Test_FIS.Test import test_fis
 from sklearn.metrics import precision_score,f1_score,recall_score,accuracy_score, confusion_matrix
 import time
 import csv,os
+from module.Membership_Function.GaussMF import GaussMF
 
 def FIS_Test_file(Modality=None,Turn =None,fileName=None):
     base_dir = os.getcwd()
@@ -18,9 +19,19 @@ def FIS_Test_file(Modality=None,Turn =None,fileName=None):
     
     data = pd.read_csv(os.path.join(base_dir,f"data/FIS/input/{fileName}/test_data.csv"))
     label_index = data.shape[1]-1
+    
+    model_data = load_model(fileName = fileName)
+    ruleList = np.array(model_data["ruleList"])
+    sigma_M = np.array(model_data["sigma_M"]).flatten()
+    centers = np.array(model_data["centers"], dtype=object)
+    center_vector = centers[label_index-1]
+    sigma = sigma_M[label_index-1]
+    
     for i,r in data.iterrows():
-        true_labels.append(r.values[label_index])
-        sample_input = r.values[1:label_index]
+        membership_values = [GaussMF(r.values[label_index], label, len(center_vector), sigma, center_vector) for label in range(1, len(center_vector) + 1)]
+        # print(f"Input: {input_data[i]}, Membership values: {membership_values}")
+        true_labels.append(np.argmax(membership_values) + 1)
+        sample_input = r.values[0:label_index]
         label,rule = test_fis(sample_input,fileName)
         predict_labels.append(label)
         rule = np.append(rule, r.values[label_index])
