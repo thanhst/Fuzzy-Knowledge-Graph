@@ -7,8 +7,9 @@
 
 ## Main points
 
-- Real CUDA kernels implemented in `Source/Src/model/FKG_CUDA_Kernels.cu`.
-- Real CUDA kernels implemented in `Source/Src/model/FIS_CUDA_Kernels.cu`.
+- Native C++/CUDA source is organized in `modules/fkg_cpp`.
+- Real CUDA kernels implemented in `modules/fkg_cpp/src/FKG_CUDA_Kernels.cu`.
+- Real CUDA kernels implemented in `modules/fkg_cpp/src/FIS_CUDA_Kernels.cu`.
 - End-to-end GPU matrix pipeline: `calculateABCM_GPU(...)`.
 - Cached GPU inference path to remove repeated setup overhead:
   - `createFisaDeviceCache(...)`
@@ -24,7 +25,7 @@
 From project root:
 
 ```bat
-Bat run\Build_FKG_CUDA.bat --fallback-cpu
+tools\build_fkg_cuda.bat
 ```
 
 CPU-only build:
@@ -78,7 +79,7 @@ C = fkg.get_C()
 Backend check:
 
 ```bat
-Bat run\Test_Backend_GPU_CPU.bat [backend] [module_dir]
+tools\test_backend.bat [backend] [module_dir]
 ```
 
 Python vs C++ CPU vs CUDA:

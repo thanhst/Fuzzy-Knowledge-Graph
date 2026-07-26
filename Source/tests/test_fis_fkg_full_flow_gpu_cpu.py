@@ -124,6 +124,63 @@ def remap_fis_predictions(train_pred_clusters: List[int],
     return remapped
 
 
+def label_index_maps(train_labels: List, test_labels: List):
+    labels = train_labels + test_labels
+    unique_labels = sorted(set(labels), key=lambda x: (isinstance(x, float), x))
+    label_to_idx = {label: idx + 1 for idx, label in enumerate(unique_labels)}
+    idx_to_label = {idx + 1: label for idx, label in enumerate(unique_labels)}
+    return label_to_idx, idx_to_label
+
+
+def gauss_mf(x: float, sigma: float, center: float) -> float:
+    if sigma <= 0:
+        sigma = 1e-10
+    diff = x - center
+    return pow(2.718281828459045, -(diff * diff) / (2.0 * sigma * sigma))
+
+
+def fuzzify_inputs_with_fis(fis, inputs: List[List[float]]) -> List[List[int]]:
+    centers = fis.get_centers()
+    sigma = fis.get_sigma()
+    rules = []
+
+    for row in inputs:
+        fuzzy_row = []
+        for feature_idx, value in enumerate(row):
+            center_vector = centers[feature_idx]
+            feature_sigma = float(sigma[feature_idx])
+            memberships = [
+                gauss_mf(float(value), feature_sigma, float(center))
+                for center in center_vector
+            ]
+            fuzzy_row.append(int(max(range(len(memberships)), key=memberships.__getitem__)) + 1)
+        rules.append(fuzzy_row)
+
+    return rules
+
+
+def make_fis_rule_records(
+    fis,
+    train_inputs: List[List[float]],
+    train_labels: List,
+    test_inputs: List[List[float]],
+    test_labels: List,
+):
+    label_to_idx, idx_to_label = label_index_maps(train_labels, test_labels)
+    train_fuzzy = fuzzify_inputs_with_fis(fis, train_inputs)
+    test_fuzzy = fuzzify_inputs_with_fis(fis, test_inputs)
+
+    train_records = [
+        fuzzy_row + [int(label_to_idx[label])]
+        for fuzzy_row, label in zip(train_fuzzy, train_labels)
+    ]
+    test_records = [
+        fuzzy_row + [int(label_to_idx[label])]
+        for fuzzy_row, label in zip(test_fuzzy, test_labels)
+    ]
+    return train_records, test_records, label_to_idx, idx_to_label
+
+
 def discretize_for_fkg(train_df, test_df, label_col: str, bins: int):
     import pandas as pd
 
@@ -176,77 +233,15 @@ def discretize_for_fkg(train_df, test_df, label_col: str, bins: int):
     return train_records, test_records, label_to_idx, idx_to_label
 
 
-def set_backend(instance, use_gpu: bool) -> None:
-    if hasattr(instance, "set_use_gpu"):
-        instance.set_use_gpu(use_gpu)
-    elif hasattr(instance, "setUseGPU"):
-        instance.setUseGPU(use_gpu)
-
-
-def run_one_backend(
+def run_fkg_records(
     fisa_module,
-    train_df,
-    test_df,
-    label_col: str,
-    bins: int,
+    train_records: List[List[int]],
+    test_records: List[List[int]],
+    idx_to_label: Dict[int, object],
     use_gpu: bool,
     warm_repeats: int,
+    input_source: str,
 ):
-    backend_name = "gpu" if use_gpu else "cpu"
-    warm_repeats = max(1, int(warm_repeats))
-
-    # -------------------------
-    # FIS stage
-    # -------------------------
-    train_labels = [normalize_label(v) for v in train_df[label_col].tolist()]
-    test_labels = [normalize_label(v) for v in test_df[label_col].tolist()]
-
-    train_matrix = train_df.values.tolist()
-    train_matrix = [[float(v) for v in row] for row in train_matrix]
-    test_inputs = test_df.drop(columns=[label_col]).values.tolist()
-    test_inputs = [[float(v) for v in row] for row in test_inputs]
-    train_inputs = train_df.drop(columns=[label_col]).values.tolist()
-    train_inputs = [[float(v) for v in row] for row in train_inputs]
-
-    n_features = len(test_inputs[0]) if test_inputs else (len(train_inputs[0]) if train_inputs else 0)
-    class_count = max(2, len(set(train_labels)))
-    clusters = [3] * n_features + [class_count]
-
-    fis = fisa_module.fis.FIS(clusters, 2.0, 1e-5, 200)
-    set_backend(fis, use_gpu)
-
-    t0 = time.perf_counter()
-    fis.train(train_matrix)
-    fis_train_cold_ms = (time.perf_counter() - t0) * 1000.0
-
-    fis_train_warm_runs = []
-    for _ in range(warm_repeats):
-        tw = time.perf_counter()
-        fis.train(train_matrix)
-        fis_train_warm_runs.append((time.perf_counter() - tw) * 1000.0)
-    fis_train_warm_avg_ms = sum(fis_train_warm_runs) / len(fis_train_warm_runs)
-
-    t1 = time.perf_counter()
-    test_pred_clusters = [int(v) for v in fis.predict_batch(test_inputs)]
-    fis_infer_cold_ms = (time.perf_counter() - t1) * 1000.0
-
-    fis_infer_warm_runs = []
-    for _ in range(warm_repeats):
-        tw = time.perf_counter()
-        _ = [int(v) for v in fis.predict_batch(test_inputs)]
-        fis_infer_warm_runs.append((time.perf_counter() - tw) * 1000.0)
-    fis_infer_warm_avg_ms = sum(fis_infer_warm_runs) / len(fis_infer_warm_runs)
-
-    train_pred_clusters = [int(v) for v in fis.predict_batch(train_inputs)]
-    fis_pred_labels = remap_fis_predictions(train_pred_clusters, train_labels, test_pred_clusters)
-    fis_acc = accuracy(fis_pred_labels, test_labels)
-
-    # -------------------------
-    # FKG stage
-    # -------------------------
-    train_records, test_records, _label_to_idx, idx_to_label = discretize_for_fkg(
-        train_df, test_df, label_col=label_col, bins=bins
-    )
     n_classes = len(idx_to_label)
     fkg = fisa_module.fkg.FKG()
     set_backend(fkg, use_gpu)
@@ -260,7 +255,10 @@ def run_one_backend(
         tw = time.perf_counter()
         fkg.train(train_records, n_classes)
         fkg_train_warm_runs.append((time.perf_counter() - tw) * 1000.0)
-    fkg_train_warm_avg_ms = sum(fkg_train_warm_runs) / len(fkg_train_warm_runs)
+    fkg_train_warm_avg_ms = (
+        sum(fkg_train_warm_runs) / len(fkg_train_warm_runs)
+        if fkg_train_warm_runs else 0.0
+    )
 
     test_features = [row[:-1] for row in test_records]
     t3 = time.perf_counter()
@@ -283,22 +281,157 @@ def run_one_backend(
         else:
             _ = [fkg.predict(row)[0] for row in test_features]
         fkg_infer_warm_runs.append((time.perf_counter() - tw) * 1000.0)
-    fkg_infer_warm_avg_ms = sum(fkg_infer_warm_runs) / len(fkg_infer_warm_runs)
+    fkg_infer_warm_avg_ms = (
+        sum(fkg_infer_warm_runs) / len(fkg_infer_warm_runs)
+        if fkg_infer_warm_runs else 0.0
+    )
 
     fkg_pred_labels = [idx_to_label.get(cls, cls) for cls in fkg_pred_classes]
     fkg_true_labels = [idx_to_label[int(row[-1])] for row in test_records]
     fkg_acc = accuracy(fkg_pred_labels, fkg_true_labels)
-
-    fis_using_gpu = bool(fis.is_using_gpu()) if hasattr(fis, "is_using_gpu") else use_gpu
     fkg_using_gpu = bool(fkg.is_using_gpu()) if hasattr(fkg, "is_using_gpu") else use_gpu
 
+    unique_train_rules = len({tuple(row) for row in train_records})
+
     return {
+        "effective_backend": "gpu" if fkg_using_gpu else "cpu",
+        "input_source": input_source,
+        "train_rule_count": len(train_records),
+        "test_rule_count": len(test_records),
+        "unique_train_rules": unique_train_rules,
+        "duplicate_train_rules": len(train_records) - unique_train_rules,
+        "train_ms": {
+            "cold": fkg_train_cold_ms,
+            "warm_avg": fkg_train_warm_avg_ms,
+            "warm_runs": fkg_train_warm_runs,
+        },
+        "infer_ms": {
+            "cold_total": fkg_infer_cold_ms,
+            "cold_per_sample": fkg_infer_cold_ms / max(1, len(test_features)),
+            "warm_avg_total": fkg_infer_warm_avg_ms,
+            "warm_avg_per_sample": fkg_infer_warm_avg_ms / max(1, len(test_features)),
+            "warm_runs": fkg_infer_warm_runs,
+        },
+        "accuracy_pct": fkg_acc,
+        "pred_first10": fkg_pred_labels[:10],
+        "_fkg_predictions": fkg_pred_labels,
+    }
+
+
+def set_backend(instance, use_gpu: bool) -> None:
+    if hasattr(instance, "set_use_gpu"):
+        instance.set_use_gpu(use_gpu)
+    elif hasattr(instance, "setUseGPU"):
+        instance.setUseGPU(use_gpu)
+
+
+def run_one_backend(
+    fisa_module,
+    train_df,
+    test_df,
+    label_col: str,
+    bins: int,
+    use_gpu: bool,
+    warm_repeats: int,
+    feature_cluster_count: int = 3,
+    include_raw_fkg: bool = False,
+):
+    backend_name = "gpu" if use_gpu else "cpu"
+    warm_repeats = max(0, int(warm_repeats))
+
+    # -------------------------
+    # FIS stage
+    # -------------------------
+    train_labels = [normalize_label(v) for v in train_df[label_col].tolist()]
+    test_labels = [normalize_label(v) for v in test_df[label_col].tolist()]
+
+    train_matrix = train_df.values.tolist()
+    train_matrix = [[float(v) for v in row] for row in train_matrix]
+    test_inputs = test_df.drop(columns=[label_col]).values.tolist()
+    test_inputs = [[float(v) for v in row] for row in test_inputs]
+    train_inputs = train_df.drop(columns=[label_col]).values.tolist()
+    train_inputs = [[float(v) for v in row] for row in train_inputs]
+
+    n_features = len(test_inputs[0]) if test_inputs else (len(train_inputs[0]) if train_inputs else 0)
+    class_count = max(2, len(set(train_labels)))
+    clusters = [int(feature_cluster_count)] * n_features + [class_count]
+
+    fis = fisa_module.fis.FIS(clusters, 2.0, 1e-5, 200)
+    set_backend(fis, use_gpu)
+
+    t0 = time.perf_counter()
+    fis.train(train_matrix)
+    fis_train_cold_ms = (time.perf_counter() - t0) * 1000.0
+
+    fis_train_warm_runs = []
+    for _ in range(warm_repeats):
+        tw = time.perf_counter()
+        fis.train(train_matrix)
+        fis_train_warm_runs.append((time.perf_counter() - tw) * 1000.0)
+    fis_train_warm_avg_ms = (
+        sum(fis_train_warm_runs) / len(fis_train_warm_runs)
+        if fis_train_warm_runs else 0.0
+    )
+
+    t1 = time.perf_counter()
+    test_pred_clusters = [int(v) for v in fis.predict_batch(test_inputs)]
+    fis_infer_cold_ms = (time.perf_counter() - t1) * 1000.0
+
+    fis_infer_warm_runs = []
+    for _ in range(warm_repeats):
+        tw = time.perf_counter()
+        _ = [int(v) for v in fis.predict_batch(test_inputs)]
+        fis_infer_warm_runs.append((time.perf_counter() - tw) * 1000.0)
+    fis_infer_warm_avg_ms = (
+        sum(fis_infer_warm_runs) / len(fis_infer_warm_runs)
+        if fis_infer_warm_runs else 0.0
+    )
+
+    train_pred_clusters = [int(v) for v in fis.predict_batch(train_inputs)]
+    fis_pred_labels = remap_fis_predictions(train_pred_clusters, train_labels, test_pred_clusters)
+    fis_acc = accuracy(fis_pred_labels, test_labels)
+
+    # -------------------------
+    # FKG stage
+    # -------------------------
+    fis_rule_train_records, fis_rule_test_records, _fis_label_to_idx, fis_idx_to_label = make_fis_rule_records(
+        fis, train_inputs, train_labels, test_inputs, test_labels
+    )
+    fkg_result = run_fkg_records(
+        fisa_module,
+        fis_rule_train_records,
+        fis_rule_test_records,
+        fis_idx_to_label,
+        use_gpu=use_gpu,
+        warm_repeats=warm_repeats,
+        input_source="fis_membership_rules",
+    )
+
+    raw_fkg_result = None
+    if include_raw_fkg:
+        train_records, test_records, _label_to_idx, raw_idx_to_label = discretize_for_fkg(
+            train_df, test_df, label_col=label_col, bins=bins
+        )
+        raw_fkg_result = run_fkg_records(
+            fisa_module,
+            train_records,
+            test_records,
+            raw_idx_to_label,
+            use_gpu=use_gpu,
+            warm_repeats=warm_repeats,
+            input_source=f"raw_quantile_discretized_bins_{bins}",
+        )
+
+    fis_using_gpu = bool(fis.is_using_gpu()) if hasattr(fis, "is_using_gpu") else use_gpu
+
+    result = {
         "requested_backend": backend_name,
         "effective_backend": {
             "fis": "gpu" if fis_using_gpu else "cpu",
-            "fkg": "gpu" if fkg_using_gpu else "cpu",
+            "fkg": fkg_result["effective_backend"],
         },
         "fis": {
+            "feature_cluster_count": int(feature_cluster_count),
             "train_ms": {
                 "cold": fis_train_cold_ms,
                 "warm_avg": fis_train_warm_avg_ms,
@@ -314,26 +447,15 @@ def run_one_backend(
             "accuracy_pct": fis_acc,
             "pred_first10": fis_pred_labels[:10],
         },
-        "fkg": {
-            "train_ms": {
-                "cold": fkg_train_cold_ms,
-                "warm_avg": fkg_train_warm_avg_ms,
-                "warm_runs": fkg_train_warm_runs,
-            },
-            "infer_ms": {
-                "cold_total": fkg_infer_cold_ms,
-                "cold_per_sample": fkg_infer_cold_ms / max(1, len(test_features)),
-                "warm_avg_total": fkg_infer_warm_avg_ms,
-                "warm_avg_per_sample": fkg_infer_warm_avg_ms / max(1, len(test_features)),
-                "warm_runs": fkg_infer_warm_runs,
-            },
-            "accuracy_pct": fkg_acc,
-            "pred_first10": fkg_pred_labels[:10],
-        },
+        "fkg": fkg_result,
         "test_size": len(test_inputs),
         "_fis_predictions": fis_pred_labels,
-        "_fkg_predictions": fkg_pred_labels,
+        "_fkg_predictions": fkg_result["_fkg_predictions"],
     }
+    if raw_fkg_result is not None:
+        result["fkg_raw_discretized"] = raw_fkg_result
+        result["_fkg_raw_predictions"] = raw_fkg_result["_fkg_predictions"]
+    return result
 
 
 def dataset_icta(args):
@@ -349,6 +471,7 @@ def dataset_icta(args):
         "test_df": test_df,
         "label_col": label_col,
         "source": str(csv_path),
+        "feature_cluster_count": 3,
     }
 
 
@@ -377,6 +500,8 @@ def dataset_feature_selection(args):
         "test_df": test_df.reset_index(drop=True),
         "label_col": label_col,
         "source": f"{train_path} | {test_path}",
+        "feature_cluster_count": 5,
+        "feature_cluster_source": "Source_code/main/diabetic_retinopathy/Scenario_diabetic_retinopathy_fusion_feature_with_ft_selection.py",
     }
 
 
@@ -384,7 +509,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Full flow benchmark for FIS + FKG (CPU/GPU).")
     parser.add_argument("--dataset", choices=["icta", "feature_selection", "both"], default="both")
     parser.add_argument("--module-dir", choices=["auto", "source", "gpu"], default="source")
+    parser.add_argument(
+        "--backend",
+        choices=["both", "cpu", "gpu"],
+        default="both",
+        help="Backend set to run. Use gpu for large FKG datasets; CPU FKG is exhaustive and slow.",
+    )
     parser.add_argument("--bins", type=int, default=6, help="Bins for FKG discretization.")
+    parser.add_argument(
+        "--include-raw-fkg",
+        action="store_true",
+        help="Also run the slow diagnostic FKG path that discretizes raw features directly.",
+    )
     parser.add_argument("--warm-repeats", type=int, default=1,
                         help="Number of warm runs after cold run (per train/infer stage).")
     parser.add_argument("--seed", type=int, default=42)
@@ -429,36 +565,57 @@ def main() -> int:
         train_df = ds["train_df"]
         test_df = ds["test_df"]
         label_col = ds["label_col"]
+        feature_cluster_count = int(ds.get("feature_cluster_count", 3))
 
-        cpu_result = run_one_backend(
-            fisa_module, train_df, test_df, label_col, args.bins, use_gpu=False,
-            warm_repeats=args.warm_repeats
-        )
-        gpu_result = run_one_backend(
-            fisa_module, train_df, test_df, label_col, args.bins, use_gpu=True,
-            warm_repeats=args.warm_repeats
-        )
+        backend_results = {}
+        if args.backend in ("both", "cpu"):
+            backend_results["cpu"] = run_one_backend(
+                fisa_module, train_df, test_df, label_col, args.bins, use_gpu=False,
+                warm_repeats=args.warm_repeats,
+                feature_cluster_count=feature_cluster_count,
+                include_raw_fkg=args.include_raw_fkg,
+            )
+        if args.backend in ("both", "gpu"):
+            backend_results["gpu"] = run_one_backend(
+                fisa_module, train_df, test_df, label_col, args.bins, use_gpu=True,
+                warm_repeats=args.warm_repeats,
+                feature_cluster_count=feature_cluster_count,
+                include_raw_fkg=args.include_raw_fkg,
+            )
 
-        fis_match = accuracy(gpu_result["_fis_predictions"], cpu_result["_fis_predictions"])
-        fkg_match = accuracy(gpu_result["_fkg_predictions"], cpu_result["_fkg_predictions"])
+        cpu_gpu_match_pct = {}
+        if "cpu" in backend_results and "gpu" in backend_results:
+            cpu_result = backend_results["cpu"]
+            gpu_result = backend_results["gpu"]
+            cpu_gpu_match_pct["fis"] = accuracy(
+                gpu_result["_fis_predictions"], cpu_result["_fis_predictions"]
+            )
+            cpu_gpu_match_pct["fkg"] = accuracy(
+                gpu_result["_fkg_predictions"], cpu_result["_fkg_predictions"]
+            )
+            if "_fkg_raw_predictions" in cpu_result and "_fkg_raw_predictions" in gpu_result:
+                cpu_gpu_match_pct["fkg_raw_discretized"] = accuracy(
+                    gpu_result["_fkg_raw_predictions"], cpu_result["_fkg_raw_predictions"]
+                )
 
-        cpu_result.pop("_fis_predictions", None)
-        cpu_result.pop("_fkg_predictions", None)
-        gpu_result.pop("_fis_predictions", None)
-        gpu_result.pop("_fkg_predictions", None)
+        for result in backend_results.values():
+            result.pop("_fis_predictions", None)
+            result.pop("_fkg_predictions", None)
+            result.pop("_fkg_raw_predictions", None)
+            result.get("fkg", {}).pop("_fkg_predictions", None)
+            result.get("fkg_raw_discretized", {}).pop("_fkg_predictions", None)
 
-        report["datasets"][ds["name"]] = {
+        dataset_report = {
             "source": ds["source"],
             "label_column": label_col,
+            "feature_cluster_count": feature_cluster_count,
+            "feature_cluster_source": ds.get("feature_cluster_source", "default"),
             "train_size": len(train_df),
             "test_size": len(test_df),
-            "cpu": cpu_result,
-            "gpu": gpu_result,
-            "cpu_gpu_match_pct": {
-                "fis": fis_match,
-                "fkg": fkg_match,
-            },
+            "cpu_gpu_match_pct": cpu_gpu_match_pct,
         }
+        dataset_report.update(backend_results)
+        report["datasets"][ds["name"]] = dataset_report
 
     print("=" * 100)
     print("FIS + FKG Full Flow CPU/GPU Benchmark")

@@ -33,11 +33,14 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     df = pd.read_csv(filePath)
     full_data = df
     df_full_data = pd.DataFrame(full_data)
-    # train_data, test_data = train_test_split(df_full_data, test_size=0.3, random_state=37)
-    train_data=df_full_data.sample(frac=0.7,random_state=None)
-    test_data=df_full_data.sample(frac=0.3,random_state=None)
-    train_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/train_data.csv'))
-    test_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/test_data.csv'))
+    train_data, test_data = train_test_split(
+        df_full_data,
+        test_size=0.3,
+        shuffle=True,
+        random_state=None,
+    )
+    train_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/train_data.csv'), index=False)
+    test_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/test_data.csv'), index=False)
     train_data = train_data.values
     test_data = test_data.values
     
@@ -94,7 +97,6 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     rules = np.hstack((rules, np.min(t, axis=1, keepdims=True), train_data[:, [col_num]]))
     
     rules_reduce = reduce_rule(h,col_num,rules)
-    # rules_reduce = rules
     df_Rule_List1 = pd.DataFrame(rules_reduce)
     df_Rule_List1.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List_reduce.csv"), index=False)
 
@@ -109,7 +111,21 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     df_Rule_List = pd.DataFrame(ruleList)
     df_Rule_List.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/Rule_List.csv"), index=False)
 
-    df_rule_30 = Generator_rule_with_data(data=pd.DataFrame(test_data),model_file=os.path.join(base_dir,f"models/{fileName}/fuzzy_model.pkl"))
+    model_data = {
+        "ruleList": ruleListModel,
+        "sigma_M": sigma_M,
+        "centers": centers,
+        "min_vals": min_vals,
+        "max_vals": max_vals
+    }
+    trainTime = time.time() - start_time
+    
+    if not os.path.exists(os.path.join(base_dir,f"models/{fileName}/")):
+        os.makedirs(os.path.join(base_dir,f"models/{fileName}/"))
+    with open(os.path.join(base_dir,f"models/{fileName}/fuzzy_model.pkl"), "wb") as file:
+        pickle.dump(model_data, file)
+
+    df_rule_30 = Generator_rule_with_data(data=pd.DataFrame(test_data),model_file=fileName)
     df_rule_70 = df_Rule_List
     df_rule_30.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TestDataRule.csv"),index=False)
     df_rule_70.to_csv(os.path.join(base_dir,f"data/FIS/output/{fileName}/FRB/TrainDataRule.csv"),index=False)
@@ -129,19 +145,6 @@ def FIS(Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,
     print("\n")
     print("*"*100)
     print("centers: \n", pd.DataFrame(centers))
-    model_data = {
-        "ruleList": ruleListModel,
-        "sigma_M": sigma_M,
-        "centers": centers,
-        "min_vals": min_vals,
-        "max_vals": max_vals
-    }
-    trainTime = time.time() - start_time
-    
-    if not os.path.exists(os.path.join(base_dir,f"models/{fileName}/")):
-        os.makedirs(os.path.join(base_dir,f"models/{fileName}/"))
-    with open(os.path.join(base_dir,f"models/{fileName}/fuzzy_model.pkl"), "wb") as file:
-        pickle.dump(model_data, file)
 
     #Test file
     

@@ -276,12 +276,19 @@ class FKGS:
         ddd = np.zeros(len(test))
         X_test = np.array(test).T[-1]
         print("Bắt đầu tính toán FISA")
+        prediction_cache = {}
         for i in range(len(test)):
             try:
-                X[i], ddd[i] =fs.FISA(base, C, test[i],n_classes)
+                cache_key = tuple(int(float(value)) for value in test[i][:-1])
+                cached = prediction_cache.get(cache_key)
+                if cached is None:
+                    cached = fs.FISA(base, C, test[i],n_classes)
+                    prediction_cache[cache_key] = cached
+                X[i], ddd[i] = cached
                 self.listRank.append(ddd[i])
             except RuntimeError as e:
                 print("Exception: ",e)
+        print(f"FISA cache unique samples: {len(prediction_cache)}/{len(test)}")
         self.res.append(X)
         
         print("Predict labels: \n",pd.DataFrame(X))
@@ -297,6 +304,7 @@ class FKGS:
         plt.title(f'Confusion Matrix for {event_name}\n(e: {e_value}, ran: {rand})')
         os.makedirs(input_dir, exist_ok=True)
         plt.savefig(os.path.join(input_dir,f'conf_matrix_{e_value}_{rand}.png'))
+        plt.close()
 
         listPrecision = np.array(self.listPre) / 100 if max(self.listPre) > 1 else np.array(self.listPre)
         listRecall = np.array(self.listRe) / 100 if max(self.listRe) > 1 else np.array(self.listRe)
@@ -349,7 +357,11 @@ class FKGS:
 
         n_classes = len(unique_labels)
         
-        for i in range(1,6):
+        turns = 5 if Turn is None else int(Turn)
+        if turns < 1:
+            raise ValueError("Turn must be at least 1")
+
+        for i in range(1, turns + 1):
             print(f"--------------------------------------Turn {i}---------------------------------")
             start = time.time()
             base = self.sampling(ran=ran, base=traindf, e=e)
@@ -414,6 +426,7 @@ class FKGS:
         save_dir = os.path.join(folderPath, f'data/FKG/{Modality}')
         os.makedirs(save_dir, exist_ok=True)
         plt.savefig(os.path.join(folderPath, f'data/FKG/{Modality}/bar_scores_e{e}_ran{ran}.png'))
+        plt.close()
         
         # Variance
         print("\nVariance:")
@@ -424,6 +437,28 @@ class FKGS:
         print(f'precision variance: {np.var(self.listPre):.2f}')
         print(f'recall variance: {np.var(self.listRe):.2f}')
         print(f'Total time variance: {np.var(total_time):.2f}')
+
+        summary = {
+            "ran": ran,
+            "e": e,
+            "turns": turns,
+            "sampling_time_mean": float(np.mean(sampling_time)),
+            "sampling_time_std": float(np.std(sampling_time)),
+            "train_time_mean": float(np.mean(train_time)),
+            "train_time_std": float(np.std(train_time)),
+            "test_time_mean": float(np.mean(test_time)),
+            "test_time_std": float(np.std(test_time)),
+            "total_time_mean": float(np.mean(total_time)),
+            "total_time_std": float(np.std(total_time)),
+            "accuracy_mean": float(np.mean(self.listAcc)),
+            "accuracy_std": float(np.std(self.listAcc)),
+            "precision_mean": float(np.mean(self.listPre)),
+            "precision_std": float(np.std(self.listPre)),
+            "recall_mean": float(np.mean(self.listRe)),
+            "recall_std": float(np.std(self.listRe)),
+        }
+        self.last_summary = summary
+        return summary
 
         
     

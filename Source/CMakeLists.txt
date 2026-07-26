@@ -36,6 +36,8 @@ endif()
 
 find_package(OpenMP QUIET)
 
+set(FISA_CPP_MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../modules/fkg_cpp")
+
 set(GPU_COMPILE_DEFS FUZZY_USE_CUDA=0 FUZZY_USE_GPU=0)
 set(GPU_LINK_LIBS "")
 set(GPU_INCLUDE_DIRS "")
@@ -73,34 +75,34 @@ elseif(USE_GPU)
 endif()
 
 set(SOURCE_FILES
-    Src/model/FKG.cpp
-    Src/model/FIS.cpp
-    Src/model/Utils.cpp
+    ${FISA_CPP_MODULE_DIR}/src/FKG.cpp
+    ${FISA_CPP_MODULE_DIR}/src/FIS.cpp
+    ${FISA_CPP_MODULE_DIR}/src/Utils.cpp
 )
 
 if(USE_CUDA AND CMAKE_CUDA_COMPILER)
     list(APPEND SOURCE_FILES
-        Src/model/FKG_CUDA_Kernels.cu
-        Src/model/FIS_CUDA_Kernels.cu
+        ${FISA_CPP_MODULE_DIR}/src/FKG_CUDA_Kernels.cu
+        ${FISA_CPP_MODULE_DIR}/src/FIS_CUDA_Kernels.cu
     )
 endif()
 
 set(HEADER_FILES
-    Include/FKG.h
-    Include/FIS.h
-    Include/FKG_CUDA_Kernels.h
-    Include/FIS_CUDA_Kernels.h
-    Include/Utils.h
+    ${FISA_CPP_MODULE_DIR}/include/FKG.h
+    ${FISA_CPP_MODULE_DIR}/include/FIS.h
+    ${FISA_CPP_MODULE_DIR}/include/FKG_CUDA_Kernels.h
+    ${FISA_CPP_MODULE_DIR}/include/FIS_CUDA_Kernels.h
+    ${FISA_CPP_MODULE_DIR}/include/Utils.h
 )
 
 pybind11_add_module(fisa_module MODULE
-    Python/bindings.cpp
+    ${FISA_CPP_MODULE_DIR}/python/bindings.cpp
     ${SOURCE_FILES}
     ${HEADER_FILES}
 )
 
 target_include_directories(fisa_module PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include
+    ${FISA_CPP_MODULE_DIR}/include
     ${GPU_INCLUDE_DIRS}
 )
 

@@ -53,5 +53,27 @@
         "list": "cpp",
         "unordered_set": "cpp",
         "xhash": "cpp"
+    },
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/*.egg-info": true,
+        "Source/build*/": true,
+        "GPU/Source/build_cuda/": true,
+        "dist/": true,
+        "result/": true,
+        "*.7z": true,
+        "msys2_installer.exe": true
+    },
+    "search.exclude": {
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/*.egg-info": true,
+        "Source/build*/": true,
+        "GPU/Source/build_cuda/": true,
+        "dist/": true,
+        "result/": true,
+        "Source/Data/result/": true,
+        "Source/Data/processing/": true
     }
 }

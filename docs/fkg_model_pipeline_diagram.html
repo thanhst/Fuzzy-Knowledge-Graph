@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Full Dental AI Model Pipeline</title>
+  <style>
+    :root {
+      --paper: #f7faf9;
+      --ink: #172635;
+      --muted: #516476;
+      --panel: #ffffff;
+      --line: #6e8799;
+      --blue: #2565a8;
+      --teal: #087d78;
+      --green: #4f8e46;
+      --amber: #c4861c;
+      --coral: #bc5a52;
+      --violet: #6f5ab8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 18px;
+      border-bottom: 1px solid #d9e4e6;
+      background: rgba(247, 250, 249, 0.96);
+      backdrop-filter: blur(8px);
+    }
+
+    .toolbar h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    button {
+      display: inline-flex;
+      min-height: 36px;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid #bfd0d6;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #102334;
+      background: #ffffff;
+      font: 700 13px "Segoe UI", Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: #86aab4;
+      background: #edf7f6;
+    }
+
+    main {
+      display: grid;
+      gap: 24px;
+      padding: 22px;
+    }
+
+    .diagram-block {
+      overflow: auto;
+      border: 1px solid #d9e3e6;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 12px 30px rgba(20, 39, 57, 0.08);
+    }
+
+    svg.pipeline {
+      display: block;
+      width: 100%;
+      min-width: 1380px;
+      height: auto;
+      background: #fbfdfc;
+    }
+
+    body.export-mode .toolbar { display: none; }
+    body.export-mode main { gap: 0; padding: 0; }
+    body.export-mode .diagram-block {
+      overflow: hidden;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    body.export-mode svg.pipeline {
+      width: 1800px;
+      min-width: 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="toolbar">
+    <h1>Full Dental AI Pipeline: Training and Testing</h1>
+    <div class="actions">
+      <button type="button" onclick="exportSvg('trainingDiagram', 'fkg_model_training.png')">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Training PNG
+      </button>
+      <button type="button" onclick="exportSvg('testingDiagram', 'fkg_model_testing.png')">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Testing PNG
+      </button>
+      <button type="button" onclick="exportBoth()">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 7V5a2 2 0 0 1 2-2h9v14h-2M5 7h9v14H5zM8 11h3M8 15h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Both PNGs
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="diagram-block">
+      <svg id="trainingDiagram" class="pipeline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1120" role="img" aria-labelledby="trainingTitle trainingDesc">
+        <title id="trainingTitle">Training pipeline of the full dental AI model</title>
+        <desc id="trainingDesc">The full training flow uses YOLO, CNN classification, image feature extraction, table feature preprocessing, FKG rules, late fusion, and explainability.</desc>
+        <defs>
+          <style>
+            .bg { fill: #fbfdfc; }
+            .title { font: 800 30px "Segoe UI", Arial, sans-serif; fill: #172635; letter-spacing: 0; }
+            .subtitle { font: 500 14px "Segoe UI", Arial, sans-serif; fill: #516476; letter-spacing: 0; }
+            .lane-title { font: 800 14px "Segoe UI", Arial, sans-serif; fill: #172635; letter-spacing: 0; }
+            .box-title { font: 800 14px "Segoe UI", Arial, sans-serif; fill: #132334; letter-spacing: 0; }
+            .box-text { font: 500 11.5px "Segoe UI", Arial, sans-serif; fill: #334858; letter-spacing: 0; }
+            .tiny { font: 600 10px "Segoe UI", Arial, sans-serif; fill: #526678; letter-spacing: 0; }
+            .section { fill: #f0f6f6; stroke: #c9d9dc; stroke-width: 1.2; rx: 8; }
+            .section-blue { fill: #eff5fb; stroke: #c8d8e6; stroke-width: 1.2; rx: 8; }
+            .section-amber { fill: #f8f4e9; stroke: #ded2b6; stroke-width: 1.2; rx: 8; }
+            .card { fill: #fff; stroke: #b8c9d2; stroke-width: 1.3; rx: 8; filter: url(#shadow); }
+            .blue { fill: #eef6ff; stroke: #8eb8dc; stroke-width: 1.45; rx: 8; }
+            .teal { fill: #e9f8f6; stroke: #78b8b1; stroke-width: 1.45; rx: 8; }
+            .green { fill: #eef8ee; stroke: #8ec48b; stroke-width: 1.45; rx: 8; }
+            .amber { fill: #fff7e5; stroke: #d8b265; stroke-width: 1.45; rx: 8; }
+            .coral { fill: #fff0ee; stroke: #d39993; stroke-width: 1.45; rx: 8; }
+            .violet { fill: #f4f0fb; stroke: #b5a2d8; stroke-width: 1.45; rx: 8; }
+            .arrow { fill: none; stroke: #6e8799; stroke-width: 2; marker-end: url(#arrow); }
+            .strong { fill: none; stroke: #087d78; stroke-width: 2.8; marker-end: url(#arrowTeal); }
+            .dash { fill: none; stroke: #879cad; stroke-width: 1.6; stroke-dasharray: 6 6; marker-end: url(#arrow); }
+            .icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+            .chip { font: 800 10px "Segoe UI", Arial, sans-serif; fill: #fff; }
+          </style>
+          <filter id="shadow" x="-15%" y="-20%" width="130%" height="145%">
+            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#102334" flood-opacity="0.10"/>
+          </filter>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+            <path d="M1 1 9 5 1 9Z" fill="#6e8799"/>
+          </marker>
+          <marker id="arrowTeal" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+            <path d="M1 1 10 5.5 1 10Z" fill="#087d78"/>
+          </marker>
+          <linearGradient id="trainTop" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#087d78"/>
+            <stop offset="0.45" stop-color="#2565a8"/>
+            <stop offset="1" stop-color="#bc5a52"/>
+          </linearGradient>
+          <symbol id="iImage" viewBox="0 0 32 32">
+            <rect x="4" y="6" width="24" height="20" rx="3" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="11" cy="13" r="3" fill="currentColor" opacity=".45"/>
+            <path d="m6 24 7-7 5 5 3-3 5 5" class="icon"/>
+          </symbol>
+          <symbol id="iTable" viewBox="0 0 32 32">
+            <rect x="5" y="6" width="22" height="20" rx="3" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <path d="M5 13h22M12 6v20M20 6v20M5 19h22" class="icon"/>
+          </symbol>
+          <symbol id="iYolo" viewBox="0 0 32 32">
+            <rect x="5" y="8" width="22" height="16" rx="3" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 13h9v7h-9zM21 13h3M21 20h3" class="icon"/>
+          </symbol>
+          <symbol id="iCnn" viewBox="0 0 32 32">
+            <path d="M6 9h6v14H6zM14 6h6v20h-6zM22 11h5v10h-5z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </symbol>
+          <symbol id="iFeatures" viewBox="0 0 32 32">
+            <path d="M5 24c5-16 8-16 11 0 3-16 6-16 11 0" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
+            <path d="M6 27h20" class="icon"/>
+          </symbol>
+          <symbol id="iGraph" viewBox="0 0 32 32">
+            <circle cx="8" cy="10" r="4" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="24" cy="10" r="4" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="16" cy="24" r="4" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 10h8M10 14l4 7M22 14l-4 7" class="icon"/>
+          </symbol>
+          <symbol id="iFuse" viewBox="0 0 32 32">
+            <circle cx="11" cy="12" r="6" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="21" cy="20" r="6" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <path d="M16 12h5M11 18v4" class="icon"/>
+          </symbol>
+          <symbol id="iExplain" viewBox="0 0 32 32">
+            <path d="M8 4h11l5 5v19H8Z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M19 4v6h6M12 16h9M12 21h7" class="icon"/>
+          </symbol>
+          <symbol id="iHeat" viewBox="0 0 32 32">
+            <rect x="5" y="5" width="22" height="22" rx="3" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="13" cy="13" r="4" fill="#bc5a52" opacity=".55"/>
+            <circle cx="20" cy="20" r="5" fill="#c4861c" opacity=".38"/>
+            <path d="M9 23c6-8 10-8 14-1" class="icon"/>
+          </symbol>
+        </defs>
+
+        <rect class="bg" x="0" y="0" width="1800" height="1120"/>
+        <rect x="0" y="0" width="1800" height="10" fill="url(#trainTop)"/>
+        <text class="title" x="48" y="58">Model Training</text>
+        <text class="subtitle" x="48" y="84">Full original pipeline: YOLO detection, CNN classification, image/table feature learning, FKG rules, late fusion, and explainability.</text>
+        <text class="tiny" x="1380" y="58">Corrected scope</text>
+        <text class="tiny" x="1380" y="76">Late fusion is one stage inside the larger model.</text>
+
+        <rect class="section-blue" x="38" y="118" width="950" height="300"/>
+        <text class="lane-title" x="60" y="148">1. Image Branch: Detection, Deep Features, and Hand-Crafted Features</text>
+
+        <g transform="translate(64 198)">
+          <rect class="blue" width="148" height="86"/>
+          <use href="#iImage" x="16" y="18" width="34" height="34" color="#2565a8"/>
+          <text class="box-title" x="62" y="31">Raw Image</text>
+          <text class="box-text" x="62" y="54">dental image</text>
+          <text class="box-text" x="62" y="71">training set</text>
+        </g>
+
+        <g transform="translate(254 198)">
+          <rect class="card" width="150" height="86"/>
+          <use href="#iImage" x="15" y="18" width="34" height="34" color="#516476"/>
+          <text class="box-title" x="62" y="31">Preprocess</text>
+          <text class="box-text" x="62" y="54">resize image</text>
+          <text class="box-text" x="62" y="71">normalize input</text>
+        </g>
+
+        <g transform="translate(448 164)">
+          <rect class="teal" width="228" height="154"/>
+          <use href="#iYolo" x="18" y="22" width="38" height="38" color="#087d78"/>
+          <text class="box-title" x="70" y="34">YOLO Detection Model</text>
+          <text class="box-text" x="70" y="58">detection head</text>
+          <text class="box-text" x="70" y="77">objectness + class loss</text>
+          <text class="box-text" x="70" y="96">backbone multi-scale features</text>
+          <text class="box-text" x="70" y="115">neck FPN/PAN fusion</text>
+          <text class="box-text" x="70" y="134">boxes + confidence scores</text>
+        </g>
+
+        <g transform="translate(740 152)">
+          <rect class="violet" width="200" height="104"/>
+          <use href="#iCnn" x="16" y="22" width="38" height="38" color="#6f5ab8"/>
+          <text class="box-title" x="68" y="34">CNN Classifier</text>
+          <text class="box-text" x="68" y="58">feature extractor</text>
+          <text class="box-text" x="68" y="77">fully connected layers</text>
+          <text class="box-text" x="68" y="94">cross-entropy loss</text>
+        </g>
+
+        <g transform="translate(520 326)">
+          <rect class="amber" width="200" height="92"/>
+          <use href="#iFeatures" x="16" y="20" width="36" height="36" color="#c4861c"/>
+          <text class="box-title" x="68" y="29">Image Feature</text>
+          <text class="box-title" x="68" y="46">Extraction</text>
+          <text class="box-text" x="68" y="68">HSV descriptors</text>
+          <text class="box-text" x="68" y="86">GLCM descriptors</text>
+        </g>
+
+        <path class="arrow" d="M212 241H246"/>
+        <path class="arrow" d="M404 241H440"/>
+        <path class="arrow" d="M676 218H732"/>
+        <path class="arrow" d="M562 318V372H512"/>
+
+        <rect class="section-amber" x="38" y="456" width="950" height="284"/>
+        <text class="lane-title" x="60" y="486">2. Table Branch and Patient-Level Fusion Inputs</text>
+
+        <g transform="translate(64 558)">
+          <rect class="teal" width="148" height="86"/>
+          <use href="#iTable" x="16" y="18" width="34" height="34" color="#087d78"/>
+          <text class="box-title" x="62" y="31">Raw Table</text>
+          <text class="box-text" x="62" y="54">clinical values</text>
+          <text class="box-text" x="62" y="71">tooth records</text>
+        </g>
+
+        <g transform="translate(254 538)">
+          <rect class="card" width="226" height="126"/>
+          <text class="box-title" x="22" y="31">Table Preprocessing</text>
+          <text class="box-text" x="22" y="55">remove invalid rows</text>
+          <text class="box-text" x="22" y="74">impute missing values</text>
+          <text class="box-text" x="22" y="93">remove weak features</text>
+          <text class="box-text" x="22" y="112">normalize to one domain</text>
+        </g>
+
+        <g transform="translate(524 538)">
+          <rect class="card" width="174" height="126"/>
+          <text class="box-title" x="22" y="35">Label Encoding</text>
+          <text class="box-text" x="22" y="60">convert categories</text>
+          <text class="box-text" x="22" y="79">1, 2, 3 scale</text>
+          <text class="box-text" x="22" y="98">low, medium, high</text>
+        </g>
+
+        <g transform="translate(744 526)">
+          <rect class="green" width="196" height="150"/>
+          <use href="#iFeatures" x="18" y="24" width="36" height="36" color="#4f8e46"/>
+          <text class="box-title" x="68" y="37">Top-k Feature Selection</text>
+          <text class="box-text" x="68" y="61">table selected features</text>
+          <text class="box-text" x="68" y="80">image selected features</text>
+          <text class="box-text" x="68" y="99">patient-level merge</text>
+          <text class="box-text" x="68" y="118">ready for FKG</text>
+        </g>
+
+        <g transform="translate(744 326)">
+          <rect class="green" width="196" height="92"/>
+          <text class="box-title" x="22" y="31">Image Aggregation</text>
+          <text class="box-text" x="22" y="54">mean pool image blobs</text>
+          <text class="box-text" x="22" y="73">top-k per patient</text>
+        </g>
+
+        <path class="arrow" d="M212 601H246"/>
+        <path class="arrow" d="M480 601H516"/>
+        <path class="arrow" d="M698 601H736"/>
+        <path class="arrow" d="M720 372H736"/>
+        <path class="arrow" d="M842 418C842 462 842 486 842 518"/>
+
+        <rect class="section" x="1034" y="118" width="708" height="622"/>
+        <text class="lane-title" x="1056" y="148">3. Model Training, Late Fusion, and Explainability</text>
+
+        <g transform="translate(1070 236)">
+          <rect class="green" width="192" height="106"/>
+          <use href="#iGraph" x="18" y="24" width="38" height="38" color="#4f8e46"/>
+          <text class="box-title" x="70" y="36">FKG Model</text>
+          <text class="box-text" x="70" y="60">learn fuzzy rule graph</text>
+          <text class="box-text" x="70" y="79">sample rule candidates</text>
+          <text class="box-text" x="70" y="98">return rule scores</text>
+        </g>
+
+        <g transform="translate(1312 152)">
+          <rect class="card" width="160" height="68"/>
+          <text class="box-title" x="24" y="29">CNN Output</text>
+          <text class="box-text" x="24" y="50">A: 0.70, B: 0.30</text>
+        </g>
+
+        <g transform="translate(1312 250)">
+          <rect class="card" width="160" height="68"/>
+          <text class="box-title" x="24" y="26">FKG Candidate 1</text>
+          <text class="box-text" x="24" y="47">A and B -> A: 0.60</text>
+        </g>
+
+        <g transform="translate(1312 348)">
+          <rect class="card" width="160" height="68"/>
+          <text class="box-title" x="24" y="26">FKG Candidate 2</text>
+          <text class="box-text" x="24" y="47">C and D -> B: 0.70</text>
+        </g>
+
+        <g transform="translate(1312 446)">
+          <rect class="card" width="160" height="68"/>
+          <text class="box-title" x="24" y="26">FKG Candidate 3</text>
+          <text class="box-text" x="24" y="47">A and B -> A: 0.70</text>
+        </g>
+
+        <g transform="translate(1522 286)">
+          <rect class="violet" width="176" height="154"/>
+          <use href="#iFuse" x="18" y="24" width="40" height="40" color="#6f5ab8"/>
+          <text class="box-title" x="72" y="38">Late Fusion</text>
+          <text class="box-text" x="72" y="62">weighted voting</text>
+          <text class="box-text" x="72" y="81">CNN + FKG evidence</text>
+          <text class="box-text" x="72" y="100">weights can be tuned</text>
+          <text class="box-text" x="72" y="119">final class evidence</text>
+        </g>
+
+        <g transform="translate(1522 510)">
+          <rect class="coral" width="176" height="88"/>
+          <use href="#iExplain" x="18" y="21" width="36" height="36" color="#bc5a52"/>
+          <text class="box-title" x="70" y="34">Training Result</text>
+          <text class="box-text" x="70" y="57">class A, confidence 0.70</text>
+          <text class="box-text" x="70" y="76">stored explanation basis</text>
+        </g>
+
+        <path class="arrow" d="M940 601H1006C1030 601 1030 289 1062 289"/>
+        <path class="arrow" d="M940 196H1304"/>
+        <path class="arrow" d="M1262 289H1304"/>
+        <path class="arrow" d="M1262 289C1290 289 1288 382 1304 382"/>
+        <path class="arrow" d="M1262 289C1290 289 1288 480 1304 480"/>
+        <path class="arrow" d="M1472 186C1500 186 1492 336 1514 336"/>
+        <path class="arrow" d="M1472 284H1514"/>
+        <path class="arrow" d="M1472 382H1514"/>
+        <path class="arrow" d="M1472 480C1500 480 1492 396 1514 396"/>
+        <path class="strong" d="M1610 440V502"/>
+
+        <rect class="section-blue" x="1034" y="778" width="708" height="268"/>
+        <text class="lane-title" x="1056" y="808">4. xAI Outputs for the Paper Figure</text>
+
+        <g transform="translate(1080 858)">
+          <rect class="amber" width="166" height="88"/>
+          <use href="#iHeat" x="18" y="22" width="36" height="36" color="#c4861c"/>
+          <text class="box-title" x="68" y="34">Grad-CAM ROI</text>
+          <text class="box-text" x="68" y="58">tooth-decay region</text>
+          <text class="box-text" x="68" y="76">visual rationale</text>
+        </g>
+
+        <g transform="translate(1290 858)">
+          <rect class="blue" width="166" height="88"/>
+          <use href="#iImage" x="18" y="22" width="36" height="36" color="#2565a8"/>
+          <text class="box-title" x="68" y="34">Full Image View</text>
+          <text class="box-text" x="68" y="58">global context</text>
+          <text class="box-text" x="68" y="76">dental image</text>
+        </g>
+
+        <g transform="translate(1500 858)">
+          <rect class="green" width="166" height="88"/>
+          <use href="#iGraph" x="18" y="22" width="36" height="36" color="#4f8e46"/>
+          <text class="box-title" x="68" y="34">Rule Rationale</text>
+          <text class="box-text" x="68" y="58">FKG rule path</text>
+          <text class="box-text" x="68" y="76">clinical reason</text>
+        </g>
+
+        <g transform="translate(1290 968)">
+          <rect class="coral" width="376" height="52"/>
+          <text class="box-title" x="24" y="24">Explanation Report</text>
+          <text class="box-text" x="24" y="42">heatmap + ROI image + full image + rule-level explanation</text>
+        </g>
+
+        <path class="arrow" d="M1610 598C1610 828 1163 824 1163 850"/>
+        <path class="arrow" d="M1610 598C1610 828 1373 824 1373 850"/>
+        <path class="arrow" d="M1610 598C1610 828 1583 824 1583 850"/>
+        <path class="strong" d="M1246 902H1282"/>
+        <path class="strong" d="M1456 902H1492"/>
+        <path class="arrow" d="M1583 946C1583 956 1512 956 1512 960"/>
+      </svg>
+    </section>
+
+    <section class="diagram-block">
+      <svg id="testingDiagram" class="pipeline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1120" role="img" aria-labelledby="testingTitle testingDesc">
+        <title id="testingTitle">Testing pipeline of the full dental AI model</title>
+        <desc id="testingDesc">The full testing flow follows the trained YOLO, CNN, image feature, table feature, FKG, late fusion, and explainability branches.</desc>
+        <defs>
+          <style>
+            .bg { fill: #fbfdfc; }
+            .title { font: 800 30px "Segoe UI", Arial, sans-serif; fill: #172635; letter-spacing: 0; }
+            .subtitle { font: 500 14px "Segoe UI", Arial, sans-serif; fill: #516476; letter-spacing: 0; }
+            .lane-title { font: 800 14px "Segoe UI", Arial, sans-serif; fill: #172635; letter-spacing: 0; }
+            .box-title { font: 800 14px "Segoe UI", Arial, sans-serif; fill: #132334; letter-spacing: 0; }
+            .box-text { font: 500 11.5px "Segoe UI", Arial, sans-serif; fill: #334858; letter-spacing: 0; }
+            .tiny { font: 600 10px "Segoe UI", Arial, sans-serif; fill: #526678; letter-spacing: 0; }
+            .section { fill: #f0f6f6; stroke: #c9d9dc; stroke-width: 1.2; rx: 8; }
+            .section-blue { fill: #eff5fb; stroke: #c8d8e6; stroke-width: 1.2; rx: 8; }
+            .section-amber { fill: #f8f4e9; stroke: #ded2b6; stroke-width: 1.2; rx: 8; }
+            .card { fill: #fff; stroke: #b8c9d2; stroke-width: 1.3; rx: 8; filter: url(#shadowTest); }
+            .blue { fill: #eef6ff; stroke: #8eb8dc; stroke-width: 1.45; rx: 8; }
+            .teal { fill: #e9f8f6; stroke: #78b8b1; stroke-width: 1.45; rx: 8; }
+            .green { fill: #eef8ee; stroke: #8ec48b; stroke-width: 1.45; rx: 8; }
+            .amber { fill: #fff7e5; stroke: #d8b265; stroke-width: 1.45; rx: 8; }
+            .coral { fill: #fff0ee; stroke: #d39993; stroke-width: 1.45; rx: 8; }
+            .violet { fill: #f4f0fb; stroke: #b5a2d8; stroke-width: 1.45; rx: 8; }
+            .arrow { fill: none; stroke: #6e8799; stroke-width: 2; marker-end: url(#arrowTest); }
+            .strong { fill: none; stroke: #087d78; stroke-width: 2.8; marker-end: url(#arrowTealTest); }
+            .dash { fill: none; stroke: #879cad; stroke-width: 1.6; stroke-dasharray: 6 6; marker-end: url(#arrowTest); }
+            .icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+          </style>
+          <filter id="shadowTest" x="-15%" y="-20%" width="130%" height="145%">
+            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#102334" flood-opacity="0.10"/>
+          </filter>
+          <marker id="arrowTest" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+            <path d="M1 1 9 5 1 9Z" fill="#6e8799"/>
+          </marker>
+          <marker id="arrowTealTest" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+            <path d="M1 1 10 5.5 1 10Z" fill="#087d78"/>
+          </marker>
+          <linearGradient id="testTop" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#2565a8"/>
+            <stop offset="0.45" stop-color="#087d78"/>
+            <stop offset="1" stop-color="#c4861c"/>
+          </linearGradient>
+          <symbol id="tImage" viewBox="0 0 32 32">
+            <rect x="4" y="6" width="24" height="20" rx="3" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="11" cy="13" r="3" fill="currentColor" opacity=".45"/>
+            <path d="m6 24 7-7 5 5 3-3 5 5" class="icon"/>
+          </symbol>
+          <symbol id="tTable" viewBox="0 0 32 32">
+            <rect x="5" y="6" width="22" height="20" rx="3" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <path d="M5 13h22M12 6v20M20 6v20M5 19h22" class="icon"/>
+          </symbol>
+          <symbol id="tYolo" viewBox="0 0 32 32">
+            <rect x="5" y="8" width="22" height="16" rx="3" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 13h9v7h-9zM21 13h3M21 20h3" class="icon"/>
+          </symbol>
+          <symbol id="tCnn" viewBox="0 0 32 32">
+            <path d="M6 9h6v14H6zM14 6h6v20h-6zM22 11h5v10h-5z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </symbol>
+          <symbol id="tFeatures" viewBox="0 0 32 32">
+            <path d="M5 24c5-16 8-16 11 0 3-16 6-16 11 0" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
+            <path d="M6 27h20" class="icon"/>
+          </symbol>
+          <symbol id="tGraph" viewBox="0 0 32 32">
+            <circle cx="8" cy="10" r="4" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="24" cy="10" r="4" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="16" cy="24" r="4" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 10h8M10 14l4 7M22 14l-4 7" class="icon"/>
+          </symbol>
+          <symbol id="tFuse" viewBox="0 0 32 32">
+            <circle cx="11" cy="12" r="6" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="21" cy="20" r="6" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <path d="M16 12h5M11 18v4" class="icon"/>
+          </symbol>
+          <symbol id="tExplain" viewBox="0 0 32 32">
+            <path d="M8 4h11l5 5v19H8Z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M19 4v6h6M12 16h9M12 21h7" class="icon"/>
+          </symbol>
+          <symbol id="tHeat" viewBox="0 0 32 32">
+            <rect x="5" y="5" width="22" height="22" rx="3" fill="#fff" stroke="currentColor" stroke-width="2"/>
+            <circle cx="13" cy="13" r="4" fill="#bc5a52" opacity=".55"/>
+            <circle cx="20" cy="20" r="5" fill="#c4861c" opacity=".38"/>
+            <path d="M9 23c6-8 10-8 14-1" class="icon"/>
+          </symbol>
+        </defs>
+
+        <rect class="bg" x="0" y="0" width="1800" height="1120"/>
+        <rect x="0" y="0" width="1800" height="10" fill="url(#testTop)"/>
+        <text class="title" x="48" y="58">Model Testing</text>
+        <text class="subtitle" x="48" y="84">Full inference pipeline: trained YOLO and CNN outputs are combined with FKG rule evidence through late fusion, then explained by xAI artifacts.</text>
+        <text class="tiny" x="1380" y="58">Original-flow fidelity</text>
+        <text class="tiny" x="1380" y="76">Image branch + table/FKG branch converge at late fusion.</text>
+
+        <rect class="section-blue" x="38" y="118" width="1704" height="346"/>
+        <text class="lane-title" x="60" y="148">1. Image Inference Branch</text>
+
+        <g transform="translate(66 228)">
+          <rect class="blue" width="150" height="86"/>
+          <use href="#tImage" x="16" y="18" width="34" height="34" color="#2565a8"/>
+          <text class="box-title" x="62" y="31">Raw Image</text>
+          <text class="box-text" x="62" y="54">new patient image</text>
+          <text class="box-text" x="62" y="71">unseen sample</text>
+        </g>
+
+        <g transform="translate(260 228)">
+          <rect class="card" width="148" height="86"/>
+          <text class="box-title" x="20" y="32">Preprocess</text>
+          <text class="box-text" x="20" y="56">resize image</text>
+          <text class="box-text" x="20" y="73">normalize input</text>
+        </g>
+
+        <g transform="translate(452 176)">
+          <rect class="teal" width="236" height="158"/>
+          <use href="#tYolo" x="18" y="24" width="40" height="40" color="#087d78"/>
+          <text class="box-title" x="72" y="36">YOLO Detection</text>
+          <text class="box-text" x="72" y="60">trained detection head</text>
+          <text class="box-text" x="72" y="79">lesion boxes + confidence</text>
+          <text class="box-text" x="72" y="98">multi-scale features</text>
+          <text class="box-text" x="72" y="117">ROI candidates</text>
+          <text class="box-text" x="72" y="136">detected tooth-decay regions</text>
+        </g>
+
+        <g transform="translate(746 154)">
+          <rect class="violet" width="196" height="106"/>
+          <use href="#tCnn" x="16" y="23" width="38" height="38" color="#6f5ab8"/>
+          <text class="box-title" x="68" y="36">CNN Classifier</text>
+          <text class="box-text" x="68" y="60">trained image classifier</text>
+          <text class="box-text" x="68" y="79">class probabilities</text>
+          <text class="box-text" x="68" y="98">example A: 0.70</text>
+        </g>
+
+        <g transform="translate(746 306)">
+          <rect class="amber" width="196" height="100"/>
+          <use href="#tFeatures" x="16" y="22" width="38" height="38" color="#c4861c"/>
+          <text class="box-title" x="68" y="35">Per-Image Features</text>
+          <text class="box-text" x="68" y="59">HSV extraction</text>
+          <text class="box-text" x="68" y="78">GLCM extraction</text>
+          <text class="box-text" x="68" y="95">hand-crafted descriptors</text>
+        </g>
+
+        <g transform="translate(1002 306)">
+          <rect class="green" width="188" height="100"/>
+          <text class="box-title" x="22" y="31">Patient Aggregation</text>
+          <text class="box-text" x="22" y="55">mean-pool image blobs</text>
+          <text class="box-text" x="22" y="74">apply top-k selection</text>
+          <text class="box-text" x="22" y="91">one vector per patient</text>
+        </g>
+
+        <path class="arrow" d="M216 271H252"/>
+        <path class="arrow" d="M408 271H444"/>
+        <path class="arrow" d="M688 222H738"/>
+        <path class="arrow" d="M688 278C715 278 715 356 738 356"/>
+        <path class="arrow" d="M942 356H994"/>
+
+        <rect class="section-amber" x="38" y="504" width="920" height="292"/>
+        <text class="lane-title" x="60" y="534">2. Table and FKG Inference Branch</text>
+
+        <g transform="translate(66 604)">
+          <rect class="teal" width="150" height="86"/>
+          <use href="#tTable" x="16" y="18" width="34" height="34" color="#087d78"/>
+          <text class="box-title" x="62" y="31">Raw Table</text>
+          <text class="box-text" x="62" y="54">patient values</text>
+          <text class="box-text" x="62" y="71">clinical record</text>
+        </g>
+
+        <g transform="translate(260 584)">
+          <rect class="card" width="216" height="126"/>
+          <text class="box-title" x="22" y="31">Preprocess Data</text>
+          <text class="box-text" x="22" y="55">remove invalid entries</text>
+          <text class="box-text" x="22" y="74">impute missing values</text>
+          <text class="box-text" x="22" y="93">normalize feature domains</text>
+          <text class="box-text" x="22" y="112">keep selected schema</text>
+        </g>
+
+        <g transform="translate(520 584)">
+          <rect class="green" width="174" height="126"/>
+          <use href="#tFeatures" x="18" y="24" width="36" height="36" color="#4f8e46"/>
+          <text class="box-title" x="66" y="36">Feature Selection</text>
+          <text class="box-text" x="66" y="60">trained top-k schema</text>
+          <text class="box-text" x="66" y="79">image + table features</text>
+          <text class="box-text" x="66" y="98">patient vector</text>
+        </g>
+
+        <g transform="translate(738 584)">
+          <rect class="green" width="178" height="126"/>
+          <use href="#tGraph" x="18" y="24" width="38" height="38" color="#4f8e46"/>
+          <text class="box-title" x="68" y="36">FKG Model</text>
+          <text class="box-text" x="68" y="60">rule evidence</text>
+          <text class="box-text" x="68" y="79">candidate scores</text>
+          <text class="box-text" x="68" y="98">rule rationale</text>
+        </g>
+
+        <path class="arrow" d="M216 647H252"/>
+        <path class="arrow" d="M476 647H512"/>
+        <path class="arrow" d="M694 647H730"/>
+        <path class="dash" d="M1190 356C1218 356 1218 647 924 647"/>
+
+        <rect class="section" x="1004" y="504" width="738" height="292"/>
+        <text class="lane-title" x="1026" y="534">3. Late Fusion and Final Prediction</text>
+
+        <g transform="translate(1042 610)">
+          <rect class="violet" width="212" height="118"/>
+          <use href="#tFuse" x="20" y="26" width="42" height="42" color="#6f5ab8"/>
+          <text class="box-title" x="78" y="39">Late Fusion</text>
+          <text class="box-text" x="78" y="64">weighted voting</text>
+          <text class="box-text" x="78" y="83">CNN image score + FKG score</text>
+          <text class="box-text" x="78" y="102">final class evidence</text>
+        </g>
+
+        <g transform="translate(1310 610)">
+          <rect class="coral" width="176" height="118"/>
+          <use href="#tExplain" x="18" y="28" width="38" height="38" color="#bc5a52"/>
+          <text class="box-title" x="70" y="40">Result</text>
+          <text class="box-text" x="70" y="64">predicted class A</text>
+          <text class="box-text" x="70" y="83">confidence 0.70</text>
+          <text class="box-text" x="70" y="102">candidate evidence kept</text>
+        </g>
+
+        <path class="arrow" d="M942 207C1000 207 1000 644 1034 644"/>
+        <path class="arrow" d="M916 647H1034"/>
+        <path class="strong" d="M1254 669H1302"/>
+
+        <rect class="section-blue" x="38" y="836" width="1704" height="218"/>
+        <text class="lane-title" x="60" y="866">4. xAI Explanation Outputs</text>
+
+        <g transform="translate(104 914)">
+          <rect class="amber" width="208" height="88"/>
+          <use href="#tHeat" x="18" y="22" width="36" height="36" color="#c4861c"/>
+          <text class="box-title" x="68" y="34">Tooth-Decay ROI</text>
+          <text class="box-text" x="68" y="58">Grad-CAM heatmap</text>
+          <text class="box-text" x="68" y="76">localized lesion evidence</text>
+        </g>
+
+        <g transform="translate(370 914)">
+          <rect class="blue" width="208" height="88"/>
+          <use href="#tImage" x="18" y="22" width="36" height="36" color="#2565a8"/>
+          <text class="box-title" x="68" y="34">Full Dental Image</text>
+          <text class="box-text" x="68" y="58">context image</text>
+          <text class="box-text" x="68" y="76">whole-sample view</text>
+        </g>
+
+        <g transform="translate(636 914)">
+          <rect class="green" width="208" height="88"/>
+          <use href="#tGraph" x="18" y="22" width="36" height="36" color="#4f8e46"/>
+          <text class="box-title" x="68" y="34">Tooth-Decay Rule</text>
+          <text class="box-text" x="68" y="58">FKG rule reason</text>
+          <text class="box-text" x="68" y="76">human-readable evidence</text>
+        </g>
+
+        <g transform="translate(920 914)">
+          <rect class="violet" width="260" height="88"/>
+          <use href="#tExplain" x="20" y="22" width="38" height="38" color="#6f5ab8"/>
+          <text class="box-title" x="74" y="34">xAI Module</text>
+          <text class="box-text" x="74" y="58">merge visual and rule reasons</text>
+          <text class="box-text" x="74" y="76">prepare interpretation</text>
+        </g>
+
+        <g transform="translate(1248 914)">
+          <rect class="coral" width="308" height="88"/>
+          <text class="box-title" x="24" y="34">Explanation Report</text>
+          <text class="box-text" x="24" y="58">prediction + confidence + ROI heatmap</text>
+          <text class="box-text" x="24" y="76">full image + FKG rule rationale</text>
+        </g>
+
+        <path class="arrow" d="M1398 728C1398 842 208 838 208 906"/>
+        <path class="arrow" d="M1398 728C1398 842 474 838 474 906"/>
+        <path class="arrow" d="M1398 728C1398 842 740 838 740 906"/>
+        <path class="strong" d="M312 958H362"/>
+        <path class="strong" d="M578 958H628"/>
+        <path class="strong" d="M844 958H912"/>
+        <path class="strong" d="M1180 958H1240"/>
+      </svg>
+    </section>
+  </main>
+
+  <script>
+    function getSvgSize(svg) {
+      const viewBox = svg.getAttribute("viewBox").split(/\s+/).map(Number);
+      return { width: viewBox[2], height: viewBox[3] };
+    }
+
+    function inlineComputedStyles(svg) {
+      const clone = svg.cloneNode(true);
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      clone.querySelectorAll("*").forEach((node) => {
+        const style = window.getComputedStyle(node);
+        if (node.tagName.toLowerCase() === "text") {
+          node.setAttribute("font-family", style.fontFamily);
+          node.setAttribute("font-size", style.fontSize);
+          node.setAttribute("font-weight", style.fontWeight);
+          node.setAttribute("letter-spacing", "0");
+        }
+      });
+      return clone;
+    }
+
+    async function exportSvg(svgId, filename) {
+      const svg = document.getElementById(svgId);
+      const { width, height } = getSvgSize(svg);
+      const scale = 2.4;
+      const clone = inlineComputedStyles(svg);
+      const xml = new XMLSerializer().serializeToString(clone);
+      const blob = new Blob([xml], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      try {
+        const img = new Image();
+        const loaded = new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+        img.src = url;
+        await loaded;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fbfdfc";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const link = document.createElement("a");
+        link.download = filename;
+        link.href = canvas.toDataURL("image/png");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    function exportBoth() {
+      exportSvg("trainingDiagram", "fkg_model_training.png");
+      window.setTimeout(() => exportSvg("testingDiagram", "fkg_model_testing.png"), 500);
+    }
+
+    function applyViewMode() {
+      const view = new URLSearchParams(window.location.search).get("view");
+      if (!view) {
+        return;
+      }
+      document.body.classList.add("export-mode");
+      const trainingBlock = document.getElementById("trainingDiagram").closest(".diagram-block");
+      const testingBlock = document.getElementById("testingDiagram").closest(".diagram-block");
+      if (view === "training") {
+        testingBlock.hidden = true;
+      } else if (view === "testing") {
+        trainingBlock.hidden = true;
+      }
+    }
+
+    applyViewMode();
+  </script>
+</body>
+</html>

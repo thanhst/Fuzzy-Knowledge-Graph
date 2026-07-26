@@ -17,6 +17,7 @@
 #endif
 #include <algorithm>
 #include <cmath>
+#include <unordered_map>
 #include <unordered_set>
 #include <atomic>
 #include <chrono>
@@ -573,6 +574,8 @@ int FIS::matchRule(const std::vector<int>& fuzzy_input, const Matrix& ruleList) 
     if (num_rules == 0) return -1;
     
     int num_attrs = static_cast<int>(ruleList[0].size()) - 1;
+    std::unordered_map<int, int> labelCounts;
+    std::vector<int> labelOrder;
     
     for (int i = 0; i < num_rules; i++) {
         bool match = true;
@@ -583,8 +586,25 @@ int FIS::matchRule(const std::vector<int>& fuzzy_input, const Matrix& ruleList) 
             }
         }
         if (match) {
-            return static_cast<int>(ruleList[i][num_attrs]);
+            const int label = static_cast<int>(ruleList[i][num_attrs]);
+            if (labelCounts.find(label) == labelCounts.end()) {
+                labelOrder.push_back(label);
+            }
+            labelCounts[label] += 1;
         }
+    }
+
+    if (!labelOrder.empty()) {
+        int bestLabel = labelOrder[0];
+        int bestCount = labelCounts[bestLabel];
+        for (int label : labelOrder) {
+            const int count = labelCounts[label];
+            if (count > bestCount) {
+                bestLabel = label;
+                bestCount = count;
+            }
+        }
+        return bestLabel;
     }
     
     return -1;

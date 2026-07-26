@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background: #eef2ef;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background:
+      radial-gradient(circle at 18% 10%, rgba(125, 162, 186, 0.12), transparent 26rem),
+      linear-gradient(180deg, #eef2ef 0%, #f7f8f4 100%);
+    color: #173042;
+  }
+
+  button {
+    font: inherit;
+  }
+}

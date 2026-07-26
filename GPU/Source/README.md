@@ -1,7 +1,7 @@
 # GPU Source Wrapper
 
-Folder này giữ cấu hình build dành cho pipeline GPU.
+This folder keeps the GPU build wrapper and optional GPU-local output.
 
-- `CMakeLists.txt` ở đây chỉ đóng vai trò wrapper.
-- Code C++ thực tế vẫn nằm ở `Source/`.
-- Output module Python (`fisa_module*.pyd`) của pipeline GPU sẽ được đặt tại `GPU/Source/`.
+- `CMakeLists.txt` only delegates to the shared `Source` build wrapper.
+- Native C++/CUDA source lives in `modules/fkg_cpp/`.
+- GPU build output (`fisa_module*.pyd`) can be placed in `GPU/Source/`.

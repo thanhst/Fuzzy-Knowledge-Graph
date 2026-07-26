@@ -38,9 +38,12 @@ class FIS:
         df = pd.read_csv(filePath)
         full_data = df
         df_full_data = pd.DataFrame(full_data)
-        # train_data, test_data = train_test_split(df_full_data, test_size=0.3, random_state=37)
-        train_data=df_full_data.sample(frac=0.7,random_state=None)
-        test_data=df_full_data.sample(frac=0.3,random_state=None)
+        train_data, test_data = train_test_split(
+            df_full_data,
+            test_size=0.3,
+            shuffle=True,
+            random_state=None,
+        )
         train_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/train_data.csv'), index=False)
         test_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/test_data.csv'),index=False)
         train_data = train_data.values
@@ -237,7 +240,7 @@ class FIS:
         for i,r in data.iterrows():
             sample_input = r.values[0:label_index]
             label,rule = test_fis(sample_input,model_folder)
-            rule = np.append(rule, label)
+            rule = np.append(rule, r.values[label_index]+1)
             rule = rule.astype(int).tolist()
             rules.append(rule)
         df_rules = pd.DataFrame(rules)

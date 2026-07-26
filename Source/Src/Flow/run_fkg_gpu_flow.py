@@ -10,73 +10,25 @@ import random
 import sys
 import time
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from modules.fkg_python.fkg_runtime import try_import_fisa_module as shared_try_import_fisa_module
 
 
 def source_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-def add_windows_dll_dirs(extra_dirs: Sequence[Path]) -> None:
-    if os.name != "nt" or not hasattr(os, "add_dll_directory"):
-        return
-
-    candidates = []
-    cuda_path = os.environ.get("CUDA_PATH")
-    if cuda_path:
-        candidates.append(Path(cuda_path) / "bin")
-    candidates.append(Path(sys.executable).resolve().parent)
-    candidates.append(Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32")
-    candidates.extend(extra_dirs)
-
-    for path in candidates:
-        if path.exists():
-            try:
-                os.add_dll_directory(str(path))
-            except OSError:
-                pass
-
-
-def resolve_module_candidates(root: Path) -> List[Path]:
-    return [
-        root,
-        root / "Release",
-        root.parent,
-        root.parent / "Release",
-    ]
-
-
 def try_import_fisa_module() -> Tuple[Optional[object], Optional[Path], Optional[str]]:
-    src = source_root()
-    candidates = [
-        src,
-        src / "build" / "lib.win-amd64-cpython-313",
-        source_root().parents[0] / "GPU" / "Source",
-        source_root().parents[0] / "GPU" / "Source" / "Release",
-    ]
-
-    errors: List[str] = []
-    for module_dir in candidates:
-        if not module_dir.exists():
-            continue
-        add_windows_dll_dirs(resolve_module_candidates(module_dir))
-
-        if str(module_dir) not in sys.path:
-            sys.path.insert(0, str(module_dir))
-
-        try:
-            if "fisa_module" in sys.modules:
-                del sys.modules["fisa_module"]
-            import fisa_module  # noqa: PLC0415
-
-            return fisa_module, module_dir, None
-        except Exception as exc:  # pragma: no cover
-            errors.append(f"{module_dir}: {exc}")
-
-    return None, None, "\n".join(errors) if errors else "No candidate module directory found."
+    result = shared_try_import_fisa_module(preferred="source", clear_existing=True)
+    return result.module, result.module_dir, result.error or None
 
 
 def discretize_column(series: pd.Series, bins: int) -> pd.Series:
