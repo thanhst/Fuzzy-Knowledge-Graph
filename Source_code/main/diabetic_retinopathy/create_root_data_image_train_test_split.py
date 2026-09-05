@@ -54,10 +54,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--materialize",
         choices=["hardlink", "copy", "none"],
-        default="hardlink",
+        default="none",
         help=(
-            "How to create split image folders. hardlink saves disk space and falls "
-            "back to copy if hardlinks are unavailable."
+            "How to create split image folders. none writes CSV manifests only; "
+            "hardlink saves disk space and falls back to copy if hardlinks are unavailable."
         ),
     )
     parser.add_argument(
