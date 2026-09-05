@@ -450,6 +450,13 @@ def read_manifest(path: Path) -> pd.DataFrame:
     if missing:
         raise ValueError(f"{path} is missing columns: {sorted(missing)}")
     frame[LABEL_COLUMN] = pd.to_numeric(frame[LABEL_COLUMN], errors="raise").astype(int)
+    manifest_dir = path.parent.resolve()
+
+    def resolve_image_path(value: object) -> Path:
+        image_path = Path(str(value))
+        return image_path if image_path.is_absolute() else (manifest_dir / image_path).resolve()
+
+    frame["image_path"] = frame["image_path"].map(lambda value: str(resolve_image_path(value)))
     missing_files = frame[~frame["image_path"].map(lambda value: Path(value).exists())]
     if not missing_files.empty:
         examples = ", ".join(missing_files["image_id"].head(5).astype(str))

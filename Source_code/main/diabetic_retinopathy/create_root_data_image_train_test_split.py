@@ -61,6 +61,12 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--path-mode",
+        choices=["relative", "absolute"],
+        default="relative",
+        help="Write manifest image_path values relative to each manifest folder or as absolute paths.",
+    )
+    parser.add_argument(
         "--overwrite",
         action="store_true",
         help="Replace existing destination files with the same names.",
@@ -526,6 +532,7 @@ def materialize_manifest_records(
     output_label_column: str,
     materialize: str,
     overwrite: bool,
+    path_mode: str,
     split_column: str,
     split_names: Sequence[str] | None = None,
 ) -> tuple[pd.DataFrame, Dict[str, int]]:
@@ -547,12 +554,16 @@ def materialize_manifest_records(
         operation = materialize_image(source_path, destination_path, materialize, overwrite)
         operations[operation] = operations.get(operation, 0) + 1
         image_path = source_path if materialize == "none" else destination_path
+        image_path_value = str(image_path.resolve())
+        if path_mode == "relative":
+            image_path_value = os.path.relpath(image_path.resolve(), start=output_dir.resolve())
+            image_path_value = image_path_value.replace(os.sep, "/")
         records.append(
             {
                 "image_id": row["image_id"],
                 "patient_id": str(row["patient_id"]),
                 "split": split_name,
-                "image_path": str(image_path.resolve()),
+                "image_path": image_path_value,
                 output_label_column: label,
             }
         )
@@ -566,6 +577,7 @@ def write_split_outputs(
     output_label_column: str,
     materialize: str,
     overwrite: bool,
+    path_mode: str,
 ) -> Dict[str, int]:
     output_dir.mkdir(parents=True, exist_ok=True)
     manifest, operations = materialize_manifest_records(
@@ -574,6 +586,7 @@ def write_split_outputs(
         output_label_column,
         materialize,
         overwrite,
+        path_mode,
         "split",
         ("train", "test"),
     )
@@ -604,6 +617,7 @@ def write_train_kfold_outputs(
     seed: int,
     materialize: str,
     overwrite: bool,
+    path_mode: str,
 ) -> Dict[str, object]:
     if n_folds == 0:
         return {"enabled": False}
@@ -632,6 +646,7 @@ def write_train_kfold_outputs(
             output_label_column,
             materialize,
             overwrite,
+            path_mode,
             "fold_split",
             ("train", "val"),
         )
@@ -723,6 +738,7 @@ def main() -> int:
         args.output_label_column,
         args.materialize,
         args.overwrite,
+        args.path_mode,
     )
 
     train_frame = split_frame[split_frame["split"] == "train"]
@@ -735,6 +751,7 @@ def main() -> int:
         args.seed,
         args.materialize,
         args.overwrite,
+        args.path_mode,
     )
     train_patients = set(train_frame["patient_id"].astype(str))
     test_patients = set(test_frame["patient_id"].astype(str))
@@ -749,6 +766,7 @@ def main() -> int:
         "test_ratio": args.test_ratio,
         "seed": args.seed,
         "materialize": args.materialize,
+        "path_mode": args.path_mode,
         "image_count": int(len(image_files)),
         "labeled_image_count": int(len(labeled_images)),
         "unmatched_image_count": int(len(unmatched)),

@@ -9,6 +9,8 @@ if exist ".venv_deep_baselines\Scripts\python.exe" (
 
 "%PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\create_root_data_image_train_test_split.py" ^
   --root-data "ROOT_DATA" ^
+  --materialize none ^
+  --path-mode relative ^
   %*
 
 set EXIT_CODE=%ERRORLEVEL%
