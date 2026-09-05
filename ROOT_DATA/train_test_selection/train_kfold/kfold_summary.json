@@ -1,0 +1,126 @@
+{
+  "enabled": true,
+  "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold",
+  "fold_count": 5,
+  "source_split": "train",
+  "manifest_columns": [
+    "image_id",
+    "patient_id",
+    "image_path",
+    "retinopathy"
+  ],
+  "folds": [
+    {
+      "fold": 1,
+      "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_1",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 1229,
+        "patients": 680,
+        "retinopathy_counts": {
+          "0": 1145,
+          "1": 84
+        }
+      },
+      "val": {
+        "images": 308,
+        "patients": 171,
+        "retinopathy_counts": {
+          "0": 286,
+          "1": 22
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_2",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 1230,
+        "patients": 681,
+        "retinopathy_counts": {
+          "0": 1145,
+          "1": 85
+        }
+      },
+      "val": {
+        "images": 307,
+        "patients": 170,
+        "retinopathy_counts": {
+          "0": 286,
+          "1": 21
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_3",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 1229,
+        "patients": 681,
+        "retinopathy_counts": {
+          "0": 1144,
+          "1": 85
+        }
+      },
+      "val": {
+        "images": 308,
+        "patients": 170,
+        "retinopathy_counts": {
+          "0": 287,
+          "1": 21
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_4",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 1230,
+        "patients": 681,
+        "retinopathy_counts": {
+          "0": 1145,
+          "1": 85
+        }
+      },
+      "val": {
+        "images": 307,
+        "patients": 170,
+        "retinopathy_counts": {
+          "0": 286,
+          "1": 21
+        }
+      }
+    },
+    {
+      "fold": 5,
+      "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_5",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 1230,
+        "patients": 681,
+        "retinopathy_counts": {
+          "0": 1145,
+          "1": 85
+        }
+      },
+      "val": {
+        "images": 307,
+        "patients": 170,
+        "retinopathy_counts": {
+          "0": 286,
+          "1": 21
+        }
+      }
+    }
+  ],
+  "file_operations": {
+    "hardlinked": 0,
+    "copied": 0,
+    "copied_after_hardlink_failed": 0,
+    "existing": 0,
+    "not_materialized": 7685
+  }
+}
