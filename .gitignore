@@ -40,13 +40,18 @@ GPU/Source/*.pyd
 .fisa_python_path.txt
 .msys2_mingw_bin.txt
 InstallationLog.txt
+.venv*/
+venv/
+env/
 
 # Local installers/archives
 msys2_installer.exe
 llvm-mingw.7z
 mingw64.7z
+Source_code/module/module.zip
 
 # Generated outputs
 data/FKG/
 Data
 Documentation
+ROOT_DATA/

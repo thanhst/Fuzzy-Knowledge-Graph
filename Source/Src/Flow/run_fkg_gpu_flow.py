@@ -49,7 +49,10 @@ def discretize_column(series: pd.Series, bins: int) -> pd.Series:
         return scaled.clip(1, q)
 
 
-def build_records(df: pd.DataFrame, bins: int) -> Tuple[List[List[int]], Dict[int, int], Dict[int, int], List[str]]:
+def build_records(
+    df: pd.DataFrame,
+    bins: int,
+) -> Tuple[List[List[int]], Dict[int, int], Dict[int, int], List[str], List[str]]:
     feature_cols = [c for c in df.columns if c not in {"patient_id", "Outcome"}]
     if not feature_cols:
         raise ValueError("Fused dataset has no feature columns.")
@@ -70,21 +73,56 @@ def build_records(df: pd.DataFrame, bins: int) -> Tuple[List[List[int]], Dict[in
     records: List[List[int]] = []
     for feat, lbl in zip(features_binned.values.tolist(), indexed_labels.tolist()):
         records.append([int(v) for v in feat] + [int(lbl)])
-    return records, label_to_idx, idx_to_label, feature_cols
+    patient_ids = df["patient_id"].astype(str).tolist()
+    return records, label_to_idx, idx_to_label, feature_cols, patient_ids
 
 
-def split_train_test(records: List[List[int]], test_ratio: float, seed: int) -> Tuple[List[List[int]], List[List[int]]]:
+def split_train_test(
+    records: List[List[int]],
+    patient_ids: List[str],
+    test_ratio: float,
+    seed: int,
+) -> Tuple[List[List[int]], List[List[int]], List[str], List[str]]:
     if len(records) < 4:
         raise ValueError("Dataset is too small for train/test split.")
+    if len(records) != len(patient_ids):
+        raise ValueError("Records and patient_ids must have the same length.")
 
-    indices = list(range(len(records)))
-    random.Random(seed).shuffle(indices)
-    split = int(len(records) * (1.0 - test_ratio))
-    split = max(2, min(split, len(records) - 2))
+    group_counts: Dict[str, int] = {}
+    groups = []
+    for patient_id in patient_ids:
+        if patient_id not in group_counts:
+            groups.append(patient_id)
+            group_counts[patient_id] = 0
+        group_counts[patient_id] += 1
+    if len(groups) < 2:
+        raise ValueError("Patient-level train/test split requires at least two unique patient_id values.")
 
-    train = [records[i] for i in indices[:split]]
-    test = [records[i] for i in indices[split:]]
-    return train, test
+    random.Random(seed).shuffle(groups)
+    target_test_rows = max(1, int(round(len(records) * test_ratio)))
+    test_groups = set()
+    test_rows = 0
+    for group in groups:
+        if len(test_groups) >= len(groups) - 1:
+            break
+        test_groups.add(group)
+        test_rows += group_counts[group]
+        if test_rows >= target_test_rows:
+            break
+
+    train_indices = [idx for idx, patient_id in enumerate(patient_ids) if patient_id not in test_groups]
+    test_indices = [idx for idx, patient_id in enumerate(patient_ids) if patient_id in test_groups]
+    if not train_indices or not test_indices:
+        raise ValueError("Patient-level train/test split produced an empty train or test set.")
+
+    train = [records[i] for i in train_indices]
+    test = [records[i] for i in test_indices]
+    train_patient_ids = [patient_ids[i] for i in train_indices]
+    test_patient_ids = [patient_ids[i] for i in test_indices]
+    overlap = set(train_patient_ids) & set(test_patient_ids)
+    if overlap:
+        raise RuntimeError(f"Patient id leakage across train/test split: {sorted(overlap)[:5]}")
+    return train, test, train_patient_ids, test_patient_ids
 
 
 def calculate_abcm_python(train_records: List[List[int]], n_classes: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -431,8 +469,13 @@ def run_fkg_flow(fusion_csv: Path, output_dir: Path, bins: int, test_ratio: floa
     if "patient_id" not in df.columns:
         raise ValueError("Fusion CSV must contain patient_id column.")
 
-    records, label_to_idx, idx_to_label, feature_cols = build_records(df, bins=bins)
-    train_records, test_records = split_train_test(records, test_ratio=test_ratio, seed=seed)
+    records, label_to_idx, idx_to_label, feature_cols, patient_ids = build_records(df, bins=bins)
+    train_records, test_records, train_patient_ids, test_patient_ids = split_train_test(
+        records,
+        patient_ids,
+        test_ratio=test_ratio,
+        seed=seed,
+    )
 
     import_error = None
     fisa_module, module_dir, import_error = try_import_fisa_module()
@@ -499,9 +542,9 @@ def run_fkg_flow(fusion_csv: Path, output_dir: Path, bins: int, test_ratio: floa
     pred_csv = output_dir / "Predictions_FKG.csv"
     with pred_csv.open("w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["index", "true_label", "pred_label", "confidence"])
-        for i, (a, p, c) in enumerate(zip(actual_orig, pred_orig, confidences)):
-            writer.writerow([i, a, p, f"{c:.8f}"])
+        writer.writerow(["index", "patient_id", "true_label", "pred_label", "confidence"])
+        for i, (patient_id, a, p, c) in enumerate(zip(test_patient_ids, actual_orig, pred_orig, confidences)):
+            writer.writerow([i, patient_id, a, p, f"{c:.8f}"])
 
     rank_counts: Dict[str, int] = {}
     for c in confidences:
@@ -532,6 +575,9 @@ def run_fkg_flow(fusion_csv: Path, output_dir: Path, bins: int, test_ratio: floa
                 "Feature Count",
                 "Train Samples",
                 "Test Samples",
+                "Train Patients",
+                "Test Patients",
+                "Patient Overlap",
                 "Import Error",
                 "Module Dir",
             ]
@@ -557,6 +603,9 @@ def run_fkg_flow(fusion_csv: Path, output_dir: Path, bins: int, test_ratio: floa
                 str(len(feature_cols)),
                 str(len(train_records)),
                 str(len(test_records)),
+                str(len(set(train_patient_ids))),
+                str(len(set(test_patient_ids))),
+                "0",
                 result.get("import_error", ""),
                 result.get("module_dir", ""),
             ]
@@ -580,6 +629,9 @@ def run_fkg_flow(fusion_csv: Path, output_dir: Path, bins: int, test_ratio: floa
         "f1_pct": f1_avg * 100.0,
         "train_samples": len(train_records),
         "test_samples": len(test_records),
+        "train_patients": len(set(train_patient_ids)),
+        "test_patients": len(set(test_patient_ids)),
+        "patient_overlap": 0,
         "conf_png_ok": conf_ok,
         "scores_png_ok": score_ok,
         "conf_png_error": conf_err,

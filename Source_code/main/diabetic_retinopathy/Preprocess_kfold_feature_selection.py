@@ -13,13 +13,22 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
-from sklearn.model_selection import KFold
+from sklearn.model_selection import GroupKFold
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
+
+try:
+    from sklearn.model_selection import StratifiedGroupKFold
+except ImportError:  # pragma: no cover - depends on sklearn version.
+    StratifiedGroupKFold = None
 
 
 CURRENT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = CURRENT_DIR.parents[1]
 LABEL_COLUMN = "diabetic_retinopathy"
+PATIENT_ID_COLUMN = "patient_id"
+IMAGE_ID_COLUMN = "image_id"
+ID_COLUMNS = [IMAGE_ID_COLUMN, PATIENT_ID_COLUMN, "id"]
+DEFAULT_PATIENT_ID_SOURCE = "data/Dataset_diabetic/labels_brset.csv"
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
@@ -174,6 +183,14 @@ def parse_args():
         help="Fusion feature CSV relative to Source_code or absolute path.",
     )
     parser.add_argument(
+        "--patient-id-source",
+        default=DEFAULT_PATIENT_ID_SOURCE,
+        help=(
+            "CSV used to recover patient_id when a feature CSV only has image_id "
+            "or matches the original diabetic dataset row order."
+        ),
+    )
+    parser.add_argument(
         "--output-root",
         default="data/Dataset_diabetic/KFold_feature_selection",
         help="Output folder relative to Source_code or absolute path.",
@@ -294,15 +311,153 @@ def selected_modalities(modalities):
     return list(dict.fromkeys(modalities))
 
 
-def load_source_frame(source_path):
+def normalize_id_series(series):
+    return series.map(lambda value: "" if pd.isna(value) else str(value).strip())
+
+
+def load_patient_id_reference(patient_id_source):
+    reference_path = resolve_project_path(patient_id_source)
+    if not reference_path.exists():
+        raise FileNotFoundError(f"Patient id source CSV not found: {reference_path}")
+
+    reference_df = pd.read_csv(
+        reference_path,
+        dtype={IMAGE_ID_COLUMN: str, PATIENT_ID_COLUMN: str, "id": str},
+    )
+    if PATIENT_ID_COLUMN not in reference_df.columns:
+        raise ValueError(f"Patient id source must contain '{PATIENT_ID_COLUMN}': {reference_path}")
+
+    reference_df[PATIENT_ID_COLUMN] = normalize_id_series(reference_df[PATIENT_ID_COLUMN])
+    if (reference_df[PATIENT_ID_COLUMN] == "").any():
+        raise ValueError(f"Patient id source contains empty patient_id values: {reference_path}")
+    if IMAGE_ID_COLUMN in reference_df.columns:
+        reference_df[IMAGE_ID_COLUMN] = normalize_id_series(reference_df[IMAGE_ID_COLUMN])
+    return reference_df, reference_path
+
+
+def map_patient_ids_from_image_ids(image_ids, reference_df, reference_path, source_path):
+    if IMAGE_ID_COLUMN not in reference_df.columns:
+        raise ValueError(
+            f"Cannot map image_id to patient_id because {reference_path} has no '{IMAGE_ID_COLUMN}' column."
+        )
+
+    reference_map = (
+        reference_df[[IMAGE_ID_COLUMN, PATIENT_ID_COLUMN]]
+        .drop_duplicates(subset=[IMAGE_ID_COLUMN])
+        .set_index(IMAGE_ID_COLUMN)[PATIENT_ID_COLUMN]
+    )
+    patient_ids = normalize_id_series(image_ids).map(reference_map)
+    missing = patient_ids.isna() | (patient_ids == "")
+    if missing.any():
+        missing_examples = normalize_id_series(image_ids)[missing].head(5).tolist()
+        raise ValueError(
+            f"Cannot map {int(missing.sum())} image_id values from {source_path} "
+            f"to patient_id using {reference_path}. Examples: {missing_examples}"
+        )
+    return patient_ids.reset_index(drop=True)
+
+
+def recover_patient_ids_from_sidecar(source_path, row_count, reference_df, reference_path):
+    sidecar_candidates = [
+        source_path.with_name("data_process.csv"),
+        source_path.with_name("table_fts.csv"),
+        source_path.with_name("image_fts_norm.csv"),
+        source_path.with_name("images_ft.csv"),
+    ]
+    seen = set()
+
+    for sidecar_path in sidecar_candidates:
+        if sidecar_path in seen or not sidecar_path.exists() or sidecar_path == source_path:
+            continue
+        seen.add(sidecar_path)
+
+        sidecar_df = pd.read_csv(
+            sidecar_path,
+            dtype={IMAGE_ID_COLUMN: str, PATIENT_ID_COLUMN: str, "id": str},
+        )
+        if len(sidecar_df) != row_count:
+            continue
+        if PATIENT_ID_COLUMN in sidecar_df.columns:
+            patient_ids = normalize_id_series(sidecar_df[PATIENT_ID_COLUMN])
+            if not (patient_ids == "").any():
+                return patient_ids.reset_index(drop=True), f"{sidecar_path}:patient_id_row_order"
+        if IMAGE_ID_COLUMN in sidecar_df.columns:
+            return (
+                map_patient_ids_from_image_ids(
+                    sidecar_df[IMAGE_ID_COLUMN],
+                    reference_df,
+                    reference_path,
+                    sidecar_path,
+                ),
+                f"{sidecar_path}:image_id_to_patient_id",
+            )
+
+    return None, None
+
+
+def infer_patient_ids(df, source_path, label_col, patient_id_source):
+    if PATIENT_ID_COLUMN in df.columns and PATIENT_ID_COLUMN != label_col:
+        patient_ids = normalize_id_series(df[PATIENT_ID_COLUMN])
+        if (patient_ids == "").any():
+            raise ValueError(f"Source CSV contains empty patient_id values: {source_path}")
+        return patient_ids.reset_index(drop=True), f"{source_path}:patient_id"
+
+    reference_df, reference_path = load_patient_id_reference(patient_id_source)
+    if IMAGE_ID_COLUMN in df.columns and IMAGE_ID_COLUMN != label_col:
+        return (
+            map_patient_ids_from_image_ids(
+                df[IMAGE_ID_COLUMN],
+                reference_df,
+                reference_path,
+                source_path,
+            ),
+            f"{source_path}:image_id_to_patient_id",
+        )
+
+    if "id" in df.columns and "id" != label_col:
+        patient_ids = normalize_id_series(df["id"])
+        if (patient_ids == "").any():
+            raise ValueError(f"Source CSV contains empty id values: {source_path}")
+        return patient_ids.reset_index(drop=True), f"{source_path}:id_as_patient_id"
+
+    sidecar_ids, sidecar_source = recover_patient_ids_from_sidecar(
+        source_path,
+        len(df),
+        reference_df,
+        reference_path,
+    )
+    if sidecar_ids is not None:
+        return sidecar_ids, sidecar_source
+
+    if source_path.parent == reference_path.parent and len(reference_df) == len(df):
+        return (
+            reference_df[PATIENT_ID_COLUMN].reset_index(drop=True),
+            f"{reference_path}:patient_id_row_order",
+        )
+
+    raise ValueError(
+        f"Cannot create patient-level KFold for {source_path}. Add a '{PATIENT_ID_COLUMN}' "
+        f"column, add an '{IMAGE_ID_COLUMN}' column that exists in {reference_path}, "
+        "or pass --patient-id-source for the matching raw metadata CSV."
+    )
+
+
+def load_source_frame(source_path, patient_id_source):
     if not source_path.exists():
         raise FileNotFoundError(f"Source CSV not found: {source_path}")
 
-    df = pd.read_csv(source_path)
+    df = pd.read_csv(source_path, dtype={IMAGE_ID_COLUMN: str, PATIENT_ID_COLUMN: str, "id": str})
     label_col = LABEL_COLUMN if LABEL_COLUMN in df.columns else df.columns[-1]
 
-    id_columns = [col for col in ["image_id", "patient_id", "id"] if col in df.columns and col != label_col]
-    id_frame = df[id_columns].copy() if id_columns else None
+    id_columns = [col for col in ID_COLUMNS if col in df.columns and col != label_col]
+    id_frame = df[id_columns].copy() if id_columns else pd.DataFrame(index=df.index)
+    patient_ids, patient_id_source_used = infer_patient_ids(
+        df,
+        source_path,
+        label_col,
+        patient_id_source,
+    )
+    id_frame[PATIENT_ID_COLUMN] = patient_ids.values
     feature_df = df.drop(columns=[label_col] + id_columns)
     feature_df = feature_df.apply(pd.to_numeric, errors="coerce")
 
@@ -317,7 +472,7 @@ def load_source_frame(source_path):
         str(encoded): str(original)
         for encoded, original in enumerate(label_encoder.classes_)
     }
-    return feature_df, encoded_labels, id_frame, label_mapping
+    return feature_df, encoded_labels, id_frame.reset_index(drop=True), label_mapping, patient_id_source_used
 
 
 def limit_rows(feature_df, labels, id_frame, max_rows, seed):
@@ -325,6 +480,53 @@ def limit_rows(feature_df, labels, id_frame, max_rows, seed):
         return feature_df, labels, id_frame
     if max_rows < labels.nunique():
         raise ValueError("--max-rows must be at least the number of label classes.")
+
+    if id_frame is not None and PATIENT_ID_COLUMN in id_frame.columns:
+        rng = np.random.default_rng(seed)
+        group_frame = pd.DataFrame(
+            {
+                PATIENT_ID_COLUMN: normalize_id_series(id_frame[PATIENT_ID_COLUMN]),
+                LABEL_COLUMN: labels.reset_index(drop=True),
+            },
+            index=labels.index,
+        )
+        group_labels = (
+            group_frame.groupby(PATIENT_ID_COLUMN, sort=False)[LABEL_COLUMN]
+            .agg(lambda values: values.value_counts().sort_index().idxmax())
+            .reset_index()
+        )
+        selected_groups = []
+        counts = group_labels[LABEL_COLUMN].value_counts().sort_index()
+        base_per_class = max(1, max_rows // max(1, len(counts)))
+        remaining_rows = max_rows
+
+        for label_value, _count in counts.items():
+            candidates = group_labels[group_labels[LABEL_COLUMN] == label_value][PATIENT_ID_COLUMN].to_numpy()
+            rng.shuffle(candidates)
+            taken_for_class = 0
+            for group_id in candidates:
+                if taken_for_class >= base_per_class and remaining_rows <= 0:
+                    break
+                if group_id in selected_groups:
+                    continue
+                selected_groups.append(group_id)
+                remaining_rows -= int((group_frame[PATIENT_ID_COLUMN] == group_id).sum())
+                taken_for_class += 1
+                if remaining_rows <= 0 and len(selected_groups) >= len(counts):
+                    break
+
+        if len(selected_groups) < len(counts):
+            raise ValueError("--max-rows selected too few patient groups for all label classes.")
+
+        selected_set = set(selected_groups)
+        selected_mask = group_frame[PATIENT_ID_COLUMN].isin(selected_set)
+        selected_indexes = labels.index[selected_mask].tolist()
+        selected_indexes = sorted(selected_indexes)
+        return (
+            feature_df.loc[selected_indexes].reset_index(drop=True),
+            labels.loc[selected_indexes].reset_index(drop=True),
+            id_frame.loc[selected_indexes].reset_index(drop=True),
+        )
 
     sample_parts = []
     counts = labels.value_counts().sort_index()
@@ -351,6 +553,54 @@ def limit_rows(feature_df, labels, id_frame, max_rows, seed):
         labels.loc[sample_parts].reset_index(drop=True),
         limited_ids,
     )
+
+
+def build_patient_group_splits(features, labels, ids, folds, seed):
+    if ids is None or PATIENT_ID_COLUMN not in ids.columns:
+        raise ValueError(f"Patient-level KFold requires a '{PATIENT_ID_COLUMN}' column.")
+
+    groups = normalize_id_series(ids[PATIENT_ID_COLUMN]).reset_index(drop=True)
+    if (groups == "").any():
+        raise ValueError("Patient-level KFold received empty patient_id values.")
+
+    group_count = int(groups.nunique())
+    if group_count < folds:
+        raise ValueError(
+            f"Cannot create {folds} patient-level folds from only {group_count} unique patients."
+        )
+
+    splitters = []
+    if StratifiedGroupKFold is not None:
+        splitters.append(
+            (
+                "StratifiedGroupKFold",
+                StratifiedGroupKFold(n_splits=folds, shuffle=True, random_state=seed),
+            )
+        )
+    splitters.append(("GroupKFold", GroupKFold(n_splits=folds)))
+
+    last_error = None
+    for splitter_name, splitter in splitters:
+        try:
+            splits = list(splitter.split(features, labels, groups))
+        except ValueError as exc:
+            last_error = exc
+            continue
+
+        for train_index, test_index in splits:
+            train_groups = set(groups.iloc[train_index].tolist())
+            test_groups = set(groups.iloc[test_index].tolist())
+            overlap = train_groups & test_groups
+            if overlap:
+                examples = sorted(overlap)[:5]
+                raise RuntimeError(
+                    f"{splitter_name} leaked patient_id values across train/test: {examples}"
+                )
+        return splitter_name, groups, splits
+
+    if last_error is not None:
+        raise ValueError(f"Cannot create patient-level folds: {last_error}") from last_error
+    raise ValueError("Cannot create patient-level folds.")
 
 
 def clean_numeric_split(train_df, test_df):
@@ -1736,11 +1986,21 @@ def flatten_fold_records(manifests):
                 "fold": record["fold"],
                 "folds": record["folds"],
                 "seed": record["seed"],
+                "splitter": record.get("splitter"),
+                "split_group_column": record.get("split_group_column"),
+                "patient_id_source": record.get("patient_id_source"),
                 "feature_selection_fit": record["feature_selection_fit"],
                 "fis_range_source": record["fis_range_source"],
                 "smote": record["smote"],
+                "train_source_rows": record.get("train_source_rows"),
+                "test_source_rows": record.get("test_source_rows"),
                 "train_rows": record["train_rows"],
                 "test_rows": record["test_rows"],
+                "train_patient_count": record.get("train_patient_count"),
+                "test_patient_count": record.get("test_patient_count"),
+                "patient_overlap_count": record.get("patient_overlap_count"),
+                "train_ids_csv": record.get("train_ids_csv"),
+                "test_ids_csv": record.get("test_ids_csv"),
                 "feature_count": record["feature_count"],
                 "preprocess_time_seconds": preprocess_time,
                 "fis_stage_time_seconds": fis_stage_time,
@@ -1825,11 +2085,19 @@ def flatten_fkgs_records(manifests):
                         "fold": record["fold"],
                         "folds": record["folds"],
                         "seed": fkgs.get("seed", record["seed"]),
+                        "splitter": record.get("splitter"),
+                        "split_group_column": record.get("split_group_column"),
+                        "patient_id_source": record.get("patient_id_source"),
                         "ran": fkgs.get("ran"),
                         "epsilon": fkgs.get("e"),
                         "turns": fkgs.get("turns"),
+                        "train_source_rows": record.get("train_source_rows"),
+                        "test_source_rows": record.get("test_source_rows"),
                         "train_rows": record["train_rows"],
                         "test_rows": record["test_rows"],
+                        "train_patient_count": record.get("train_patient_count"),
+                        "test_patient_count": record.get("test_patient_count"),
+                        "patient_overlap_count": record.get("patient_overlap_count"),
                         "feature_count": record["feature_count"],
                         "preprocess_time_seconds": record.get("preprocess_time_seconds"),
                         "fis_stage_time_seconds": fis.get("fis_stage_time_seconds"),
@@ -1925,6 +2193,13 @@ def build_fkgs_mean_std_summary(fkgs_df):
         return pd.DataFrame()
 
     numeric_columns = [
+        "train_source_rows",
+        "test_source_rows",
+        "train_rows",
+        "test_rows",
+        "train_patient_count",
+        "test_patient_count",
+        "patient_overlap_count",
         "preprocess_time_seconds",
         "fis_stage_time_seconds",
         "fkgs_stage_time_seconds",
@@ -2330,8 +2605,13 @@ def write_report_outputs(manifests, report_root):
     stats_df = pd.DataFrame()
     if not summary_df.empty:
         average_columns = [
+            "train_source_rows",
+            "test_source_rows",
             "train_rows",
             "test_rows",
+            "train_patient_count",
+            "test_patient_count",
+            "patient_overlap_count",
             "feature_count",
             "preprocess_time_seconds",
             "fis_stage_time_seconds",
@@ -2679,13 +2959,22 @@ def prepare_modality(config, args):
     output_root = resolve_project_path(args.output_root) / config.key
     output_root.mkdir(parents=True, exist_ok=True)
 
-    features, labels, ids, label_mapping = load_source_frame(source_path)
+    features, labels, ids, label_mapping, patient_id_source_used = load_source_frame(
+        source_path,
+        args.patient_id_source,
+    )
     features, labels, ids = limit_rows(features, labels, ids, args.max_rows, args.seed)
 
-    splitter = KFold(n_splits=args.folds, shuffle=True, random_state=args.seed)
+    splitter_name, patient_groups, splits = build_patient_group_splits(
+        features,
+        labels,
+        ids,
+        args.folds,
+        args.seed,
+    )
     fold_records = []
 
-    for fold_number, (train_index, test_index) in enumerate(splitter.split(features), start=1):
+    for fold_number, (train_index, test_index) in enumerate(splits, start=1):
         fold_start = time.perf_counter()
         preprocess_start = time.perf_counter()
         fold_seed = args.seed + fold_number
@@ -2693,6 +2982,11 @@ def prepare_modality(config, args):
         test_x = features.iloc[test_index].reset_index(drop=True)
         train_y = labels.iloc[train_index].reset_index(drop=True)
         test_y = labels.iloc[test_index].reset_index(drop=True)
+        train_ids = ids.iloc[train_index].reset_index(drop=True)
+        test_ids = ids.iloc[test_index].reset_index(drop=True)
+        train_patient_ids = set(patient_groups.iloc[train_index].tolist())
+        test_patient_ids = set(patient_groups.iloc[test_index].tolist())
+        patient_overlap = train_patient_ids & test_patient_ids
 
         if config.key == "image":
             train_selected, test_selected, cluster, feature_rows = prepare_image_fold(
@@ -2757,11 +3051,15 @@ def prepare_modality(config, args):
         fold_dir.mkdir(parents=True, exist_ok=True)
         train_path = fold_dir / "train_data.csv"
         test_path = fold_dir / "test_data.csv"
+        train_ids_path = fold_dir / "train_ids.csv"
+        test_ids_path = fold_dir / "test_ids.csv"
         selected_features_path = fold_dir / "selected_features.csv"
         metadata_path = fold_dir / "metadata.json"
 
         train_fold.to_csv(train_path, index=False)
         test_fold.to_csv(test_path, index=False)
+        train_ids.to_csv(train_ids_path, index=False)
+        test_ids.to_csv(test_ids_path, index=False)
         pd.DataFrame(feature_rows).to_csv(selected_features_path, index=False)
         preprocess_time = time.perf_counter() - preprocess_start
 
@@ -2820,19 +3118,30 @@ def prepare_modality(config, args):
             "fold": fold_number,
             "folds": args.folds,
             "seed": args.seed,
+            "splitter": splitter_name,
+            "split_group_column": PATIENT_ID_COLUMN,
+            "patient_id_source": patient_id_source_used,
             "feature_selection_fit": "train_fold_only",
             "fis_range_source": args.fis_range_source,
             "smote": smote_status,
             "label_mapping_encoded_to_original": label_mapping,
             "cluster": cluster,
             "dropped_constant_columns": dropped_constant_columns,
+            "train_source_rows": int(len(train_index)),
+            "test_source_rows": int(len(test_index)),
             "train_rows": int(train_fold.shape[0]),
             "test_rows": int(test_fold.shape[0]),
+            "train_patient_count": int(len(train_patient_ids)),
+            "test_patient_count": int(len(test_patient_ids)),
+            "patient_overlap_count": int(len(patient_overlap)),
+            "patient_overlap_examples": sorted(patient_overlap)[:5],
             "feature_count": int(train_fold.shape[1] - 1),
             "preprocess_time_seconds": preprocess_time,
             "fold_total_time_seconds": fold_total_time,
             "train_csv": str(train_path),
             "test_csv": str(test_path),
+            "train_ids_csv": str(train_ids_path),
+            "test_ids_csv": str(test_ids_path),
             "selected_features_csv": str(selected_features_path),
             "fis": fis_record,
             "fkg": fkg_record,
@@ -2851,6 +3160,10 @@ def prepare_modality(config, args):
         "output_root": str(output_root),
         "folds": args.folds,
         "seed": args.seed,
+        "splitter": splitter_name,
+        "split_group_column": PATIENT_ID_COLUMN,
+        "patient_id_source": patient_id_source_used,
+        "patient_count": int(patient_groups.nunique()),
         "skip_fis": args.skip_fis,
         "skip_smote": args.skip_smote,
         "fold_records": fold_records,
@@ -2862,6 +3175,7 @@ def prepare_modality(config, args):
     print("=" * 100)
     print(f"Prepared modality: {config.key}")
     print(f"Source: {source_path}")
+    print(f"Splitter: {splitter_name} by {PATIENT_ID_COLUMN}; patients={patient_groups.nunique()}")
     print(f"Output: {output_root}")
     print(f"Manifest: {manifest_path}")
     print("=" * 100)
