@@ -16,6 +16,7 @@ if not defined RUN_ID (
 )
 
 if not defined DEVICE set "DEVICE=auto"
+if not defined RESNET_ARCH set "RESNET_ARCH=resnet50"
 if not defined FIS_BACKEND set "FIS_BACKEND=cpu"
 if not defined FKGS_RAN set "FKGS_RAN=15 20"
 if not defined FKGS_EPSILON set "FKGS_EPSILON=0.2 0.3"
@@ -33,6 +34,7 @@ echo Diabetic Retinopathy KFold full rerun
 echo RUN_ID=%RUN_ID%
 echo PYTHON_EXE=%PYTHON_EXE%
 echo DEVICE=%DEVICE%
+echo RESNET_ARCH=%RESNET_ARCH%
 echo FKGS_RAN=%FKGS_RAN%
 echo FKGS_EPSILON=%FKGS_EPSILON%
 echo FKGS_WORKERS=%FKGS_WORKERS%
@@ -62,7 +64,8 @@ echo [2/4] Running deep baselines on patient-aware KFold splits...
   --models all ^
   --epochs 10 ^
   --batch-size 16 ^
-  --device "%DEVICE%"
+  --device "%DEVICE%" ^
+  --resnet-arch "%RESNET_ARCH%"
 if errorlevel 1 goto fail
 
 echo.

@@ -35,11 +35,10 @@ except ImportError:
 
 try:
     from torchvision import transforms
-    from torchvision.models import ResNet18_Weights, resnet18
+    from torchvision import models as torchvision_models
 except ImportError:
     transforms = None
-    ResNet18_Weights = None
-    resnet18 = None
+    torchvision_models = None
 
 
 LABEL_COLUMN = "retinopathy"
@@ -47,6 +46,10 @@ SOURCE_LABEL_COLUMNS = {"retinopathy", "diabetic_retinopathy"}
 DEFAULT_SPLIT_ROOT = Path("ROOT_DATA/train_test_selection")
 DEFAULT_TABULAR_CSV = Path("Source_code/data/Dataset_diabetic/data_process.csv")
 DEFAULT_MODELS = ("mlp", "resnet", "early_fusion", "late_fusion")
+RESNET_ARCHITECTURES = {
+    "resnet18": "ResNet18_Weights",
+    "resnet50": "ResNet50_Weights",
+}
 DEFAULT_TABULAR_COLUMNS = (
     "patient_age",
     "diabetes_time_y",
@@ -241,15 +244,22 @@ class MLPClassifier(nn.Module):
 
 
 class ResNetEncoder(nn.Module):
-    def __init__(self, pretrained: bool, freeze_backbone: bool):
+    def __init__(self, resnet_arch: str, pretrained: bool, freeze_backbone: bool):
         super().__init__()
-        if resnet18 is None:
+        if torchvision_models is None:
             raise RuntimeError("torchvision is required for ResNet/image/fusion models")
-        if ResNet18_Weights is not None:
-            weights = ResNet18_Weights.DEFAULT if pretrained else None
-            backbone = resnet18(weights=weights)
+        if resnet_arch not in RESNET_ARCHITECTURES:
+            raise ValueError(f"Unsupported ResNet architecture: {resnet_arch}")
+        constructor = getattr(torchvision_models, resnet_arch, None)
+        if constructor is None:
+            raise RuntimeError(f"torchvision does not provide {resnet_arch}")
+
+        weights_class = getattr(torchvision_models, RESNET_ARCHITECTURES[resnet_arch], None)
+        if weights_class is not None:
+            weights = weights_class.DEFAULT if pretrained else None
+            backbone = constructor(weights=weights)
         else:
-            backbone = resnet18(pretrained=pretrained)
+            backbone = constructor(pretrained=pretrained)
         self.output_dim = backbone.fc.in_features
         backbone.fc = nn.Identity()
         if freeze_backbone:
@@ -262,9 +272,20 @@ class ResNetEncoder(nn.Module):
 
 
 class ImageClassifier(nn.Module):
-    def __init__(self, num_classes: int, pretrained: bool, freeze_backbone: bool, dropout: float):
+    def __init__(
+        self,
+        num_classes: int,
+        resnet_arch: str,
+        pretrained: bool,
+        freeze_backbone: bool,
+        dropout: float,
+    ):
         super().__init__()
-        self.encoder = ResNetEncoder(pretrained=pretrained, freeze_backbone=freeze_backbone)
+        self.encoder = ResNetEncoder(
+            resnet_arch=resnet_arch,
+            pretrained=pretrained,
+            freeze_backbone=freeze_backbone,
+        )
         self.classifier = nn.Sequential(
             nn.Dropout(dropout),
             nn.Linear(self.encoder.output_dim, num_classes),
@@ -279,6 +300,7 @@ class EarlyFusionClassifier(nn.Module):
         self,
         tabular_dim: int,
         num_classes: int,
+        resnet_arch: str,
         pretrained: bool,
         freeze_backbone: bool,
         tabular_hidden_dim: int,
@@ -286,7 +308,11 @@ class EarlyFusionClassifier(nn.Module):
         dropout: float,
     ):
         super().__init__()
-        self.image_encoder = ResNetEncoder(pretrained=pretrained, freeze_backbone=freeze_backbone)
+        self.image_encoder = ResNetEncoder(
+            resnet_arch=resnet_arch,
+            pretrained=pretrained,
+            freeze_backbone=freeze_backbone,
+        )
         self.tabular_encoder = nn.Sequential(
             nn.Linear(tabular_dim, tabular_hidden_dim),
             nn.LayerNorm(tabular_hidden_dim),
@@ -312,6 +338,7 @@ class LateFusionClassifier(nn.Module):
         self,
         tabular_dim: int,
         num_classes: int,
+        resnet_arch: str,
         pretrained: bool,
         freeze_backbone: bool,
         tabular_hidden_dims: Sequence[int],
@@ -320,6 +347,7 @@ class LateFusionClassifier(nn.Module):
         super().__init__()
         self.image_model = ImageClassifier(
             num_classes=num_classes,
+            resnet_arch=resnet_arch,
             pretrained=pretrained,
             freeze_backbone=freeze_backbone,
             dropout=dropout,
@@ -366,6 +394,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dropout", type=float, default=0.25)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
+    parser.add_argument(
+        "--resnet-arch",
+        default="resnet18",
+        choices=sorted(RESNET_ARCHITECTURES),
+        help="ResNet backbone used by image, early-fusion, and late-fusion models.",
+    )
     parser.add_argument("--pretrained-resnet", action="store_true")
     parser.add_argument("--freeze-backbone", action="store_true")
     parser.add_argument("--amp", action="store_true")
@@ -419,7 +453,7 @@ def require_dependencies(models: Sequence[str]) -> None:
             "Missing dependency: torch. Install PyTorch in this environment before training."
         )
     if any(model in {"resnet", "early_fusion", "late_fusion"} for model in models):
-        if transforms is None or resnet18 is None:
+        if transforms is None or torchvision_models is None:
             raise SystemExit(
                 "Missing dependency: torchvision. Install torchvision for ResNet/fusion models."
             )
@@ -554,6 +588,7 @@ def build_model(
     if model_name == "resnet":
         return ImageClassifier(
             num_classes=num_classes,
+            resnet_arch=args.resnet_arch,
             pretrained=args.pretrained_resnet,
             freeze_backbone=args.freeze_backbone,
             dropout=args.dropout,
@@ -562,6 +597,7 @@ def build_model(
         return EarlyFusionClassifier(
             tabular_dim=tabular_dim,
             num_classes=num_classes,
+            resnet_arch=args.resnet_arch,
             pretrained=args.pretrained_resnet,
             freeze_backbone=args.freeze_backbone,
             tabular_hidden_dim=64,
@@ -572,6 +608,7 @@ def build_model(
         return LateFusionClassifier(
             tabular_dim=tabular_dim,
             num_classes=num_classes,
+            resnet_arch=args.resnet_arch,
             pretrained=args.pretrained_resnet,
             freeze_backbone=args.freeze_backbone,
             tabular_hidden_dims=(128, 64),
@@ -1144,6 +1181,7 @@ def main() -> int:
         "label_values": label_values,
         "positive_label": args.positive_label,
         "device": str(device),
+        "resnet_arch": args.resnet_arch,
         "epochs": args.epochs,
         "batch_size": args.batch_size,
         "image_size": args.image_size,

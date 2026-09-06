@@ -8,7 +8,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 DEEP_MODELS = [
     ("mlp", "MLP", "Tabular"),
-    ("resnet", "ResNet-18 (runner hi\u1ec7n c\u00f3)", "Image"),
+    ("resnet", None, "Image"),
     ("early_fusion", "Early Fusion (MLP)", "Multimodal"),
     ("late_fusion", "Late Fusion (Ensemble)", "Multimodal"),
 ]
@@ -95,6 +95,15 @@ def relative_to_project(path: Path) -> str:
         return str(path)
 
 
+def resnet_label(config: dict) -> str:
+    arch = str(config.get("resnet_arch", "resnet18")).lower()
+    if arch == "resnet50":
+        return "ResNet-50"
+    if arch == "resnet18":
+        return "ResNet-18"
+    return arch.upper()
+
+
 def add_deep_rows(
     rows: list[dict],
     deep_summary: Path,
@@ -108,20 +117,25 @@ def add_deep_rows(
         raise RuntimeError(f"Missing deep baseline val summaries for: {', '.join(missing)}")
 
     device = config.get("device", "unknown")
+    resnet_arch = str(config.get("resnet_arch", "resnet18"))
     run_final_test = bool(config.get("run_final_test", False))
     row_protocol = protocol if not run_final_test else "Patient-aware 5-fold validation plus outer test"
     run_name = deep_summary.parent.name
 
     for model_key, label, data_type in DEEP_MODELS:
+        model_label = resnet_label(config) if model_key == "resnet" else label
+        config_note = f"runner {run_name}; device={device}"
+        if model_key in {"resnet", "early_fusion", "late_fusion"}:
+            config_note += f"; resnet_arch={resnet_arch}"
         row = by_model[model_key]
         rows.append(
             {
-                "model": label,
+                "model": model_label,
                 "data_type": data_type,
                 "source_family": "deep_baseline_KFold",
                 "eval_split": "val_mean_5fold",
                 "protocol": row_protocol,
-                "selected_config": f"runner {run_name}; device={device}",
+                "selected_config": config_note,
                 "accuracy_pct": read_percent_fraction(row, "accuracy_mean"),
                 "accuracy_std_pct": read_percent_fraction(row, "accuracy_std"),
                 "precision_pct": read_percent_fraction(row, "precision_mean"),
@@ -192,7 +206,14 @@ def add_fkgs_rows(
         )
 
 
-def write_outputs(rows: list[dict], output_stem: Path, deep_summary: Path, fkgs_summary: Path, fkgs_tables: Path | None) -> None:
+def write_outputs(
+    rows: list[dict],
+    output_stem: Path,
+    deep_summary: Path,
+    fkgs_summary: Path,
+    fkgs_tables: Path | None,
+    config: dict,
+) -> None:
     output_stem.parent.mkdir(parents=True, exist_ok=True)
     csv_path = output_stem.with_suffix(".csv")
     md_path = output_stem.with_suffix(".md")
@@ -237,7 +258,7 @@ def write_outputs(rows: list[dict], output_stem: Path, deep_summary: Path, fkgs_
         f"Ngu\u1ed3n FKGS: `{relative_to_project(fkgs_summary)}`.",
         "Giao th\u1ee9c: patient-aware 5-fold validation, kh\u00f4ng d\u00f9ng outer test trong l\u1ea7n t\u1ed5ng h\u1ee3p n\u00e0y.",
         "",
-        "L\u01b0u \u00fd: runner deep baseline hi\u1ec7n d\u00f9ng ResNet-18 trong code, kh\u00f4ng ph\u1ea3i ResNet-50.",
+        f"L\u01b0u \u00fd: c\u1ea5u h\u00ecnh deep baseline d\u00f9ng `{str(config.get('resnet_arch', 'resnet18'))}` cho c\u00e1c model c\u00f3 backbone \u1ea3nh.",
         "",
         "| M\u00f4 h\u00ecnh | Ki\u1ec3u d\u1eef li\u1ec7u | Protocol | Acc (%) | Precision (%) | Recall/Sensitivity (%) | Specificity (%) | F1 (%) | AUC (%) | Train (s) | Test (s) | Total (s) | Ghi ch\u00fa |",
         "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
@@ -297,7 +318,7 @@ def main() -> int:
     rows: list[dict] = []
     add_deep_rows(rows, deep_summary, deep_rows, config, args.protocol)
     add_fkgs_rows(rows, fkgs_summary, fkgs_rows, args.protocol)
-    write_outputs(rows, output_stem, deep_summary, fkgs_summary, fkgs_tables)
+    write_outputs(rows, output_stem, deep_summary, fkgs_summary, fkgs_tables, config)
     return 0
 
 
