@@ -1,8 +1,8 @@
 {
-  "root_data": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA",
-  "labels_csv": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\labels_brset.csv",
-  "image_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\fundus_photos",
-  "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection",
+  "root_data": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA",
+  "labels_csv": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\labels_brset.csv",
+  "image_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\fundus_photos_224",
+  "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection",
   "source_label_column": "diabetic_retinopathy",
   "output_label_column": "retinopathy",
   "manifest_columns": [
@@ -15,30 +15,30 @@
   "seed": 42,
   "materialize": "none",
   "path_mode": "relative",
-  "image_count": 1935,
-  "labeled_image_count": 1935,
+  "image_count": 1529,
+  "labeled_image_count": 1529,
   "unmatched_image_count": 0,
-  "patient_count": 1055,
+  "patient_count": 897,
   "patient_overlap_count": 0,
   "train": {
-    "images": 1537,
-    "patients": 851,
+    "images": 1208,
+    "patients": 729,
     "retinopathy_counts": {
-      "0": 1431,
-      "1": 106
+      "0": 1111,
+      "1": 97
     }
   },
   "test": {
-    "images": 398,
-    "patients": 204,
+    "images": 321,
+    "patients": 168,
     "retinopathy_counts": {
-      "0": 371,
-      "1": 27
+      "0": 296,
+      "1": 25
     }
   },
   "train_kfold": {
     "enabled": true,
-    "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold",
+    "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold",
     "fold_count": 5,
     "source_split": "train",
     "manifest_columns": [
@@ -50,106 +50,106 @@
     "folds": [
       {
         "fold": 1,
-        "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_1",
+        "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_1",
         "patient_overlap_count": 0,
         "train": {
-          "images": 1229,
-          "patients": 680,
+          "images": 966,
+          "patients": 583,
           "retinopathy_counts": {
-            "0": 1145,
-            "1": 84
+            "0": 889,
+            "1": 77
           }
         },
         "val": {
-          "images": 308,
-          "patients": 171,
+          "images": 242,
+          "patients": 146,
           "retinopathy_counts": {
-            "0": 286,
-            "1": 22
+            "0": 222,
+            "1": 20
           }
         }
       },
       {
         "fold": 2,
-        "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_2",
+        "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_2",
         "patient_overlap_count": 0,
         "train": {
-          "images": 1230,
-          "patients": 681,
+          "images": 966,
+          "patients": 583,
           "retinopathy_counts": {
-            "0": 1145,
-            "1": 85
+            "0": 888,
+            "1": 78
           }
         },
         "val": {
-          "images": 307,
-          "patients": 170,
+          "images": 242,
+          "patients": 146,
           "retinopathy_counts": {
-            "0": 286,
-            "1": 21
+            "0": 223,
+            "1": 19
           }
         }
       },
       {
         "fold": 3,
-        "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_3",
+        "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_3",
         "patient_overlap_count": 0,
         "train": {
-          "images": 1229,
-          "patients": 681,
+          "images": 966,
+          "patients": 583,
           "retinopathy_counts": {
-            "0": 1144,
-            "1": 85
+            "0": 888,
+            "1": 78
           }
         },
         "val": {
-          "images": 308,
-          "patients": 170,
+          "images": 242,
+          "patients": 146,
           "retinopathy_counts": {
-            "0": 287,
-            "1": 21
+            "0": 223,
+            "1": 19
           }
         }
       },
       {
         "fold": 4,
-        "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_4",
+        "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_4",
         "patient_overlap_count": 0,
         "train": {
-          "images": 1230,
-          "patients": 681,
+          "images": 967,
+          "patients": 583,
           "retinopathy_counts": {
-            "0": 1145,
-            "1": 85
+            "0": 890,
+            "1": 77
           }
         },
         "val": {
-          "images": 307,
-          "patients": 170,
+          "images": 241,
+          "patients": 146,
           "retinopathy_counts": {
-            "0": 286,
-            "1": 21
+            "0": 221,
+            "1": 20
           }
         }
       },
       {
         "fold": 5,
-        "output_dir": "E:\\Thanh\\Aprivate\\source\\Fuzzy-Knowledge-Graph\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_5",
+        "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_5",
         "patient_overlap_count": 0,
         "train": {
-          "images": 1230,
-          "patients": 681,
+          "images": 967,
+          "patients": 584,
           "retinopathy_counts": {
-            "0": 1145,
-            "1": 85
+            "0": 889,
+            "1": 78
           }
         },
         "val": {
-          "images": 307,
-          "patients": 170,
+          "images": 241,
+          "patients": 145,
           "retinopathy_counts": {
-            "0": 286,
-            "1": 21
+            "0": 222,
+            "1": 19
           }
         }
       }
@@ -159,7 +159,7 @@
       "copied": 0,
       "copied_after_hardlink_failed": 0,
       "existing": 0,
-      "not_materialized": 7685
+      "not_materialized": 6040
     }
   },
   "file_operations": {
@@ -167,6 +167,6 @@
     "copied": 0,
     "copied_after_hardlink_failed": 0,
     "existing": 0,
-    "not_materialized": 1935
+    "not_materialized": 1529
   }
 }

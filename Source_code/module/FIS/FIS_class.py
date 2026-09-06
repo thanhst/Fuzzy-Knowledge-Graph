@@ -1,6 +1,6 @@
 import pandas as pd
 class FIS:
-    def __init__(self,Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,cluster = []):
+    def __init__(self,Turn = None,filePath='./data/Dataset/Meta_result_txl.csv',fileName=None,cluster = [],test_size=0.3,random_state=42,patient_images_per_group=2):
         import numpy as np
         import pandas as pd
         from module.Rules_Function.RuleWeight import RuleWeight
@@ -13,7 +13,8 @@ class FIS:
         import sys
         import time
         import os
-        from sklearn.model_selection import train_test_split
+        import json
+        from module.Helper.patient_split import group_train_test_split
         
         base_dir = os.getcwd()
         
@@ -38,14 +39,21 @@ class FIS:
         df = pd.read_csv(filePath)
         full_data = df
         df_full_data = pd.DataFrame(full_data)
-        train_data, test_data = train_test_split(
+        train_data, test_data, split_metadata = group_train_test_split(
             df_full_data,
-            test_size=0.3,
-            shuffle=True,
-            random_state=None,
+            test_size=test_size,
+            seed=random_state,
+            images_per_patient=patient_images_per_group,
         )
+        if split_metadata["patient_group_overlap_count"]:
+            raise ValueError(
+                f"Patient group leakage detected for {fileName}: "
+                f"{split_metadata['patient_group_overlap_sample']}"
+            )
         train_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/train_data.csv'), index=False)
         test_data.to_csv(os.path.join(base_dir,f'data/FIS/input/{fileName}/test_data.csv'),index=False)
+        with open(os.path.join(base_dir,f'data/FIS/input/{fileName}/split_metadata.json'), "w", encoding="utf-8") as file:
+            json.dump(split_metadata, file, indent=2)
         train_data = train_data.values
         test_data = test_data.values
         
