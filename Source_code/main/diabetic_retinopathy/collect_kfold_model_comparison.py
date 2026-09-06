@@ -22,9 +22,15 @@ FKGS_LABELS = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Collect diabetic retinopathy KFold deep baseline and FKGS summaries into one comparison table."
+        description="Collect diabetic retinopathy KFold deep baseline and FKG/FKGS summaries into one comparison table."
     )
-    parser.add_argument("--deep-summary", type=Path, required=True, help="Path to deep baseline summary.csv.")
+    parser.add_argument(
+        "--deep-summary",
+        type=Path,
+        required=True,
+        nargs="+",
+        help="One or more paths to deep baseline summary.csv files. The first summary containing a model is used for that row.",
+    )
     parser.add_argument(
         "--deep-config",
         type=Path,
@@ -33,6 +39,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--fkgs-summary", type=Path, required=True, help="Path to kfold_fkgs_mean_std_summary.csv.")
     parser.add_argument("--fkgs-tables", type=Path, default=None, help="Path to kfold_fkgs_tables.csv.")
+    parser.add_argument(
+        "--fkg-summary",
+        type=Path,
+        default=None,
+        help="Optional path to native FKG kfold_modality_mean_std_summary.csv. When present, FKG rows use this full metric summary.",
+    )
     parser.add_argument(
         "--output-stem",
         type=Path,
@@ -104,25 +116,44 @@ def resnet_label(config: dict) -> str:
     return arch.upper()
 
 
+def deep_backbone_note(rows: list[dict]) -> str:
+    notes = []
+    for row in rows:
+        config = str(row.get("selected_config") or "")
+        marker = "resnet_arch="
+        if marker not in config:
+            continue
+        arch = config.split(marker, 1)[1].split(";", 1)[0].strip()
+        notes.append(f"{row['model']}: `{arch}`")
+    if not notes:
+        return "L\u01b0u \u00fd: backbone \u1ea3nh c\u1ee7a t\u1eebng deep model \u0111\u01b0\u1ee3c ghi trong c\u1ed9t `Ghi ch\u00fa`."
+    return "L\u01b0u \u00fd backbone \u1ea3nh: " + "; ".join(notes) + "."
+
+
 def add_deep_rows(
     rows: list[dict],
-    deep_summary: Path,
-    deep_summary_rows: list[dict[str, str]],
-    config: dict,
+    deep_sources: list[dict],
     protocol: str,
 ) -> None:
-    by_model = {row["model"]: row for row in deep_summary_rows if row.get("eval_split") == "val"}
-    missing = [model_key for model_key, _, _ in DEEP_MODELS if model_key not in by_model]
-    if missing:
-        raise RuntimeError(f"Missing deep baseline val summaries for: {', '.join(missing)}")
-
-    device = config.get("device", "unknown")
-    resnet_arch = str(config.get("resnet_arch", "resnet18"))
-    run_final_test = bool(config.get("run_final_test", False))
-    row_protocol = protocol if not run_final_test else "Patient-aware 5-fold validation plus outer test"
-    run_name = deep_summary.parent.name
-
     for model_key, label, data_type in DEEP_MODELS:
+        source = next(
+            (
+                candidate
+                for candidate in deep_sources
+                if model_key in candidate["by_model"]
+            ),
+            None,
+        )
+        if source is None:
+            raise RuntimeError(f"Missing deep baseline val summary for: {model_key}")
+        deep_summary = source["path"]
+        config = source["config"]
+        by_model = source["by_model"]
+        device = config.get("device", "unknown")
+        resnet_arch = str(config.get("resnet_arch", "resnet18"))
+        run_final_test = bool(config.get("run_final_test", False))
+        row_protocol = protocol if not run_final_test else "Patient-aware 5-fold validation plus outer test"
+        run_name = deep_summary.parent.name
         model_label = resnet_label(config) if model_key == "resnet" else label
         config_note = f"runner {run_name}; device={device}"
         if model_key in {"resnet", "early_fusion", "late_fusion"}:
@@ -206,13 +237,65 @@ def add_fkgs_rows(
         )
 
 
+def add_fkg_rows(
+    rows: list[dict],
+    fkg_summary: Path,
+    fkg_summary_rows: list[dict[str, str]],
+    protocol: str,
+) -> None:
+    for modality in ("image", "table", "fusion"):
+        candidates = [row for row in fkg_summary_rows if row.get("modality") == modality]
+        if not candidates:
+            raise RuntimeError(f"Missing native FKG summary for modality: {modality}")
+        best = candidates[0]
+        label, data_type = FKGS_LABELS[modality]
+        train_time = read_float(best, "fkg_full_train_time_seconds_mean")
+        train_time_std = read_float(best, "fkg_full_train_time_seconds_std")
+        if train_time is None:
+            train_time = read_float(best, "fkg_train_time_seconds_mean")
+            train_time_std = read_float(best, "fkg_train_time_seconds_std")
+        rows.append(
+            {
+                "model": label,
+                "data_type": data_type,
+                "source_family": "FKG_KFold",
+                "eval_split": "val_mean_5fold",
+                "protocol": protocol,
+                "selected_config": (
+                    f"native FKG rerun; folds={best['folds']}; "
+                    f"features={float(best['feature_count_mean']):.0f}"
+                ),
+                "accuracy_pct": read_percent_fraction(best, "fkg_accuracy_mean"),
+                "accuracy_std_pct": read_percent_fraction(best, "fkg_accuracy_std"),
+                "precision_pct": read_percent_fraction(best, "fkg_precision_mean"),
+                "precision_std_pct": read_percent_fraction(best, "fkg_precision_std"),
+                "recall_pct": read_percent_fraction(best, "fkg_recall_mean"),
+                "recall_std_pct": read_percent_fraction(best, "fkg_recall_std"),
+                "specificity_pct": read_percent_fraction(best, "fkg_specificity_mean"),
+                "specificity_std_pct": read_percent_fraction(best, "fkg_specificity_std"),
+                "f1_pct": read_percent_fraction(best, "fkg_f1_mean"),
+                "f1_std_pct": read_percent_fraction(best, "fkg_f1_std"),
+                "auc_pct": read_percent_fraction(best, "fkg_auc_mean"),
+                "auc_std_pct": read_percent_fraction(best, "fkg_auc_std"),
+                "train_time_s": train_time,
+                "train_time_std_s": train_time_std,
+                "test_time_s": read_float(best, "fkg_test_time_seconds_mean"),
+                "test_time_std_s": read_float(best, "fkg_test_time_seconds_std"),
+                "total_time_s": read_float(best, "fkg_end_to_end_time_seconds_mean"),
+                "total_time_std_s": read_float(best, "fkg_end_to_end_time_seconds_std"),
+                "source_path": str(fkg_summary),
+            }
+        )
+
+
 def write_outputs(
     rows: list[dict],
     output_stem: Path,
-    deep_summary: Path,
+    deep_summaries: list[Path],
     fkgs_summary: Path,
     fkgs_tables: Path | None,
-    config: dict,
+    fkg_summary: Path | None,
+    deep_sources: list[dict],
 ) -> None:
     output_stem.parent.mkdir(parents=True, exist_ok=True)
     csv_path = output_stem.with_suffix(".csv")
@@ -254,11 +337,18 @@ def write_outputs(
     md_lines = [
         "# Diabetic Retinopathy Model Comparison - KFold Rerun",
         "",
-        f"Ngu\u1ed3n deep baseline: `{relative_to_project(deep_summary)}`.",
+        "Ngu\u1ed3n deep baseline: "
+        + ", ".join(f"`{relative_to_project(path)}`" for path in deep_summaries)
+        + ".",
         f"Ngu\u1ed3n FKGS: `{relative_to_project(fkgs_summary)}`.",
+        (
+            f"Ngu\u1ed3n native FKG: `{relative_to_project(fkg_summary)}`."
+            if fkg_summary
+            else "Ngu\u1ed3n native FKG: kh\u00f4ng cung c\u1ea5p, d\u00f9ng FKGS summary."
+        ),
         "Giao th\u1ee9c: patient-aware 5-fold validation, kh\u00f4ng d\u00f9ng outer test trong l\u1ea7n t\u1ed5ng h\u1ee3p n\u00e0y.",
         "",
-        f"L\u01b0u \u00fd: c\u1ea5u h\u00ecnh deep baseline d\u00f9ng `{str(config.get('resnet_arch', 'resnet18'))}` cho c\u00e1c model c\u00f3 backbone \u1ea3nh.",
+        deep_backbone_note(rows),
         "",
         "| M\u00f4 h\u00ecnh | Ki\u1ec3u d\u1eef li\u1ec7u | Protocol | Acc (%) | Precision (%) | Recall/Sensitivity (%) | Specificity (%) | F1 (%) | AUC (%) | Train (s) | Test (s) | Total (s) | Ghi ch\u00fa |",
         "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
@@ -299,26 +389,52 @@ def write_outputs(
 
 def main() -> int:
     args = parse_args()
-    deep_summary = resolve_path(args.deep_summary)
+    deep_summaries = [resolve_path(path) for path in args.deep_summary]
     fkgs_summary = resolve_path(args.fkgs_summary)
     fkgs_tables = resolve_path(args.fkgs_tables) if args.fkgs_tables else None
+    fkg_summary = resolve_path(args.fkg_summary) if args.fkg_summary else None
     output_stem = resolve_path(args.output_stem)
 
-    if not deep_summary.exists():
-        raise FileNotFoundError(deep_summary)
+    for deep_summary in deep_summaries:
+        if not deep_summary.exists():
+            raise FileNotFoundError(deep_summary)
     if not fkgs_summary.exists():
         raise FileNotFoundError(fkgs_summary)
     if fkgs_tables and not fkgs_tables.exists():
         raise FileNotFoundError(fkgs_tables)
+    if fkg_summary and not fkg_summary.exists():
+        raise FileNotFoundError(fkg_summary)
 
-    deep_rows = read_csv(deep_summary)
+    deep_config = resolve_path(args.deep_config) if args.deep_config else None
+    deep_sources = []
+    for deep_summary in deep_summaries:
+        config = read_config(
+            deep_summary,
+            deep_config if deep_config and len(deep_summaries) == 1 else None,
+        )
+        summary_rows = read_csv(deep_summary)
+        deep_sources.append(
+            {
+                "path": deep_summary,
+                "rows": summary_rows,
+                "config": config,
+                "by_model": {
+                    row["model"]: row
+                    for row in summary_rows
+                    if row.get("eval_split") == "val"
+                },
+            }
+        )
     fkgs_rows = read_csv(fkgs_summary)
-    config = read_config(deep_summary, args.deep_config)
+    fkg_rows = read_csv(fkg_summary) if fkg_summary else []
 
     rows: list[dict] = []
-    add_deep_rows(rows, deep_summary, deep_rows, config, args.protocol)
-    add_fkgs_rows(rows, fkgs_summary, fkgs_rows, args.protocol)
-    write_outputs(rows, output_stem, deep_summary, fkgs_summary, fkgs_tables, config)
+    add_deep_rows(rows, deep_sources, args.protocol)
+    if fkg_summary:
+        add_fkg_rows(rows, fkg_summary, fkg_rows, args.protocol)
+    else:
+        add_fkgs_rows(rows, fkgs_summary, fkgs_rows, args.protocol)
+    write_outputs(rows, output_stem, deep_summaries, fkgs_summary, fkgs_tables, fkg_summary, deep_sources)
     return 0
 
 

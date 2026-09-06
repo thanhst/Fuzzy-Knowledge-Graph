@@ -18,6 +18,7 @@ if not defined RUN_ID (
 if not defined DEVICE set "DEVICE=auto"
 if not defined RESNET_ARCH set "RESNET_ARCH=resnet50"
 if not defined FIS_BACKEND set "FIS_BACKEND=cpu"
+if not defined FKG_BACKEND set "FKG_BACKEND=auto"
 if not defined FKGS_RAN set "FKGS_RAN=15 20"
 if not defined FKGS_EPSILON set "FKGS_EPSILON=0.2 0.3"
 if not defined FKGS_TURNS set "FKGS_TURNS=1"
@@ -35,6 +36,7 @@ echo RUN_ID=%RUN_ID%
 echo PYTHON_EXE=%PYTHON_EXE%
 echo DEVICE=%DEVICE%
 echo RESNET_ARCH=%RESNET_ARCH%
+echo FKG_BACKEND=%FKG_BACKEND%
 echo FKGS_RAN=%FKGS_RAN%
 echo FKGS_EPSILON=%FKGS_EPSILON%
 echo FKGS_WORKERS=%FKGS_WORKERS%
@@ -69,12 +71,14 @@ echo [2/4] Running deep baselines on patient-aware KFold splits...
 if errorlevel 1 goto fail
 
 echo.
-echo [3/4] Running FIS + FKGS for image, table, and fusion KFold splits...
+echo [3/4] Running FIS + FKGS + native FKG for image, table, and fusion KFold splits...
 "%PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\Preprocess_kfold_feature_selection.py" ^
   --modalities image table fusion ^
   --run-fkgs ^
+  --run-fkg ^
   --fis-engine native ^
   --native-backend "%FIS_BACKEND%" ^
+  --fkg-backend "%FKG_BACKEND%" ^
   --ran %FKGS_RAN% ^
   --e %FKGS_EPSILON% ^
   --fkgs-turns "%FKGS_TURNS%" ^
@@ -90,6 +94,7 @@ echo [4/4] Building comparison table...
   --deep-config "%DEEP_RESULTS%\config.json" ^
   --fkgs-summary "%FKGS_REPORT_ABS%\kfold_fkgs_mean_std_summary.csv" ^
   --fkgs-tables "%FKGS_REPORT_ABS%\kfold_fkgs_tables.csv" ^
+  --fkg-summary "%FKGS_REPORT_ABS%\kfold_modality_mean_std_summary.csv" ^
   --output-stem "%COMPARISON_STEM%"
 if errorlevel 1 goto fail
 

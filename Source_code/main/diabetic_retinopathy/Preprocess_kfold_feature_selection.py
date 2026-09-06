@@ -1,5 +1,6 @@
 import argparse
 import json
+import math
 import os
 import random
 import subprocess
@@ -1206,18 +1207,20 @@ def save_score_plot(metrics, output_path, title):
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
-        names = ["accuracy", "precision", "recall", "f1"]
+        names = [name for name in ["accuracy", "precision", "recall", "specificity", "f1", "auc"] if name in metrics]
         values = [metrics[name] for name in names]
-        plt.figure(figsize=(7, 5))
-        bars = plt.bar([name.title() for name in names], values, color=["#4C78A8", "#F58518", "#54A24B", "#B279A2"])
+        plot_values = [0.0 if pd.isna(value) else value for value in values]
+        colors = ["#4C78A8", "#F58518", "#54A24B", "#E45756", "#B279A2", "#72B7B2"]
+        plt.figure(figsize=(9, 5))
+        bars = plt.bar([name.title() for name in names], plot_values, color=colors[: len(names)])
         plt.ylim(0, 1.05)
         plt.ylabel("Score")
         plt.title(title)
         for bar, value in zip(bars, values):
             plt.text(
                 bar.get_x() + bar.get_width() / 2,
-                min(value + 0.02, 1.03),
-                f"{value:.2%}",
+                min((0.0 if pd.isna(value) else value) + 0.02, 1.03),
+                "NA" if pd.isna(value) else f"{value:.2%}",
                 ha="center",
                 va="bottom",
                 fontsize=9,
@@ -1786,6 +1789,59 @@ def save_confusion_csv(true_labels, predicted_labels, labels, output_path):
     out.to_csv(output_path)
 
 
+def binary_auc_score(true_labels, positive_scores, positive_label):
+    positives = [1 if value == positive_label else 0 for value in true_labels]
+    positive_count = sum(positives)
+    negative_count = len(positives) - positive_count
+    if positive_count == 0 or negative_count == 0:
+        return math.nan
+
+    order = sorted(range(len(positive_scores)), key=lambda index: positive_scores[index])
+    ranks = [0.0] * len(positive_scores)
+    cursor = 0
+    while cursor < len(order):
+        next_cursor = cursor + 1
+        while (
+            next_cursor < len(order)
+            and positive_scores[order[next_cursor]] == positive_scores[order[cursor]]
+        ):
+            next_cursor += 1
+        average_rank = (cursor + 1 + next_cursor) / 2.0
+        for rank_index in range(cursor, next_cursor):
+            ranks[order[rank_index]] = average_rank
+        cursor = next_cursor
+
+    positive_rank_sum = sum(rank for rank, is_positive in zip(ranks, positives) if is_positive)
+    return (
+        positive_rank_sum - positive_count * (positive_count + 1) / 2.0
+    ) / (positive_count * negative_count)
+
+
+def binary_specificity(true_labels, predicted_labels, positive_label):
+    tn = sum(
+        1
+        for truth, predicted in zip(true_labels, predicted_labels)
+        if truth != positive_label and predicted != positive_label
+    )
+    fp = sum(
+        1
+        for truth, predicted in zip(true_labels, predicted_labels)
+        if truth != positive_label and predicted == positive_label
+    )
+    return tn / (tn + fp) if (tn + fp) else 0.0
+
+
+def positive_scores_from_predictions(predicted_labels, confidences, positive_label):
+    scores = []
+    for predicted, confidence in zip(predicted_labels, confidences):
+        if confidence is None or pd.isna(confidence) or not np.isfinite(confidence):
+            scores.append(1.0 if predicted == positive_label else 0.0)
+            continue
+        confidence = max(0.0, min(1.0, float(confidence)))
+        scores.append(confidence if predicted == positive_label else 1.0 - confidence)
+    return scores
+
+
 def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modality, backend):
     from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
@@ -1822,7 +1878,7 @@ def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modali
             confidences.append(float(confidence))
     elif hasattr(fkg, "predict_batch"):
         predicted_labels = [int(value) for value in fkg.predict_batch(test_inputs)]
-        confidences = [0.0] * len(predicted_labels)
+        confidences = [None] * len(predicted_labels)
     else:
         for sample in test_inputs:
             pred, confidence = fkg.predict(sample)
@@ -1831,11 +1887,15 @@ def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modali
     test_time = time.perf_counter() - test_start
 
     labels = sorted(set(test_labels) | set(predicted_labels))
+    positive_label = max(labels)
+    positive_scores = positive_scores_from_predictions(predicted_labels, confidences, positive_label)
     metrics = {
         "accuracy": accuracy_score(test_labels, predicted_labels),
         "precision": precision_score(test_labels, predicted_labels, average="macro", zero_division=0),
         "recall": recall_score(test_labels, predicted_labels, average="macro", zero_division=0),
+        "specificity": binary_specificity(test_labels, predicted_labels, positive_label),
         "f1": f1_score(test_labels, predicted_labels, average="macro", zero_division=0),
+        "auc": binary_auc_score(test_labels, positive_scores, positive_label),
     }
 
     output_dir = Path(output_dir)
@@ -1851,6 +1911,7 @@ def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modali
             "true_label": test_labels,
             "predicted_label": predicted_labels,
             "confidence": confidences,
+            "positive_score": positive_scores,
         }
     ).to_csv(predictions_path, index=False)
 
@@ -1862,7 +1923,10 @@ def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modali
             "Test Accuracy": [metrics["accuracy"]],
             "Test Precision": [metrics["precision"]],
             "Test Recall": [metrics["recall"]],
+            "Test Specificity": [metrics["specificity"]],
             "Test F1": [metrics["f1"]],
+            "Test AUC": [metrics["auc"]],
+            "Positive Label": [positive_label],
             "Engine": ["native_fisa_module"],
             "Backend Request": [backend],
             "Backend Used": [backend_used],
@@ -1902,7 +1966,10 @@ def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modali
         "fkg_accuracy": metrics["accuracy"],
         "fkg_precision": metrics["precision"],
         "fkg_recall": metrics["recall"],
+        "fkg_specificity": metrics["specificity"],
         "fkg_f1": metrics["f1"],
+        "fkg_auc": metrics["auc"],
+        "fkg_positive_label": positive_label,
         "fkg_train_samples": len(train_records),
         "fkg_test_samples": len(test_records),
         "fkg_feature_count": len(train_records[0]) - 1,
@@ -1980,6 +2047,9 @@ def flatten_fold_records(manifests):
                 if fkg_stage_time is None
                 else (preprocess_time or 0) + (fis_stage_time or fis_total_time or 0) + fkg_stage_time
             )
+            fkg_full_train_time = None
+            if fkg_end_to_end_time is not None and fkg.get("fkg_test_time_seconds") is not None:
+                fkg_full_train_time = fkg_end_to_end_time - fkg.get("fkg_test_time_seconds")
             fold_total_time = record.get("fold_total_time_seconds") or fkg_end_to_end_time or fis_end_to_end_time or preprocess_time
             row = {
                 "modality": record["modality"],
@@ -2007,6 +2077,7 @@ def flatten_fold_records(manifests):
                 "fis_end_to_end_time_seconds": fis_end_to_end_time,
                 "fkg_stage_time_seconds": fkg_stage_time,
                 "fkg_end_to_end_time_seconds": fkg_end_to_end_time,
+                "fkg_full_train_time_seconds": fkg_full_train_time,
                 "fold_total_time_seconds": fold_total_time,
                 "cluster": json.dumps(record["cluster"]),
                 "train_csv": record["train_csv"],
@@ -2044,7 +2115,10 @@ def flatten_fold_records(manifests):
                 "fkg_accuracy": fkg.get("fkg_accuracy"),
                 "fkg_precision": fkg.get("fkg_precision"),
                 "fkg_recall": fkg.get("fkg_recall"),
+                "fkg_specificity": fkg.get("fkg_specificity"),
                 "fkg_f1": fkg.get("fkg_f1"),
+                "fkg_auc": fkg.get("fkg_auc"),
+                "fkg_positive_label": fkg.get("fkg_positive_label"),
                 "fkg_train_samples": fkg.get("fkg_train_samples"),
                 "fkg_test_samples": fkg.get("fkg_test_samples"),
                 "fkg_feature_count": fkg.get("fkg_feature_count"),
@@ -2448,8 +2522,12 @@ def save_fkg_mean_std_table(stats_df, output_path):
         "fkg_precision_std",
         "fkg_recall_mean",
         "fkg_recall_std",
+        "fkg_specificity_mean",
+        "fkg_specificity_std",
         "fkg_f1_mean",
         "fkg_f1_std",
+        "fkg_auc_mean",
+        "fkg_auc_std",
     ]
     if not all(column in stats_df.columns for column in required_columns):
         return
@@ -2473,8 +2551,12 @@ def save_fkg_mean_std_table(stats_df, output_path):
             "Precision std",
             "Recall mean",
             "Recall std",
+            "Specificity mean",
+            "Specificity std",
             "F1 mean",
             "F1 std",
+            "AUC mean",
+            "AUC std",
         ]
         for column in [
             "Acc mean",
@@ -2483,8 +2565,12 @@ def save_fkg_mean_std_table(stats_df, output_path):
             "Precision std",
             "Recall mean",
             "Recall std",
+            "Specificity mean",
+            "Specificity std",
             "F1 mean",
             "F1 std",
+            "AUC mean",
+            "AUC std",
         ]:
             view[column] = pd.to_numeric(view[column], errors="coerce").map(
                 lambda value: "" if pd.isna(value) else f"{value * 100:.2f}%"
@@ -2499,7 +2585,7 @@ def save_fkg_mean_std_table(stats_df, output_path):
                 lambda value: "" if pd.isna(value) else f"{value:.2f}"
             )
 
-        fig, ax = plt.subplots(figsize=(18, 3.2))
+        fig, ax = plt.subplots(figsize=(22, 3.2))
         ax.axis("off")
         table = ax.table(
             cellText=view.values,
@@ -2625,13 +2711,16 @@ def write_report_outputs(manifests, report_root):
             "fis_f1",
             "fkg_stage_time_seconds",
             "fkg_end_to_end_time_seconds",
+            "fkg_full_train_time_seconds",
             "fkg_train_time_seconds",
             "fkg_test_time_seconds",
             "fkg_total_time_seconds",
             "fkg_accuracy",
             "fkg_precision",
             "fkg_recall",
+            "fkg_specificity",
             "fkg_f1",
+            "fkg_auc",
             "fold_total_time_seconds",
         ]
         average_columns = [
