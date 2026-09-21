@@ -1,6 +1,7 @@
 import argparse
 import csv
 import json
+import math
 from pathlib import Path
 
 
@@ -17,7 +18,27 @@ FKGS_LABELS = {
     "image": ("FKG-UM (\u1ea2nh)", "Unimodal FKG"),
     "table": ("FKG-UM (B\u1ea3ng)", "Unimodal FKG"),
     "fusion": ("FKG-MM (\u0111\u1ec1 xu\u1ea5t)", "Multimodal FKG"),
+    "fusion_filter": ("FKG-MM (Filter)", "Multimodal FKG"),
+    "fusion_hadamard": ("FKG-MM (Hadamard)", "Multimodal FKG"),
+    "fusion_tensor": ("FKG-MM (Tensor)", "Multimodal FKG"),
+    "fusion_wrapper": ("FKG-MM (Wrapper)", "Multimodal FKG"),
 }
+
+# Report order; a modality that a run did not produce is simply skipped.
+MODALITY_ORDER = [
+    "table",
+    "image",
+    "fusion",
+    "fusion_filter",
+    "fusion_hadamard",
+    "fusion_tensor",
+    "fusion_wrapper",
+]
+
+
+def present_modalities(summary_rows: list[dict[str, str]]) -> list[str]:
+    available = {row.get("modality") for row in summary_rows}
+    return [modality for modality in MODALITY_ORDER if modality in available]
 
 
 def parse_args() -> argparse.Namespace:
@@ -82,7 +103,13 @@ def read_float(row: dict[str, str], key: str) -> float | None:
     value = row.get(key)
     if value in ("", None):
         return None
-    return float(value)
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    # A NaN fold metric means "not measurable here"; printing "nan +/- nan" in a
+    # paper table is worse than printing nothing.
+    return None if math.isnan(number) else number
 
 
 def read_percent_fraction(row: dict[str, str], key: str) -> float | None:
@@ -90,6 +117,39 @@ def read_percent_fraction(row: dict[str, str], key: str) -> float | None:
     if value is None:
         return None
     return value * 100.0
+
+
+# Every family writes its fold summary with these names, as fractions, so one
+# reader handles all three. Positive class = diabetic retinopathy; anything
+# macro-averaged carries the macro_ prefix and is never mixed with the rest.
+COMPARISON_METRICS = [
+    "accuracy",
+    "balanced_accuracy",
+    "precision",
+    "sensitivity",
+    "specificity",
+    "f1",
+    "auc_roc",
+    "auc_pr",
+    "mcc",
+    "macro_precision",
+    "macro_recall",
+    "macro_f1",
+]
+
+
+def percent_metric_block(
+    row: dict[str, str],
+    prefix: str,
+    suffix: str = "_mean",
+    std_suffix: str = "_std",
+) -> dict[str, float | None]:
+    """Read one family's fold summary into the shared ``<metric>_pct`` columns."""
+    block: dict[str, float | None] = {}
+    for metric in COMPARISON_METRICS:
+        block[f"{metric}_pct"] = read_percent_fraction(row, f"{prefix}{metric}{suffix}")
+        block[f"{metric}_std_pct"] = read_percent_fraction(row, f"{prefix}{metric}{std_suffix}")
+    return block
 
 
 def fmt_pm(mean: float | None, std: float | None, decimals: int = 1) -> str:
@@ -167,18 +227,7 @@ def add_deep_rows(
                 "eval_split": "val_mean_5fold",
                 "protocol": row_protocol,
                 "selected_config": config_note,
-                "accuracy_pct": read_percent_fraction(row, "accuracy_mean"),
-                "accuracy_std_pct": read_percent_fraction(row, "accuracy_std"),
-                "precision_pct": read_percent_fraction(row, "precision_mean"),
-                "precision_std_pct": read_percent_fraction(row, "precision_std"),
-                "recall_pct": read_percent_fraction(row, "sensitivity_mean"),
-                "recall_std_pct": read_percent_fraction(row, "sensitivity_std"),
-                "specificity_pct": read_percent_fraction(row, "specificity_mean"),
-                "specificity_std_pct": read_percent_fraction(row, "specificity_std"),
-                "f1_pct": read_percent_fraction(row, "f1_mean"),
-                "f1_std_pct": read_percent_fraction(row, "f1_std"),
-                "auc_pct": read_percent_fraction(row, "auc_mean"),
-                "auc_std_pct": read_percent_fraction(row, "auc_std"),
+                **percent_metric_block(row, prefix="", suffix="_mean", std_suffix="_std"),
                 "train_time_s": read_float(row, "train_seconds_mean"),
                 "train_time_std_s": read_float(row, "train_seconds_std"),
                 "test_time_s": read_float(row, "eval_seconds_mean"),
@@ -196,10 +245,14 @@ def add_fkgs_rows(
     fkgs_summary_rows: list[dict[str, str]],
     protocol: str,
 ) -> None:
-    for modality in ("image", "table", "fusion"):
+    for modality in present_modalities(fkgs_summary_rows):
         candidates = [row for row in fkgs_summary_rows if row.get("modality") == modality]
         if not candidates:
-            raise RuntimeError(f"Missing FKGS summaries for modality: {modality}")
+            continue
+        # NOTE: the (ran, epsilon) config is chosen by the same 5-fold accuracy
+        # that is then reported, so this row is selected on the data it is
+        # scored on and reads optimistically. It is labelled as such in
+        # `selected_config`, and the full grid is written beside this table.
         best = max(candidates, key=lambda row: float(row["fkgs_accuracy_pct_mean"]))
         label, data_type = FKGS_LABELS[modality]
         rows.append(
@@ -210,22 +263,11 @@ def add_fkgs_rows(
                 "eval_split": "val_mean_5fold",
                 "protocol": protocol,
                 "selected_config": (
-                    f"best accuracy from rerun; ran={best['ran']}; "
-                    f"epsilon={best['epsilon']}; folds={best['folds']}; "
-                    f"features={float(best['feature_count_mean']):.0f}"
+                    f"config chosen by accuracy on these same 5 folds (optimistic); "
+                    f"ran={best['ran']}; epsilon={best['epsilon']}; "
+                    f"folds={best['folds']}; features={float(best['feature_count_mean']):.0f}"
                 ),
-                "accuracy_pct": read_float(best, "fkgs_accuracy_pct_mean"),
-                "accuracy_std_pct": read_float(best, "fkgs_accuracy_pct_std"),
-                "precision_pct": read_float(best, "fkgs_precision_pct_mean"),
-                "precision_std_pct": read_float(best, "fkgs_precision_pct_std"),
-                "recall_pct": read_float(best, "fkgs_recall_pct_mean"),
-                "recall_std_pct": read_float(best, "fkgs_recall_pct_std"),
-                "specificity_pct": None,
-                "specificity_std_pct": None,
-                "f1_pct": None,
-                "f1_std_pct": None,
-                "auc_pct": None,
-                "auc_std_pct": None,
+                **percent_metric_block(best, prefix="fkgs_", suffix="_mean", std_suffix="_std"),
                 "train_time_s": read_float(best, "fkgs_full_train_time_seconds_mean"),
                 "train_time_std_s": read_float(best, "fkgs_full_train_time_seconds_std"),
                 "test_time_s": read_float(best, "fkgs_test_time_seconds_mean"),
@@ -243,10 +285,10 @@ def add_fkg_rows(
     fkg_summary_rows: list[dict[str, str]],
     protocol: str,
 ) -> None:
-    for modality in ("image", "table", "fusion"):
+    for modality in present_modalities(fkg_summary_rows):
         candidates = [row for row in fkg_summary_rows if row.get("modality") == modality]
         if not candidates:
-            raise RuntimeError(f"Missing native FKG summary for modality: {modality}")
+            continue
         best = candidates[0]
         label, data_type = FKGS_LABELS[modality]
         train_time = read_float(best, "fkg_full_train_time_seconds_mean")
@@ -265,18 +307,7 @@ def add_fkg_rows(
                     f"native FKG rerun; folds={best['folds']}; "
                     f"features={float(best['feature_count_mean']):.0f}"
                 ),
-                "accuracy_pct": read_percent_fraction(best, "fkg_accuracy_mean"),
-                "accuracy_std_pct": read_percent_fraction(best, "fkg_accuracy_std"),
-                "precision_pct": read_percent_fraction(best, "fkg_precision_mean"),
-                "precision_std_pct": read_percent_fraction(best, "fkg_precision_std"),
-                "recall_pct": read_percent_fraction(best, "fkg_recall_mean"),
-                "recall_std_pct": read_percent_fraction(best, "fkg_recall_std"),
-                "specificity_pct": read_percent_fraction(best, "fkg_specificity_mean"),
-                "specificity_std_pct": read_percent_fraction(best, "fkg_specificity_std"),
-                "f1_pct": read_percent_fraction(best, "fkg_f1_mean"),
-                "f1_std_pct": read_percent_fraction(best, "fkg_f1_std"),
-                "auc_pct": read_percent_fraction(best, "fkg_auc_mean"),
-                "auc_std_pct": read_percent_fraction(best, "fkg_auc_std"),
+                **percent_metric_block(best, prefix="fkg_", suffix="_mean", std_suffix="_std"),
                 "train_time_s": train_time,
                 "train_time_std_s": train_time_std,
                 "test_time_s": read_float(best, "fkg_test_time_seconds_mean"),
@@ -308,18 +339,11 @@ def write_outputs(
         "eval_split",
         "protocol",
         "selected_config",
-        "accuracy_pct",
-        "accuracy_std_pct",
-        "precision_pct",
-        "precision_std_pct",
-        "recall_pct",
-        "recall_std_pct",
-        "specificity_pct",
-        "specificity_std_pct",
-        "f1_pct",
-        "f1_std_pct",
-        "auc_pct",
-        "auc_std_pct",
+        *[
+            column
+            for metric in COMPARISON_METRICS
+            for column in (f"{metric}_pct", f"{metric}_std_pct")
+        ],
         "train_time_s",
         "train_time_std_s",
         "test_time_s",
@@ -350,28 +374,36 @@ def write_outputs(
         "",
         deep_backbone_note(rows),
         "",
-        "| M\u00f4 h\u00ecnh | Ki\u1ec3u d\u1eef li\u1ec7u | Protocol | Acc (%) | Precision (%) | Recall/Sensitivity (%) | Specificity (%) | F1 (%) | AUC (%) | Train (s) | Test (s) | Total (s) | Ghi ch\u00fa |",
-        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
+        "| M\u00f4 h\u00ecnh | Ki\u1ec3u d\u1eef li\u1ec7u | Acc (%) | Sensitivity (%) | Specificity (%) | Precision (%) | F1 (%) | AUC-ROC (%) | AUC-PR (%) | Train (s) | Test (s) | Total (s) | Ghi ch\u00fa |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for row in rows:
         md_lines.append(
-            "| {model} | {data_type} | {protocol} | {accuracy} | {precision} | {recall} | {specificity} | "
-            "{f1} | {auc} | {train} | {test} | {total} | {note} |".format(
-                model=row["model"],
+            "| {model} | {data_type} | {accuracy} | {sensitivity} | {specificity} | {precision} | "
+            "{f1} | {auc_roc} | {auc_pr} | {train} | {test} | {total} | {note} |".format(
+                model=row["model"] + (" [FKG-S]" if row["source_family"] == "FKGS_KFold" else ""),
                 data_type=row["data_type"],
-                protocol=row["protocol"],
                 accuracy=fmt_pm(row["accuracy_pct"], row["accuracy_std_pct"]),
-                precision=fmt_pm(row["precision_pct"], row["precision_std_pct"]),
-                recall=fmt_pm(row["recall_pct"], row["recall_std_pct"]),
+                sensitivity=fmt_pm(row["sensitivity_pct"], row["sensitivity_std_pct"]),
                 specificity=fmt_pm(row["specificity_pct"], row["specificity_std_pct"]),
+                precision=fmt_pm(row["precision_pct"], row["precision_std_pct"]),
                 f1=fmt_pm(row["f1_pct"], row["f1_std_pct"]),
-                auc=fmt_pm(row["auc_pct"], row["auc_std_pct"]),
+                auc_roc=fmt_pm(row["auc_roc_pct"], row["auc_roc_std_pct"]),
+                auc_pr=fmt_pm(row["auc_pr_pct"], row["auc_pr_std_pct"]),
                 train=fmt_pm(row["train_time_s"], row["train_time_std_s"], 2),
                 test=fmt_pm(row["test_time_s"], row["test_time_std_s"], 2),
                 total=fmt_pm(row["total_time_s"], row["total_time_std_s"], 2),
                 note=row["selected_config"],
             )
         )
+    md_lines += [
+        "",
+        "Sensitivity / Specificity / Precision / F1 l\u00e0 gi\u00e1 tr\u1ecb c\u1ee7a l\u1edbp d\u01b0\u01a1ng "
+        "(diabetic retinopathy), kh\u00f4ng ph\u1ea3i macro-average. C\u00e1c c\u1ed9t macro_* n\u1eb1m trong file CSV.",
+        "",
+        "\u00b1 l\u00e0 \u0111\u1ed9 l\u1ec7ch chu\u1ea9n gi\u1eefa 5 fold (ddof=1). "
+        "AUC-PR c\u1ee7a m\u00f4 h\u00ecnh ng\u1eabu nhi\u00ean b\u1eb1ng t\u1ef7 l\u1ec7 l\u1edbp d\u01b0\u01a1ng (~6.6%), kh\u00f4ng ph\u1ea3i 50%.",
+    ]
 
     if fkgs_tables:
         md_lines += [
@@ -430,10 +462,12 @@ def main() -> int:
 
     rows: list[dict] = []
     add_deep_rows(rows, deep_sources, args.protocol)
+    # Both families are reported. Previously FKGS disappeared from the table
+    # whenever a native FKG summary existed, so the sampling-based model was
+    # never shown next to the others.
     if fkg_summary:
         add_fkg_rows(rows, fkg_summary, fkg_rows, args.protocol)
-    else:
-        add_fkgs_rows(rows, fkgs_summary, fkgs_rows, args.protocol)
+    add_fkgs_rows(rows, fkgs_summary, fkgs_rows, args.protocol)
     write_outputs(rows, output_stem, deep_summaries, fkgs_summary, fkgs_tables, fkg_summary, deep_sources)
     return 0
 

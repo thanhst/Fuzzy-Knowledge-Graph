@@ -41,6 +41,14 @@ except ImportError:
     torchvision_models = None
 
 
+CURRENT_DIR = Path(__file__).resolve().parent
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
+
+from metrics_utils import (  # noqa: E402  (path setup must run first)
+    binary_classification_metrics,
+)
+
 LABEL_COLUMN = "retinopathy"
 SOURCE_LABEL_COLUMNS = {"retinopathy", "diabetic_retinopathy"}
 DEFAULT_SPLIT_ROOT = Path("ROOT_DATA/train_test_selection")
@@ -732,61 +740,29 @@ def train_epoch(
     return total_loss / max(1, total_examples), total_examples, batch_count
 
 
-def binary_auc(y_true: Sequence[int], y_score: Sequence[float], positive_label: int) -> float:
-    positives = [1 if value == positive_label else 0 for value in y_true]
-    positive_count = sum(positives)
-    negative_count = len(positives) - positive_count
-    if positive_count == 0 or negative_count == 0:
-        return math.nan
-
-    order = sorted(range(len(y_score)), key=lambda index: y_score[index])
-    ranks = [0.0] * len(y_score)
-    cursor = 0
-    while cursor < len(order):
-        next_cursor = cursor + 1
-        while (
-            next_cursor < len(order)
-            and y_score[order[next_cursor]] == y_score[order[cursor]]
-        ):
-            next_cursor += 1
-        average_rank = (cursor + 1 + next_cursor) / 2.0
-        for rank_index in range(cursor, next_cursor):
-            ranks[order[rank_index]] = average_rank
-        cursor = next_cursor
-
-    positive_rank_sum = sum(rank for rank, is_positive in zip(ranks, positives) if is_positive)
-    return (
-        positive_rank_sum - positive_count * (positive_count + 1) / 2.0
-    ) / (positive_count * negative_count)
-
-
 def compute_metrics(
     y_true: Sequence[int],
     y_pred: Sequence[int],
     y_score: Sequence[float],
     positive_label: int,
 ) -> Dict[str, float]:
-    tp = sum(1 for truth, pred in zip(y_true, y_pred) if truth == positive_label and pred == positive_label)
-    tn = sum(1 for truth, pred in zip(y_true, y_pred) if truth != positive_label and pred != positive_label)
-    fp = sum(1 for truth, pred in zip(y_true, y_pred) if truth != positive_label and pred == positive_label)
-    fn = sum(1 for truth, pred in zip(y_true, y_pred) if truth == positive_label and pred != positive_label)
-    total = max(1, len(y_true))
-    precision = tp / (tp + fp) if (tp + fp) else 0.0
-    sensitivity = tp / (tp + fn) if (tp + fn) else 0.0
-    specificity = tn / (tn + fp) if (tn + fp) else 0.0
-    f1 = 2.0 * precision * sensitivity / (precision + sensitivity) if (precision + sensitivity) else 0.0
-    return {
-        "accuracy": (tp + tn) / total,
-        "f1": f1,
-        "auc": binary_auc(y_true, y_score, positive_label),
-        "sensitivity": sensitivity,
-        "specificity": specificity,
-        "precision": precision,
-        "tp": float(tp),
-        "tn": float(tn),
-        "fp": float(fp),
-        "fn": float(fn),
-    }
+    """Delegate to the shared metric module.
+
+    The deep baselines used to carry their own AUC and confusion-count code.
+    Keeping a second implementation here is what let the deep rows report
+    positive-class precision/recall while the FKG rows reported macro averages
+    in the same table, so there is now exactly one implementation.
+    ``auc`` stays as an alias of AUC-ROC because --select-metric names it.
+    """
+    metrics = binary_classification_metrics(
+        y_true=y_true,
+        y_pred=y_pred,
+        y_score=y_score,
+        positive_label=positive_label,
+        labels=[0, 1],
+    )
+    metrics["auc"] = metrics["auc_roc"]
+    return metrics
 
 
 def evaluate(
@@ -977,7 +953,21 @@ def write_csv(path: Path, rows: Sequence[Dict[str, object]]) -> None:
 
 
 def summarize_metrics(rows: Sequence[Dict[str, object]]) -> List[Dict[str, object]]:
-    metrics = ["accuracy", "f1", "auc", "sensitivity", "specificity", "precision"]
+    metrics = [
+        "accuracy",
+        "balanced_accuracy",
+        "f1",
+        "auc",
+        "auc_roc",
+        "auc_pr",
+        "sensitivity",
+        "specificity",
+        "precision",
+        "mcc",
+        "macro_precision",
+        "macro_recall",
+        "macro_f1",
+    ]
     time_columns = [
         "train_seconds",
         "train_time_seconds",
@@ -1004,7 +994,12 @@ def summarize_metrics(rows: Sequence[Dict[str, object]]) -> List[Dict[str, objec
         for metric in metrics:
             values = finite_float_values(model_rows, metric)
             summary[f"{metric}_mean"] = float(np.mean(values)) if values else math.nan
-            summary[f"{metric}_std"] = float(np.std(values, ddof=0)) if values else math.nan
+            # ddof=1: "mean +/- std over 5 folds" means the sample standard
+            # deviation across folds, which is also what metrics_utils uses for
+            # the FKG and FKGS rows.
+            summary[f"{metric}_std"] = (
+                float(np.std(values, ddof=1)) if len(values) > 1 else (0.0 if values else math.nan)
+            )
         for column in time_columns:
             values = finite_float_values(model_rows, column)
             summary[f"{column}_mean"] = float(np.mean(values)) if values else math.nan

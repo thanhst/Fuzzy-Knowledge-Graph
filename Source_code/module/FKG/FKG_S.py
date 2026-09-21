@@ -5,7 +5,29 @@ import json
 import fisa_module as fs
 import os
 import random
+import sys
 import time
+
+
+def _load_metrics_utils():
+    """Import the shared metric module that every model family reports through.
+
+    FKG_S lives under Source_code/module/FKG while the metric definitions live
+    under Source_code/main/diabetic_retinopathy, and this file is imported from
+    several working directories, so the path is derived from __file__ rather
+    than assumed to be on sys.path.
+    """
+    metrics_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "main",
+        "diabetic_retinopathy",
+    )
+    if metrics_dir not in sys.path:
+        sys.path.insert(0, metrics_dir)
+    import metrics_utils
+
+    return metrics_utils
+
 
 class FKGS:
     print("FKGS is running")
@@ -17,7 +39,13 @@ class FKGS:
         self.timeUpdate = []
         self.listRank = []
         self.res = []
-    
+        # One entry per turn. Previously precision/recall were overwritten each
+        # turn and held per-class values, so the reported "+/- std" was the
+        # spread between the two classes of the last turn rather than the
+        # spread between turns. Both are kept per turn now.
+        self.turn_metrics = []
+        self.turn_prediction_paths = []
+
     def combination(self,k, n):
         if k == 0 or k == n:
             return 1
@@ -216,7 +244,7 @@ class FKGS:
     def Tprecision(self, Pre, Act):
         TP = {}
         FP = {}
-        unique_labels = set(Act) | set(Pre)
+        unique_labels = sorted({int(v) for v in Act} | {int(v) for v in Pre})
         for label in unique_labels:
             TP[label] = 0
             FP[label] = 0
@@ -242,7 +270,7 @@ class FKGS:
     def Trecall(self, Pre, Act):
         TP = {}
         FN = {}
-        unique_labels = set(Act) | set(Pre)
+        unique_labels = sorted({int(v) for v in Act} | {int(v) for v in Pre})
 
         for label in unique_labels:
             TP[label] = 0
@@ -294,9 +322,55 @@ class FKGS:
         print("Predict labels: \n",pd.DataFrame(X))
         print("True labels: \n",pd.DataFrame(X_test))
         self.listAcc.append(self.Acc(X,X_test))
-        self.listPre = list(self.Tprecision(X, X_test).values())
-        self.listRe = list(self.Trecall(X, X_test).values())
-        
+        per_class_precision = list(self.Tprecision(X, X_test).values())
+        per_class_recall = list(self.Trecall(X, X_test).values())
+
+        metrics_utils = _load_metrics_utils()
+        turn_index = len(self.turn_metrics) + 1
+        true_labels = [int(float(value)) for value in X_test]
+        predicted_labels = [int(float(value)) for value in X]
+        # The FIS rule encoding is 1-based, so the diabetic retinopathy class is
+        # the larger of the two labels present in the fold.
+        present_labels = sorted(set(true_labels))
+        positive_label = max(present_labels) if len(present_labels) > 1 else present_labels[0]
+        positive_scores = metrics_utils.positive_scores_from_confidence(
+            predicted_labels,
+            [float(value) for value in ddd],
+            positive_label,
+        )
+        turn_metrics = metrics_utils.binary_classification_metrics(
+            y_true=true_labels,
+            y_pred=predicted_labels,
+            y_score=positive_scores,
+            positive_label=positive_label,
+            labels=sorted(set(true_labels) | set(predicted_labels)),
+        )
+        turn_metrics["turn"] = turn_index
+        self.turn_metrics.append(turn_metrics)
+
+        # Persist the raw predictions so any metric in the paper can be
+        # recomputed and audited without rerunning the sampling.
+        os.makedirs(input_dir, exist_ok=True)
+        predictions_path = os.path.join(
+            input_dir, f"predictions_fkgs_e{e_value}_ran{rand}_turn{turn_index}.csv"
+        )
+        pd.DataFrame(
+            {
+                "true_label": true_labels,
+                "predicted_label": predicted_labels,
+                "confidence": [float(value) for value in ddd],
+                "positive_score": positive_scores,
+            }
+        ).to_csv(predictions_path, index=False)
+        self.turn_prediction_paths.append(predictions_path)
+
+        # Kept for the existing bar chart below and for the summary keys that
+        # older reports read; these are macro averages, one scalar per turn.
+        self.listPre.append(float(np.mean(per_class_precision)) if per_class_precision else 0.0)
+        self.listRe.append(float(np.mean(per_class_recall)) if per_class_recall else 0.0)
+        self.listPre_per_class = per_class_precision
+        self.listRe_per_class = per_class_recall
+
 
         cm = confusion_matrix(X_test, X)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)
@@ -306,8 +380,19 @@ class FKGS:
         plt.savefig(os.path.join(input_dir,f'conf_matrix_{e_value}_{rand}.png'))
         plt.close()
 
-        listPrecision = np.array(self.listPre) / 100 if max(self.listPre) > 1 else np.array(self.listPre)
-        listRecall = np.array(self.listRe) / 100 if max(self.listRe) > 1 else np.array(self.listRe)
+        # This chart is per class, so it uses the per-class values of this turn
+        # rather than self.listPre/self.listRe, which now hold one macro value
+        # per turn.
+        listPrecision = (
+            np.array(per_class_precision) / 100
+            if per_class_precision and max(per_class_precision) > 1
+            else np.array(per_class_precision)
+        )
+        listRecall = (
+            np.array(per_class_recall) / 100
+            if per_class_recall and max(per_class_recall) > 1
+            else np.array(per_class_recall)
+        )
 
         labels = list(range(n_classes))
         x = np.arange(len(labels))
@@ -457,6 +542,26 @@ class FKGS:
             "recall_mean": float(np.mean(self.listRe)),
             "recall_std": float(np.std(self.listRe)),
         }
+
+        # Full metric set, averaged over the turns of this (fold, ran, e) run.
+        # accuracy/precision/recall above stay as they were so older reports
+        # keep reproducing; everything below is positive-class (diabetic
+        # retinopathy) unless it carries a macro_ prefix.
+        if self.turn_metrics:
+            metrics_utils = _load_metrics_utils()
+            aggregated = metrics_utils.aggregate_metrics(self.turn_metrics)
+            for key, value in aggregated.items():
+                if key == "folds":
+                    continue
+                summary[f"fkgs_{key}"] = value
+            last_turn = self.turn_metrics[-1]
+            summary["fkgs_turns_scored"] = len(self.turn_metrics)
+            summary["fkgs_positive_label"] = last_turn["positive_label"]
+            summary["fkgs_score_kind"] = last_turn["score_kind"]
+            summary["fkgs_test_samples"] = last_turn["n"]
+            summary["fkgs_test_positives"] = last_turn["n_pos"]
+            summary["fkgs_prediction_csvs"] = list(self.turn_prediction_paths)
+
         self.last_summary = summary
         return summary
 

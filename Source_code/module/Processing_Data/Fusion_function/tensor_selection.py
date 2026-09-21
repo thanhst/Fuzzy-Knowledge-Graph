@@ -1,22 +1,44 @@
-from sklearn.decomposition import TruncatedSVD
 import numpy as np
-def tensor_fusion(Fimg, Ftab, rank=10):
-    flattened_tensors = []
-    for f_img, f_tab in zip(Fimg, Ftab):
-        tensor = np.outer(f_img, f_tab)
-        flat_tensor = tensor.flatten()
-        flattened_tensors.append(flat_tensor)
+from sklearn.preprocessing import StandardScaler
 
-    X_tensor = np.stack(flattened_tensors)  # shape: (n_samples, f_img_dim * f_tab_dim)
 
-    # Bước 2: Giảm chiều với SVD
-    svd = TruncatedSVD(n_components=rank)
-    reduced = svd.fit_transform(X_tensor)  # shape: (n_samples, rank)
+def _normalize_rows(values):
+    norms = np.linalg.norm(values, axis=1, keepdims=True) + 1e-8
+    return values / norms
 
-    # Bước 3: Lấy các thành phần chính nếu cần
-    # components = svd.components_.flatten()[:rank]  # flatten (rank, n_features) -> lấy top rank thành phần
 
-    # Bước 4: Kết hợp lại
-    # fused_features = np.concatenate([reduced, np.tile(components, (reduced.shape[0], 1))], axis=1)
+def _fit_cross_modal_svd(Fimg, Ftab, requested_rank):
+    max_rank = min(Fimg.shape[1], Ftab.shape[1])
+    rank = min(int(requested_rank), max_rank)
+    if rank < 1:
+        raise ValueError("rank must be at least 1 and both modalities must have features.")
 
-    return reduced
+    cross_cov = Fimg.T @ Ftab / max(1, Fimg.shape[0] - 1)
+    U, singular_values, Vt = np.linalg.svd(cross_cov, full_matrices=False)
+    return U[:, :rank], Vt[:rank, :].T, singular_values[:rank]
+
+
+def _project_cross_modal(Fimg, Ftab, Wimg, Wtab, singular_values):
+    weights = np.sqrt(np.maximum(singular_values, 1e-12))
+    Zimg = _normalize_rows((Fimg @ Wimg) * weights)
+    Ztab = _normalize_rows((Ftab @ Wtab) * weights)
+    return Zimg, Ztab
+
+
+def tensor_fusion(Fimg, Ftab, rank=10, return_projection=False):
+    """Tensor-style fusion from the cross relation F_img.T @ F_tab.
+
+    The method first decomposes C = F_img.T @ F_tab / (n - 1) as U S V.T,
+    then uses compatible latent factors [Z_img, Z_tab, Z_img * Z_tab].
+    This replaces the ambiguous SVD of flattened Kronecker products.
+    """
+    Fimg = StandardScaler().fit_transform(np.asarray(Fimg, dtype=float))
+    Ftab = StandardScaler().fit_transform(np.asarray(Ftab, dtype=float))
+
+    Wimg, Wtab, singular_values = _fit_cross_modal_svd(Fimg, Ftab, rank)
+    Zimg, Ztab = _project_cross_modal(Fimg, Ftab, Wimg, Wtab, singular_values)
+    Ffused = np.concatenate([Zimg, Ztab, Zimg * Ztab], axis=1)
+
+    if return_projection:
+        return Ffused, Wimg, Wtab, singular_values
+    return Ffused

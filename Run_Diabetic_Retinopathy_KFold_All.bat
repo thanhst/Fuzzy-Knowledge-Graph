@@ -22,13 +22,17 @@ if not defined FKG_BACKEND set "FKG_BACKEND=auto"
 if not defined FKGS_RAN set "FKGS_RAN=15 20"
 if not defined FKGS_EPSILON set "FKGS_EPSILON=0.2 0.3"
 if not defined FKGS_TURNS set "FKGS_TURNS=1"
-if not defined FKGS_WORKERS set "FKGS_WORKERS=4"
+if not defined FKGS_WORKERS set "FKGS_WORKERS=1"
+if not defined FKG_MODALITIES set "FKG_MODALITIES=table image fusion fusion_filter fusion_hadamard fusion_tensor fusion_wrapper"
+if not defined RUN_TAG set "RUN_TAG=kfold_rerun_%RUN_ID%_formula_fix"
 
 set "DEEP_RESULTS=ROOT_DATA\train_test_selection\deep_baselines\kfold_rerun_%RUN_ID%"
 set "FKGS_OUTPUT=data\Dataset_diabetic\KFold_feature_selection_rerun_%RUN_ID%"
 set "FKGS_REPORT=data\result\KFold_feature_selection_rerun_%RUN_ID%"
 set "FKGS_REPORT_ABS=Source_code\%FKGS_REPORT%"
 set "COMPARISON_STEM=result\diabetic_retinopathy_model_comparison_kfold_rerun_%RUN_ID%"
+set "RESTRICT_IMAGE_IDS=ROOT_DATA\train_test_selection\train.csv"
+set "FOLD_MANIFEST_ROOT=ROOT_DATA\train_test_selection\train_kfold"
 
 echo ============================================================
 echo Diabetic Retinopathy KFold full rerun
@@ -40,10 +44,14 @@ echo FKG_BACKEND=%FKG_BACKEND%
 echo FKGS_RAN=%FKGS_RAN%
 echo FKGS_EPSILON=%FKGS_EPSILON%
 echo FKGS_WORKERS=%FKGS_WORKERS%
+echo FKG_MODALITIES=%FKG_MODALITIES%
+echo RUN_TAG=%RUN_TAG%
 echo.
 echo Deep baseline output: %DEEP_RESULTS%
 echo FKGS output: %FKGS_OUTPUT%
 echo FKGS report: %FKGS_REPORT_ABS%
+echo FKG/FKGS image-id restriction: %RESTRICT_IMAGE_IDS%
+echo FKG/FKGS fold manifest: %FOLD_MANIFEST_ROOT%
 echo Comparison: %COMPARISON_STEM%.csv / .md
 echo ============================================================
 echo.
@@ -71,14 +79,17 @@ echo [2/4] Running deep baselines on patient-aware KFold splits...
 if errorlevel 1 goto fail
 
 echo.
-echo [3/4] Running FIS + FKGS + native FKG for image, table, and fusion KFold splits...
+echo [3/4] Running FIS + FKGS + native FKG for image, table, and fusion-strategy KFold splits...
 "%PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\Preprocess_kfold_feature_selection.py" ^
-  --modalities image table fusion ^
+  --modalities %FKG_MODALITIES% ^
   --run-fkgs ^
   --run-fkg ^
   --fis-engine native ^
   --native-backend "%FIS_BACKEND%" ^
   --fkg-backend "%FKG_BACKEND%" ^
+  --restrict-image-ids "%RESTRICT_IMAGE_IDS%" ^
+  --fold-manifest-root "%FOLD_MANIFEST_ROOT%" ^
+  --run-tag "%RUN_TAG%" ^
   --ran %FKGS_RAN% ^
   --e %FKGS_EPSILON% ^
   --fkgs-turns "%FKGS_TURNS%" ^
@@ -95,7 +106,8 @@ echo [4/4] Building comparison table...
   --fkgs-summary "%FKGS_REPORT_ABS%\kfold_fkgs_mean_std_summary.csv" ^
   --fkgs-tables "%FKGS_REPORT_ABS%\kfold_fkgs_tables.csv" ^
   --fkg-summary "%FKGS_REPORT_ABS%\kfold_modality_mean_std_summary.csv" ^
-  --output-stem "%COMPARISON_STEM%"
+  --output-stem "%COMPARISON_STEM%" ^
+  --protocol "Patient-grouped 5-fold CV with shared deep-baseline train image IDs; fold_manifest_root=ROOT_DATA/train_test_selection/train_kfold; formula_fix cross-SVD fusion."
 if errorlevel 1 goto fail
 
 echo.

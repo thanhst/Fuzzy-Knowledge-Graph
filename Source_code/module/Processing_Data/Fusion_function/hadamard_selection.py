@@ -1,30 +1,45 @@
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from sklearn.feature_selection import SelectKBest, mutual_info_classif
-from sklearn.linear_model import Ridge
 
-def hadamard_fusion(Fimg, Ftab, common_dim=64, alpha=0.01):
-    scaler_img = StandardScaler()
-    scaler_tab = StandardScaler()
-    Fimg = scaler_img.fit_transform(Fimg)
-    Ftab = scaler_tab.fit_transform(Ftab)
 
-    proj_img = Ridge(alpha=alpha, fit_intercept=False)
-    proj_tab = Ridge(alpha=alpha, fit_intercept=False)
+def _normalize_rows(values):
+    norms = np.linalg.norm(values, axis=1, keepdims=True) + 1e-8
+    return values / norms
 
-    X_random = np.random.randn(Fimg.shape[0], common_dim)
-    Y_random = np.random.randn(Ftab.shape[0], common_dim)
 
-    proj_img.fit(Fimg, X_random)
-    proj_tab.fit(Ftab, Y_random)
+def _fit_cross_modal_svd(Fimg, Ftab, requested_rank):
+    max_rank = min(Fimg.shape[1], Ftab.shape[1])
+    rank = min(int(requested_rank), max_rank)
+    if rank < 1:
+        raise ValueError("common_dim must be at least 1 and both modalities must have features.")
 
-    Fimg_proj = proj_img.predict(Fimg)
-    Ftab_proj = proj_tab.predict(Ftab)
+    cross_cov = Fimg.T @ Ftab / max(1, Fimg.shape[0] - 1)
+    U, singular_values, Vt = np.linalg.svd(cross_cov, full_matrices=False)
+    return U[:, :rank], Vt[:rank, :].T, singular_values[:rank]
 
-    Fimg_proj = Fimg_proj / (np.linalg.norm(Fimg_proj, axis=1, keepdims=True) + 1e-8)
-    Ftab_proj = Ftab_proj / (np.linalg.norm(Ftab_proj, axis=1, keepdims=True) + 1e-8)
 
-    Ffused = Fimg_proj * Ftab_proj
-    Fconcat = np.concatenate([Ffused, np.tanh(Fimg_proj), np.tanh(Ftab_proj)], axis=1)
+def _project_cross_modal(Fimg, Ftab, Wimg, Wtab, singular_values):
+    weights = np.sqrt(np.maximum(singular_values, 1e-12))
+    Zimg = _normalize_rows((Fimg @ Wimg) * weights)
+    Ztab = _normalize_rows((Ftab @ Wtab) * weights)
+    return Zimg, Ztab
 
-    return Fconcat
+
+def hadamard_fusion(Fimg, Ftab, common_dim=64, return_projection=False):
+    """Fuse image and table features with train-fitted cross-SVD Hadamard factors.
+
+    W_img and W_tab are learned from C = F_img.T @ F_tab / (n - 1) via
+    C = U S V.T. This is the orthogonal objective max trace(W_img.T C W_tab),
+    so the learned projections have compatible dimensions before the
+    element-wise Hadamard product Z_img * Z_tab.
+    """
+    Fimg = StandardScaler().fit_transform(np.asarray(Fimg, dtype=float))
+    Ftab = StandardScaler().fit_transform(np.asarray(Ftab, dtype=float))
+
+    Wimg, Wtab, singular_values = _fit_cross_modal_svd(Fimg, Ftab, common_dim)
+    Zimg, Ztab = _project_cross_modal(Fimg, Ftab, Wimg, Wtab, singular_values)
+    Ffused = Zimg * Ztab
+
+    if return_projection:
+        return Ffused, Wimg, Wtab, singular_values
+    return Ffused

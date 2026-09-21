@@ -1,93 +1,91 @@
 import numpy as np
-import pandas as pd
-from sklearn.feature_selection import mutual_info_classif
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import mutual_info_classif
 from sklearn.preprocessing import MinMaxScaler
 
 
-def compute_feature_importance(X, y):
-    # Normalize features
-    X = MinMaxScaler().fit_transform(X)
-
-    # Mutual Information
-    mi_scores = mutual_info_classif(X, y)
-
-    # Random Forest Importance
-    rf = RandomForestClassifier(n_estimators=100, random_state=42)
+def compute_feature_importance(X, y, seed=42):
+    X = MinMaxScaler().fit_transform(np.asarray(X, dtype=float))
+    mi_scores = mutual_info_classif(X, y, random_state=seed)
+    rf = RandomForestClassifier(n_estimators=100, random_state=seed, n_jobs=-1)
     rf.fit(X, y)
-    rf_scores = rf.feature_importances_
-
-    # Combine scores (average)
-    combined_scores = (mi_scores + rf_scores) / 2
-    return combined_scores
+    return (mi_scores + rf.feature_importances_) / 2
 
 
-def remove_correlated_features(X, indices, threshold=0.9):
-    selected = []
-    for i in indices:
-        too_correlated = False
-        for j in selected:
-            corr = np.corrcoef(X[:, i], X[:, j])[0, 1]
-            if abs(corr) > threshold:
-                too_correlated = True
-                break
-        if not too_correlated:
-            selected.append(i)
-    return selected
+def _absolute_correlation(left, right):
+    corr = np.corrcoef(left, right)[0, 1]
+    return abs(corr) if np.isfinite(corr) else 0.0
 
 
-def filter_multimodal_selection(Fimg, Ftab, target, k_img=10, k_tab=10, corr_threshold=0.9):
-    # Step 1: Feature importance
-    img_scores = compute_feature_importance(Fimg, target)
-    tab_scores = compute_feature_importance(Ftab, target)
+def _select_multimodal_indices(Fimg, Ftab, img_scores, tab_scores, k_img, k_tab, corr_threshold):
+    if corr_threshold <= 0 or corr_threshold > 1:
+        raise ValueError("corr_threshold must be in the interval (0, 1].")
 
-    # Step 2: Sort features
-    sorted_img_indices = np.argsort(img_scores)[::-1]
-    sorted_tab_indices = np.argsort(tab_scores)[::-1]
+    selected_img = []
+    selected_tab = []
+    selected_vectors = []
+    candidates = []
+    candidates.extend(("image", int(i), float(img_scores[i])) for i in np.argsort(img_scores)[::-1])
+    candidates.extend(("table", int(i), float(tab_scores[i])) for i in np.argsort(tab_scores)[::-1])
+    candidates.sort(key=lambda item: item[2], reverse=True)
 
-    # Step 3: Initial candidate selection (2x)
-    candidate_img_indices = sorted_img_indices[:2 * k_img]
-    candidate_tab_indices = sorted_tab_indices[:2 * k_tab]
+    for modality, index, _score in candidates:
+        if modality == "image":
+            if len(selected_img) >= k_img:
+                continue
+            vector = Fimg[:, index]
+        else:
+            if len(selected_tab) >= k_tab:
+                continue
+            vector = Ftab[:, index]
 
-    # Step 4: Remove intra-modal correlation
-    final_img_indices = remove_correlated_features(Fimg, candidate_img_indices, corr_threshold)
-    final_tab_indices = remove_correlated_features(Ftab, candidate_tab_indices, corr_threshold)
+        if any(_absolute_correlation(vector, selected_vector) > corr_threshold for selected_vector in selected_vectors):
+            continue
 
-    # Step 5: Truncate
-    final_img_indices = final_img_indices[:k_img]
-    final_tab_indices = final_tab_indices[:k_tab]
+        if modality == "image":
+            selected_img.append(index)
+        else:
+            selected_tab.append(index)
+        selected_vectors.append(vector)
 
-    # Step 6: Concatenate features
-    Ffused = np.concatenate((Fimg[:, final_img_indices], Ftab[:, final_tab_indices]), axis=1)
+        if len(selected_img) >= k_img and len(selected_tab) >= k_tab:
+            break
 
+    return selected_img, selected_tab
+
+
+def filter_multimodal_selection(
+    Fimg,
+    Ftab,
+    target,
+    k_img=10,
+    k_tab=10,
+    corr_threshold=0.9,
+    return_indices=False,
+):
+    """Filter multimodal features by importance and cross-modal correlation.
+
+    Features from both modalities are ranked together by MI/RF score. A
+    candidate is kept only when its absolute Pearson correlation with every
+    already selected feature, either image or table, is <= corr_threshold.
+    """
+    Fimg = np.asarray(Fimg, dtype=float)
+    Ftab = np.asarray(Ftab, dtype=float)
+    target = np.asarray(target).ravel()
+
+    img_scores = compute_feature_importance(Fimg, target, seed=42)
+    tab_scores = compute_feature_importance(Ftab, target, seed=43)
+    selected_img, selected_tab = _select_multimodal_indices(
+        Fimg,
+        Ftab,
+        img_scores,
+        tab_scores,
+        min(int(k_img), Fimg.shape[1]),
+        min(int(k_tab), Ftab.shape[1]),
+        float(corr_threshold),
+    )
+
+    Ffused = np.concatenate([Fimg[:, selected_img], Ftab[:, selected_tab]], axis=1)
+    if return_indices:
+        return Ffused, selected_img, selected_tab
     return Ffused
-
-# def filter_multimodal_selection(Fimg, Ftab, target, k_img=10, k_tab=10, corr_threshold=0.9, img_names=None, tab_names=None):
-#     # Step 1: Feature importance
-#     img_scores = compute_feature_importance(Fimg, target)
-#     tab_scores = compute_feature_importance(Ftab, target)
-
-#     # Step 2: Sort features
-#     sorted_img_indices = np.argsort(img_scores)[::-1]
-#     sorted_tab_indices = np.argsort(tab_scores)[::-1]
-
-#     # Step 3: Initial candidate selection (2x)
-#     candidate_img_indices = sorted_img_indices[:2 * k_img]
-#     candidate_tab_indices = sorted_tab_indices[:2 * k_tab]
-
-#     # Step 4: Remove correlation
-#     final_img_indices = remove_correlated_features(Fimg, candidate_img_indices, corr_threshold)
-#     final_tab_indices = remove_correlated_features(Ftab, candidate_tab_indices, corr_threshold)
-
-#     # Step 5: Truncate
-#     final_img_indices = final_img_indices[:k_img]
-#     final_tab_indices = final_tab_indices[:k_tab]
-
-#     # Optional: get feature names
-#     selected_img_names = [img_names[i] for i in final_img_indices] if img_names is not None else final_img_indices
-#     selected_tab_names = [tab_names[i] for i in final_tab_indices] if tab_names is not None else final_tab_indices
-
-#     # Step 6: Concatenate features
-#     Ffused = np.concatenate((Fimg[:, final_img_indices], Ftab[:, final_tab_indices]), axis=1)
-
-#     return Ffused, selected_img_names, selected_tab_names

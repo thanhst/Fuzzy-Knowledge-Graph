@@ -25,6 +25,20 @@ except ImportError:  # pragma: no cover - depends on sklearn version.
 
 CURRENT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = CURRENT_DIR.parents[1]
+
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
+
+from metrics_utils import (  # noqa: E402  (path setup must run first)
+    METRIC_NAMES,
+    binary_classification_metrics,
+    positive_scores_from_confidence,
+)
+
+# Every model family reports these, as fractions, so one row of the comparison
+# table can be read against another. Positive class = diabetic retinopathy.
+FKGS_METRIC_COLUMNS = list(METRIC_NAMES)
+
 LABEL_COLUMN = "diabetic_retinopathy"
 PATIENT_ID_COLUMN = "patient_id"
 IMAGE_ID_COLUMN = "image_id"
@@ -195,6 +209,36 @@ def parse_args():
         "--output-root",
         default="data/Dataset_diabetic/KFold_feature_selection",
         help="Output folder relative to Source_code or absolute path.",
+    )
+    parser.add_argument(
+        "--restrict-image-ids",
+        default=None,
+        help=(
+            "CSV with an image_id column. Restricts every modality to those rows, "
+            "so FKG can be scored on exactly the samples the deep baselines saw. "
+            "Only 1529 of the 16266 dataset rows have a fundus image on disk, so "
+            "without this the two families are compared on different data."
+        ),
+    )
+    parser.add_argument(
+        "--fold-manifest-root",
+        default=None,
+        help=(
+            "Optional ROOT_DATA/train_test_selection/train_kfold directory. When "
+            "provided, FKG/FKGS use the exact train.csv/val.csv patient folds from "
+            "the deep baseline run instead of creating a fresh StratifiedGroupKFold."
+        ),
+    )
+    parser.add_argument(
+        "--run-tag",
+        default=None,
+        help=(
+            "Sub-folder under data/FIS/{input,output} and models/ that isolates "
+            "this run. Without it every run overwrites the previous run's rules, "
+            "predictions and confusion matrices in a shared folder, which makes "
+            "a published number impossible to trace back. Defaults to the "
+            "--output-root folder name."
+        ),
     )
     parser.add_argument(
         "--report-root",
@@ -443,6 +487,175 @@ def infer_patient_ids(df, source_path, label_col, patient_id_source):
     )
 
 
+def infer_image_ids(df, source_path, patient_id_source):
+    """Recover image_id for a feature CSV that does not carry one.
+
+    data_process_tabular.csv and data_process_fusion.csv hold features only;
+    they are row-aligned with data_process.csv, which is where the ids come
+    from. Returns None when no aligned sidecar exists, since image ids are only
+    needed to restrict a run to a subset.
+    """
+    if IMAGE_ID_COLUMN in df.columns:
+        return normalize_id_series(df[IMAGE_ID_COLUMN]).reset_index(drop=True)
+
+    candidates = [
+        source_path.with_name("data_process.csv"),
+        resolve_project_path(patient_id_source),
+    ]
+    for candidate in candidates:
+        if not candidate.exists() or candidate == source_path:
+            continue
+        sidecar = pd.read_csv(candidate, dtype={IMAGE_ID_COLUMN: str})
+        sidecar.columns = [str(column).lstrip("﻿") for column in sidecar.columns]
+        if IMAGE_ID_COLUMN not in sidecar.columns or len(sidecar) != len(df):
+            continue
+        return normalize_id_series(sidecar[IMAGE_ID_COLUMN]).reset_index(drop=True)
+    return None
+
+
+def restrict_to_image_ids(feature_df, labels, id_frame, allowed_image_ids, source_path):
+    """Keep only the rows whose image_id is in ``allowed_image_ids``."""
+    if IMAGE_ID_COLUMN not in id_frame.columns:
+        raise ValueError(
+            f"--restrict-image-ids needs an image_id for {source_path}, but none could be "
+            "recovered. Add an image_id column to the feature CSV."
+        )
+    mask = normalize_id_series(id_frame[IMAGE_ID_COLUMN]).isin(allowed_image_ids)
+    kept = int(mask.sum())
+    if kept == 0:
+        raise ValueError(f"--restrict-image-ids matched no rows in {source_path}.")
+    print(
+        f"[INFO] Restricted {source_path.name}: {kept}/{len(mask)} rows kept "
+        f"({len(allowed_image_ids)} ids requested)."
+    )
+    return (
+        feature_df.loc[mask].reset_index(drop=True),
+        labels.loc[mask].reset_index(drop=True),
+        id_frame.loc[mask].reset_index(drop=True),
+    )
+
+
+def load_allowed_image_ids(path_value):
+    # A relative path may be given against Source_code (like the feature CSVs)
+    # or against the repository root, where ROOT_DATA lives.
+    path = resolve_project_path(path_value)
+    if not path.exists():
+        repo_candidate = PROJECT_ROOT.parent / path_value
+        if repo_candidate.exists():
+            path = repo_candidate
+    if not path.exists():
+        raise FileNotFoundError(f"--restrict-image-ids CSV not found: {path}")
+    frame = pd.read_csv(path, dtype=str)
+    frame.columns = [str(column).lstrip("﻿") for column in frame.columns]
+    if IMAGE_ID_COLUMN not in frame.columns:
+        raise ValueError(f"{path} has no '{IMAGE_ID_COLUMN}' column.")
+    return set(normalize_id_series(frame[IMAGE_ID_COLUMN]).tolist())
+
+
+def resolve_external_or_project_path(path_value):
+    path = Path(path_value)
+    if path.is_absolute():
+        return path
+    project_candidate = PROJECT_ROOT / path
+    if project_candidate.exists():
+        return project_candidate
+    return PROJECT_ROOT.parent / path
+
+
+def find_manifest_fold_dir(fold_manifest_root, fold_number):
+    candidates = [
+        fold_manifest_root / f"fold_{fold_number}",
+        fold_manifest_root / f"fold_{fold_number:02d}",
+    ]
+    for candidate in candidates:
+        if candidate.is_dir():
+            return candidate
+    raise FileNotFoundError(
+        f"Cannot find fold_{fold_number} under fold manifest root: {fold_manifest_root}"
+    )
+
+
+def load_manifest_image_ids(path):
+    frame = pd.read_csv(path, dtype={IMAGE_ID_COLUMN: str})
+    frame.columns = [str(column).lstrip("﻿") for column in frame.columns]
+    if IMAGE_ID_COLUMN not in frame.columns:
+        raise ValueError(f"{path} has no '{IMAGE_ID_COLUMN}' column.")
+    image_ids = normalize_id_series(frame[IMAGE_ID_COLUMN])
+    if (image_ids == "").any():
+        raise ValueError(f"{path} contains empty image_id values.")
+    if image_ids.duplicated().any():
+        examples = image_ids[image_ids.duplicated()].head(5).tolist()
+        raise ValueError(f"{path} contains duplicate image_id values: {examples}")
+    return set(image_ids.tolist())
+
+
+def build_manifest_splits(ids, folds, fold_manifest_root):
+    if IMAGE_ID_COLUMN not in ids.columns:
+        raise ValueError(
+            "--fold-manifest-root requires image_id values for every feature row. "
+            "Use --restrict-image-ids with ROOT_DATA/train_test_selection/train.csv "
+            "or add image_id to the feature CSV."
+        )
+    if PATIENT_ID_COLUMN not in ids.columns:
+        raise ValueError("--fold-manifest-root requires patient_id values.")
+
+    image_ids = normalize_id_series(ids[IMAGE_ID_COLUMN]).reset_index(drop=True)
+    patient_groups = normalize_id_series(ids[PATIENT_ID_COLUMN]).reset_index(drop=True)
+    if (image_ids == "").any():
+        raise ValueError("Feature rows contain empty image_id values.")
+    if image_ids.duplicated().any():
+        examples = image_ids[image_ids.duplicated()].head(5).tolist()
+        raise ValueError(f"Feature rows contain duplicate image_id values: {examples}")
+    if (patient_groups == "").any():
+        raise ValueError("Feature rows contain empty patient_id values.")
+
+    id_to_index = {image_id: index for index, image_id in image_ids.items()}
+    all_feature_ids = set(id_to_index)
+    fold_manifest_root = resolve_external_or_project_path(fold_manifest_root)
+    if not fold_manifest_root.is_dir():
+        raise FileNotFoundError(f"Fold manifest root not found: {fold_manifest_root}")
+
+    splits = []
+    for fold_number in range(1, folds + 1):
+        fold_dir = find_manifest_fold_dir(fold_manifest_root, fold_number)
+        train_ids = load_manifest_image_ids(fold_dir / "train.csv")
+        test_ids = load_manifest_image_ids(fold_dir / "val.csv")
+        overlap = train_ids & test_ids
+        if overlap:
+            examples = ", ".join(sorted(overlap)[:5])
+            raise RuntimeError(f"Fold {fold_number} manifest image leakage: {examples}")
+
+        missing = (train_ids | test_ids) - all_feature_ids
+        if missing:
+            examples = ", ".join(sorted(missing)[:5])
+            raise ValueError(
+                f"Fold {fold_number} references {len(missing)} image_id values "
+                f"not present in the restricted feature rows. Examples: {examples}"
+            )
+
+        unused = all_feature_ids - (train_ids | test_ids)
+        if unused:
+            examples = ", ".join(sorted(unused)[:5])
+            raise ValueError(
+                f"Fold {fold_number} does not cover {len(unused)} feature rows. "
+                f"Use --restrict-image-ids with the same outer train manifest. "
+                f"Examples: {examples}"
+            )
+
+        train_index = np.array([id_to_index[image_id] for image_id in sorted(train_ids)], dtype=int)
+        test_index = np.array([id_to_index[image_id] for image_id in sorted(test_ids)], dtype=int)
+
+        train_patients = set(patient_groups.iloc[train_index].tolist())
+        test_patients = set(patient_groups.iloc[test_index].tolist())
+        patient_overlap = train_patients & test_patients
+        if patient_overlap:
+            examples = ", ".join(sorted(patient_overlap)[:5])
+            raise RuntimeError(f"Fold {fold_number} manifest patient leakage: {examples}")
+        splits.append((train_index, test_index))
+
+    return "external_manifest_train_val", patient_groups, splits
+
+
 def load_source_frame(source_path, patient_id_source):
     if not source_path.exists():
         raise FileNotFoundError(f"Source CSV not found: {source_path}")
@@ -459,6 +672,10 @@ def load_source_frame(source_path, patient_id_source):
         patient_id_source,
     )
     id_frame[PATIENT_ID_COLUMN] = patient_ids.values
+    if IMAGE_ID_COLUMN not in id_frame.columns:
+        recovered_image_ids = infer_image_ids(df, source_path, patient_id_source)
+        if recovered_image_ids is not None:
+            id_frame[IMAGE_ID_COLUMN] = recovered_image_ids.values
     feature_df = df.drop(columns=[label_col] + id_columns)
     feature_df = feature_df.apply(pd.to_numeric, errors="coerce")
 
@@ -813,14 +1030,14 @@ def selected_index_feature_rows(source_columns, selected_indices, branch, output
     return rows
 
 
-def generated_component_feature_rows(method_name, feature_count):
+def generated_component_feature_rows(method_name, feature_count, scores=None):
     return [
         {
             "branch": method_name,
             "selected": True,
             "source_column": f"{method_name}_component_{idx}",
             "selected_output_column": idx,
-            "score": None,
+            "score": None if scores is None else float(scores[idx]),
             "p_value": None,
         }
         for idx in range(feature_count)
@@ -879,18 +1096,45 @@ def compute_filter_scores(train_values, train_y, seed):
     return (mi_scores + rf.feature_importances_) / 2
 
 
-def remove_correlated_indices(train_values, indices, threshold):
-    selected = []
-    for idx in indices:
-        too_correlated = False
-        for selected_idx in selected:
-            corr = np.corrcoef(train_values[:, idx], train_values[:, selected_idx])[0, 1]
-            if np.isfinite(corr) and abs(corr) > threshold:
-                too_correlated = True
-                break
-        if not too_correlated:
-            selected.append(int(idx))
-    return selected
+def absolute_correlation(left, right):
+    corr = np.corrcoef(left, right)[0, 1]
+    return abs(corr) if np.isfinite(corr) else 0.0
+
+
+def select_filter_multimodal_indices(img_values, tab_values, img_scores, tab_scores, k_img, k_tab, threshold):
+    """Greedy multimodal filter selection with intra- and inter-modal corr checks."""
+    if threshold <= 0 or threshold > 1:
+        raise ValueError("--filter-corr must be in the interval (0, 1].")
+
+    selected_img = []
+    selected_tab = []
+    selected_vectors = []
+    candidates = []
+    candidates.extend(("image", int(idx), float(img_scores[idx])) for idx in np.argsort(img_scores)[::-1])
+    candidates.extend(("table", int(idx), float(tab_scores[idx])) for idx in np.argsort(tab_scores)[::-1])
+    candidates.sort(key=lambda item: item[2], reverse=True)
+
+    for modality, idx, _score in candidates:
+        if modality == "image":
+            if len(selected_img) >= k_img:
+                continue
+            vector = img_values[:, idx]
+        else:
+            if len(selected_tab) >= k_tab:
+                continue
+            vector = tab_values[:, idx]
+
+        if any(absolute_correlation(vector, selected_vector) > threshold for selected_vector in selected_vectors):
+            continue
+        if modality == "image":
+            selected_img.append(idx)
+        else:
+            selected_tab.append(idx)
+        selected_vectors.append(vector)
+        if len(selected_img) >= k_img and len(selected_tab) >= k_tab:
+            break
+
+    return selected_img, selected_tab
 
 
 def prepare_fusion_filter_fold(train_x, test_x, train_y, args, fold_seed):
@@ -902,10 +1146,15 @@ def prepare_fusion_filter_fold(train_x, test_x, train_y, args, fold_seed):
     tab_values = train_tab.to_numpy()
     img_scores = compute_filter_scores(img_values, train_y, fold_seed)
     tab_scores = compute_filter_scores(tab_values, train_y, fold_seed + 1)
-    candidate_img = np.argsort(img_scores)[::-1][: 2 * args.k_img]
-    candidate_tab = np.argsort(tab_scores)[::-1][: 2 * args.k_tab]
-    selected_img = remove_correlated_indices(img_values, candidate_img, args.filter_corr)[: args.k_img]
-    selected_tab = remove_correlated_indices(tab_values, candidate_tab, args.filter_corr)[: args.k_tab]
+    selected_img, selected_tab = select_filter_multimodal_indices(
+        img_values,
+        tab_values,
+        img_scores,
+        tab_scores,
+        args.k_img,
+        args.k_tab,
+        args.filter_corr,
+    )
 
     train_selected = pd.concat(
         [train_img.iloc[:, selected_img], train_tab.iloc[:, selected_tab]],
@@ -931,9 +1180,33 @@ def normalize_rows(values):
     return values / norms
 
 
-def prepare_fusion_hadamard_fold(train_x, test_x, train_y, args, fold_seed):
-    from sklearn.linear_model import Ridge
+def fit_cross_modal_svd(train_img_values, train_tab_values, requested_rank):
+    """Fit W_img and W_tab from the train-only cross relation F_img^T F_tab.
 
+    This solves the orthogonal cross-covariance objective
+    max trace(W_img.T @ C @ W_tab), C = F_img.T @ F_tab / (n - 1),
+    and avoids taking an SVD over flattened Kronecker features whose component
+    matrices cannot be multiplied back with the original modalities.
+    """
+    max_rank = min(train_img_values.shape[1], train_tab_values.shape[1])
+    rank = min(int(requested_rank), max_rank)
+    if rank < 1:
+        raise ValueError("Cross-modal SVD rank must be at least 1.")
+
+    cross_cov = train_img_values.T @ train_tab_values / max(1, train_img_values.shape[0] - 1)
+    u, singular_values, vt = np.linalg.svd(cross_cov, full_matrices=False)
+    return u[:, :rank], vt[:rank, :].T, singular_values[:rank]
+
+
+def apply_cross_modal_projection(img_values, tab_values, w_img, w_tab, singular_values):
+    weights = np.sqrt(np.maximum(singular_values, 1e-12))
+    img_latent = normalize_rows((img_values @ w_img) * weights)
+    tab_latent = normalize_rows((tab_values @ w_tab) * weights)
+    return img_latent, tab_latent
+
+
+def prepare_fusion_hadamard_fold(train_x, test_x, train_y, args, fold_seed):
+    """Hadamard fusion with train-only cross-SVD projections."""
     table_columns, image_columns = split_fusion_columns(train_x.columns)
     train_img, test_img = scale_split(train_x[image_columns], test_x[image_columns], StandardScaler())
     train_tab, test_tab = scale_split(train_x[table_columns], test_x[table_columns], StandardScaler())
@@ -941,57 +1214,80 @@ def prepare_fusion_hadamard_fold(train_x, test_x, train_y, args, fold_seed):
     common_dim = int(args.hadamard_dim)
     if common_dim < 1:
         raise ValueError("--hadamard-dim must be at least 1.")
-    rng = np.random.default_rng(fold_seed)
-    x_random = rng.standard_normal((train_img.shape[0], common_dim))
-    y_random = rng.standard_normal((train_tab.shape[0], common_dim))
-    proj_img = Ridge(alpha=0.01, fit_intercept=False)
-    proj_tab = Ridge(alpha=0.01, fit_intercept=False)
-    proj_img.fit(train_img, x_random)
-    proj_tab.fit(train_tab, y_random)
 
-    train_img_proj = normalize_rows(proj_img.predict(train_img))
-    train_tab_proj = normalize_rows(proj_tab.predict(train_tab))
-    test_img_proj = normalize_rows(proj_img.predict(test_img))
-    test_tab_proj = normalize_rows(proj_tab.predict(test_tab))
-    train_selected = np.concatenate(
-        [train_img_proj * train_tab_proj, np.tanh(train_img_proj), np.tanh(train_tab_proj)],
-        axis=1,
+    w_img, w_tab, singular_values = fit_cross_modal_svd(
+        train_img.to_numpy(),
+        train_tab.to_numpy(),
+        common_dim,
     )
-    test_selected = np.concatenate(
-        [test_img_proj * test_tab_proj, np.tanh(test_img_proj), np.tanh(test_tab_proj)],
-        axis=1,
+    train_img_proj, train_tab_proj = apply_cross_modal_projection(
+        train_img.to_numpy(),
+        train_tab.to_numpy(),
+        w_img,
+        w_tab,
+        singular_values,
     )
+    test_img_proj, test_tab_proj = apply_cross_modal_projection(
+        test_img.to_numpy(),
+        test_tab.to_numpy(),
+        w_img,
+        w_tab,
+        singular_values,
+    )
+    train_selected = train_img_proj * train_tab_proj
+    test_selected = test_img_proj * test_tab_proj
     feature_count = train_selected.shape[1]
     cluster = [5] * feature_count + [2]
     return (
         pd.DataFrame(train_selected),
         pd.DataFrame(test_selected),
         cluster,
-        generated_component_feature_rows("hadamard", feature_count),
+        generated_component_feature_rows("hadamard", feature_count, singular_values),
     )
 
 
-def outer_product_features(left_values, right_values):
-    return np.einsum("ij,ik->ijk", left_values, right_values).reshape(left_values.shape[0], -1)
-
-
 def prepare_fusion_tensor_fold(train_x, test_x, train_y, args, fold_seed):
-    from sklearn.decomposition import TruncatedSVD
-
+    """Tensor-style fusion using cross-SVD latent factors, not raw Kronecker SVD."""
     table_columns, image_columns = split_fusion_columns(train_x.columns)
     train_img, test_img = scale_split(train_x[image_columns], test_x[image_columns], StandardScaler())
     train_tab, test_tab = scale_split(train_x[table_columns], test_x[table_columns], StandardScaler())
 
-    train_outer = outer_product_features(train_img.to_numpy(), train_tab.to_numpy())
-    test_outer = outer_product_features(test_img.to_numpy(), test_tab.to_numpy())
-    rank = min(int(args.tensor_rank), train_outer.shape[1])
-    if rank < 1:
+    if int(args.tensor_rank) < 1:
         raise ValueError("--tensor-rank must be at least 1.")
-    svd = TruncatedSVD(n_components=rank, random_state=fold_seed)
-    train_selected = svd.fit_transform(train_outer)
-    test_selected = svd.transform(test_outer)
-    cluster = [5] * rank + [2]
-    rows = generated_component_feature_rows("tensor", rank)
+    w_img, w_tab, singular_values = fit_cross_modal_svd(
+        train_img.to_numpy(),
+        train_tab.to_numpy(),
+        args.tensor_rank,
+    )
+    train_img_proj, train_tab_proj = apply_cross_modal_projection(
+        train_img.to_numpy(),
+        train_tab.to_numpy(),
+        w_img,
+        w_tab,
+        singular_values,
+    )
+    test_img_proj, test_tab_proj = apply_cross_modal_projection(
+        test_img.to_numpy(),
+        test_tab.to_numpy(),
+        w_img,
+        w_tab,
+        singular_values,
+    )
+    train_selected = np.concatenate(
+        [train_img_proj, train_tab_proj, train_img_proj * train_tab_proj],
+        axis=1,
+    )
+    test_selected = np.concatenate(
+        [test_img_proj, test_tab_proj, test_img_proj * test_tab_proj],
+        axis=1,
+    )
+    feature_count = train_selected.shape[1]
+    cluster = [5] * feature_count + [2]
+    rows = generated_component_feature_rows(
+        "tensor_cross_svd",
+        feature_count,
+        np.tile(singular_values, 3),
+    )
     return pd.DataFrame(train_selected), pd.DataFrame(test_selected), cluster, rows
 
 
@@ -1010,16 +1306,16 @@ def evaluate_wrapper_feature_set(values, target, seed, cv, estimators):
     return float(scores.mean())
 
 
-def best_wrapper_feature(values, selected_indices, target, remaining_indices, seed, cv, estimators, cache):
-    best_score = -np.inf
+def best_wrapper_feature(values, selected_indices, target, remaining_indices, seed, cv, estimators, cache, cache_prefix):
+    best_score = None
     best_feature = None
     for idx in sorted(remaining_indices):
         trial = selected_indices + [idx]
-        cache_key = ("single", tuple(trial))
+        cache_key = (cache_prefix, tuple(trial))
         if cache_key not in cache:
             cache[cache_key] = evaluate_wrapper_feature_set(values[:, trial], target, seed, cv, estimators)
         score = cache[cache_key]
-        if score > best_score:
+        if best_score is None or score > best_score:
             best_score = score
             best_feature = idx
     return best_feature, best_score
@@ -1044,6 +1340,7 @@ def select_wrapper_indices(img_values, tab_values, target, args, seed):
             cv,
             estimators,
             score_cache,
+            "min_image",
         )
         if best_feature is not None:
             selected_img.append(best_feature)
@@ -1058,6 +1355,7 @@ def select_wrapper_indices(img_values, tab_values, target, args, seed):
             cv,
             estimators,
             score_cache,
+            "min_table",
         )
         if best_feature is not None:
             selected_tab.append(best_feature)
@@ -1066,7 +1364,7 @@ def select_wrapper_indices(img_values, tab_values, target, args, seed):
     best_score = evaluate_wrapper_feature_set(fused, target, seed, cv, estimators)
 
     while len(selected_img) < min(args.wrapper_max_img, img_values.shape[1]) or len(selected_tab) < min(args.wrapper_max_tab, tab_values.shape[1]):
-        best_new_score = -np.inf
+        best_new_score = None
         best_new_feature = None
         best_modality = None
 
@@ -1086,7 +1384,7 @@ def select_wrapper_indices(img_values, tab_values, target, args, seed):
                         estimators,
                     )
                 score = score_cache[cache_key]
-                if score > best_new_score:
+                if best_new_score is None or score > best_new_score:
                     best_new_score = score
                     best_new_feature = idx
                     best_modality = "image"
@@ -1107,7 +1405,7 @@ def select_wrapper_indices(img_values, tab_values, target, args, seed):
                         estimators,
                     )
                 score = score_cache[cache_key]
-                if score > best_new_score:
+                if best_new_score is None or score > best_new_score:
                     best_new_score = score
                     best_new_feature = idx
                     best_modality = "table"
@@ -1207,7 +1505,19 @@ def save_score_plot(metrics, output_path, title):
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
-        names = [name for name in ["accuracy", "precision", "recall", "specificity", "f1", "auc"] if name in metrics]
+        names = [
+            name
+            for name in [
+                "accuracy",
+                "precision",
+                "sensitivity",
+                "specificity",
+                "f1",
+                "auc_roc",
+                "auc_pr",
+            ]
+            if name in metrics
+        ]
         values = [metrics[name] for name in names]
         plot_values = [0.0 if pd.isna(value) else value for value in values]
         colors = ["#4C78A8", "#F58518", "#54A24B", "#E45756", "#B279A2", "#72B7B2"]
@@ -1789,62 +2099,7 @@ def save_confusion_csv(true_labels, predicted_labels, labels, output_path):
     out.to_csv(output_path)
 
 
-def binary_auc_score(true_labels, positive_scores, positive_label):
-    positives = [1 if value == positive_label else 0 for value in true_labels]
-    positive_count = sum(positives)
-    negative_count = len(positives) - positive_count
-    if positive_count == 0 or negative_count == 0:
-        return math.nan
-
-    order = sorted(range(len(positive_scores)), key=lambda index: positive_scores[index])
-    ranks = [0.0] * len(positive_scores)
-    cursor = 0
-    while cursor < len(order):
-        next_cursor = cursor + 1
-        while (
-            next_cursor < len(order)
-            and positive_scores[order[next_cursor]] == positive_scores[order[cursor]]
-        ):
-            next_cursor += 1
-        average_rank = (cursor + 1 + next_cursor) / 2.0
-        for rank_index in range(cursor, next_cursor):
-            ranks[order[rank_index]] = average_rank
-        cursor = next_cursor
-
-    positive_rank_sum = sum(rank for rank, is_positive in zip(ranks, positives) if is_positive)
-    return (
-        positive_rank_sum - positive_count * (positive_count + 1) / 2.0
-    ) / (positive_count * negative_count)
-
-
-def binary_specificity(true_labels, predicted_labels, positive_label):
-    tn = sum(
-        1
-        for truth, predicted in zip(true_labels, predicted_labels)
-        if truth != positive_label and predicted != positive_label
-    )
-    fp = sum(
-        1
-        for truth, predicted in zip(true_labels, predicted_labels)
-        if truth != positive_label and predicted == positive_label
-    )
-    return tn / (tn + fp) if (tn + fp) else 0.0
-
-
-def positive_scores_from_predictions(predicted_labels, confidences, positive_label):
-    scores = []
-    for predicted, confidence in zip(predicted_labels, confidences):
-        if confidence is None or pd.isna(confidence) or not np.isfinite(confidence):
-            scores.append(1.0 if predicted == positive_label else 0.0)
-            continue
-        confidence = max(0.0, min(1.0, float(confidence)))
-        scores.append(confidence if predicted == positive_label else 1.0 - confidence)
-    return scores
-
-
 def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modality, backend):
-    from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-
     train_df = pd.read_csv(train_rule_path)
     test_df = pd.read_csv(test_rule_path)
     train_records = [[int(float(value)) for value in row] for row in train_df.values.tolist()]
@@ -1887,16 +2142,27 @@ def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modali
     test_time = time.perf_counter() - test_start
 
     labels = sorted(set(test_labels) | set(predicted_labels))
-    positive_label = max(labels)
-    positive_scores = positive_scores_from_predictions(predicted_labels, confidences, positive_label)
-    metrics = {
-        "accuracy": accuracy_score(test_labels, predicted_labels),
-        "precision": precision_score(test_labels, predicted_labels, average="macro", zero_division=0),
-        "recall": recall_score(test_labels, predicted_labels, average="macro", zero_division=0),
-        "specificity": binary_specificity(test_labels, predicted_labels, positive_label),
-        "f1": f1_score(test_labels, predicted_labels, average="macro", zero_division=0),
-        "auc": binary_auc_score(test_labels, positive_scores, positive_label),
-    }
+    # The FIS rule encoding is 1-based; the diabetic retinopathy class is the
+    # larger label. Take it from the ground truth only, so a fold where the
+    # model never predicts the positive class cannot shift the definition.
+    present_true_labels = sorted(set(test_labels))
+    positive_label = max(present_true_labels)
+    positive_scores = positive_scores_from_confidence(
+        predicted_labels, confidences, positive_label
+    )
+    metrics = binary_classification_metrics(
+        y_true=test_labels,
+        y_pred=predicted_labels,
+        y_score=positive_scores,
+        positive_label=positive_label,
+        labels=labels,
+    )
+    # Back-compatible aliases: earlier reports quoted macro precision/recall/F1
+    # under these names, and the old CSV columns still read them.
+    metrics["precision_macro_legacy"] = metrics["macro_precision"]
+    metrics["recall_macro_legacy"] = metrics["macro_recall"]
+    metrics["f1_macro_legacy"] = metrics["macro_f1"]
+    metrics["auc"] = metrics["auc_roc"]
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1922,10 +2188,17 @@ def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modali
             "Total Time": [train_time + test_time],
             "Test Accuracy": [metrics["accuracy"]],
             "Test Precision": [metrics["precision"]],
-            "Test Recall": [metrics["recall"]],
+            "Test Sensitivity": [metrics["sensitivity"]],
             "Test Specificity": [metrics["specificity"]],
             "Test F1": [metrics["f1"]],
-            "Test AUC": [metrics["auc"]],
+            "Test AUC-ROC": [metrics["auc_roc"]],
+            "Test AUC-PR": [metrics["auc_pr"]],
+            "Test Balanced Accuracy": [metrics["balanced_accuracy"]],
+            "Test MCC": [metrics["mcc"]],
+            "Test Macro Precision": [metrics["macro_precision"]],
+            "Test Macro Recall": [metrics["macro_recall"]],
+            "Test Macro F1": [metrics["macro_f1"]],
+            "Test Positives": [metrics["n_pos"]],
             "Positive Label": [positive_label],
             "Engine": ["native_fisa_module"],
             "Backend Request": [backend],
@@ -1963,12 +2236,27 @@ def run_native_fkg_for_rules(train_rule_path, test_rule_path, output_dir, modali
         "fkg_train_time_seconds": train_time,
         "fkg_test_time_seconds": test_time,
         "fkg_total_time_seconds": train_time + test_time,
+        # fkg_precision / fkg_recall / fkg_f1 are POSITIVE-CLASS values now.
+        # Earlier reports put macro averages under these names, which is why a
+        # macro F1 of 0.69 sat next to a positive-class F1 of 0.49 in the same
+        # comparison table. The macro numbers are still emitted, under
+        # fkg_macro_*, so the older tables stay reproducible.
         "fkg_accuracy": metrics["accuracy"],
         "fkg_precision": metrics["precision"],
-        "fkg_recall": metrics["recall"],
+        "fkg_recall": metrics["sensitivity"],
+        "fkg_sensitivity": metrics["sensitivity"],
         "fkg_specificity": metrics["specificity"],
         "fkg_f1": metrics["f1"],
-        "fkg_auc": metrics["auc"],
+        "fkg_auc": metrics["auc_roc"],
+        "fkg_auc_roc": metrics["auc_roc"],
+        "fkg_auc_pr": metrics["auc_pr"],
+        "fkg_balanced_accuracy": metrics["balanced_accuracy"],
+        "fkg_mcc": metrics["mcc"],
+        "fkg_macro_precision": metrics["macro_precision"],
+        "fkg_macro_recall": metrics["macro_recall"],
+        "fkg_macro_f1": metrics["macro_f1"],
+        "fkg_test_positives": metrics["n_pos"],
+        "fkg_score_kind": metrics["score_kind"],
         "fkg_positive_label": positive_label,
         "fkg_train_samples": len(train_records),
         "fkg_test_samples": len(test_records),
@@ -2115,9 +2403,19 @@ def flatten_fold_records(manifests):
                 "fkg_accuracy": fkg.get("fkg_accuracy"),
                 "fkg_precision": fkg.get("fkg_precision"),
                 "fkg_recall": fkg.get("fkg_recall"),
+                "fkg_sensitivity": fkg.get("fkg_sensitivity"),
                 "fkg_specificity": fkg.get("fkg_specificity"),
                 "fkg_f1": fkg.get("fkg_f1"),
                 "fkg_auc": fkg.get("fkg_auc"),
+                "fkg_auc_roc": fkg.get("fkg_auc_roc"),
+                "fkg_auc_pr": fkg.get("fkg_auc_pr"),
+                "fkg_balanced_accuracy": fkg.get("fkg_balanced_accuracy"),
+                "fkg_mcc": fkg.get("fkg_mcc"),
+                "fkg_macro_precision": fkg.get("fkg_macro_precision"),
+                "fkg_macro_recall": fkg.get("fkg_macro_recall"),
+                "fkg_macro_f1": fkg.get("fkg_macro_f1"),
+                "fkg_test_positives": fkg.get("fkg_test_positives"),
+                "fkg_score_kind": fkg.get("fkg_score_kind"),
                 "fkg_positive_label": fkg.get("fkg_positive_label"),
                 "fkg_train_samples": fkg.get("fkg_train_samples"),
                 "fkg_test_samples": fkg.get("fkg_test_samples"),
@@ -2192,6 +2490,19 @@ def flatten_fkgs_records(manifests):
                         "fkgs_precision_std_pct": fkgs.get("precision_std"),
                         "fkgs_recall_pct": fkgs.get("recall_mean"),
                         "fkgs_recall_std_pct": fkgs.get("recall_std"),
+                        # Full metric set as fractions, averaged over the turns
+                        # of this fold. The mean/std across folds is taken later
+                        # by build_fkgs_mean_std_summary.
+                        **{
+                            f"fkgs_{name}": fkgs.get(f"fkgs_{name}_mean")
+                            for name in FKGS_METRIC_COLUMNS
+                        },
+                        "fkgs_positive_label": fkgs.get("fkgs_positive_label"),
+                        "fkgs_score_kind": fkgs.get("fkgs_score_kind"),
+                        "fkgs_test_positives": fkgs.get("fkgs_test_positives"),
+                        "fkgs_prediction_csvs": ";".join(
+                            str(path) for path in (fkgs.get("fkgs_prediction_csvs") or [])
+                        ),
                         "fkgs_module_path": fkgs.get("fkgs_module_path"),
                         "fkgs_bar_scores_png": fkgs.get("bar_scores_png"),
                         "fis_file_name": fis.get("file_name"),
@@ -2287,7 +2598,7 @@ def build_fkgs_mean_std_summary(fkgs_df):
         "fkgs_accuracy_pct",
         "fkgs_precision_pct",
         "fkgs_recall_pct",
-    ]
+    ] + [f"fkgs_{name}" for name in FKGS_METRIC_COLUMNS]
     numeric_df = fkgs_df.copy()
     for column in numeric_columns:
         numeric_df[column] = pd.to_numeric(numeric_df[column], errors="coerce")
@@ -2718,9 +3029,17 @@ def write_report_outputs(manifests, report_root):
             "fkg_accuracy",
             "fkg_precision",
             "fkg_recall",
+            "fkg_sensitivity",
             "fkg_specificity",
             "fkg_f1",
             "fkg_auc",
+            "fkg_auc_roc",
+            "fkg_auc_pr",
+            "fkg_balanced_accuracy",
+            "fkg_mcc",
+            "fkg_macro_precision",
+            "fkg_macro_recall",
+            "fkg_macro_f1",
             "fold_total_time_seconds",
         ]
         average_columns = [
@@ -3047,20 +3366,38 @@ def prepare_modality(config, args):
     source_path = resolve_project_path(getattr(args, config.source_arg))
     output_root = resolve_project_path(args.output_root) / config.key
     output_root.mkdir(parents=True, exist_ok=True)
+    # Keeps this run's FIS rules, FKG predictions and confusion matrices in
+    # their own folder instead of overwriting the previous run's.
+    run_tag = args.run_tag or resolve_project_path(args.output_root).name
 
     features, labels, ids, label_mapping, patient_id_source_used = load_source_frame(
         source_path,
         args.patient_id_source,
     )
+    if getattr(args, "restrict_image_ids", None):
+        features, labels, ids = restrict_to_image_ids(
+            features,
+            labels,
+            ids,
+            load_allowed_image_ids(args.restrict_image_ids),
+            source_path,
+        )
     features, labels, ids = limit_rows(features, labels, ids, args.max_rows, args.seed)
 
-    splitter_name, patient_groups, splits = build_patient_group_splits(
-        features,
-        labels,
-        ids,
-        args.folds,
-        args.seed,
-    )
+    if getattr(args, "fold_manifest_root", None):
+        splitter_name, patient_groups, splits = build_manifest_splits(
+            ids,
+            args.folds,
+            args.fold_manifest_root,
+        )
+    else:
+        splitter_name, patient_groups, splits = build_patient_group_splits(
+            features,
+            labels,
+            ids,
+            args.folds,
+            args.seed,
+        )
     fold_records = []
 
     for fold_number, (train_index, test_index) in enumerate(splits, start=1):
@@ -3155,7 +3492,7 @@ def prepare_modality(config, args):
         fis_record = None
         fkg_record = None
         fkgs_records = []
-        fis_file_name = f"{config.display_name}/{fold_name}"
+        fis_file_name = f"{run_tag}/{config.display_name}/{fold_name}" if run_tag else f"{config.display_name}/{fold_name}"
         if not args.skip_fis:
             print("__________Running FIS KFold___________")
             print(f"Modality={config.key}; fold={fold_number}/{args.folds}; fileName={fis_file_name}")
@@ -3296,6 +3633,32 @@ def main():
         manifests = []
         for modality in selected_modalities(args.modalities):
             manifests.append(prepare_modality(MODALITY_CONFIGS[modality], args))
+
+        # Carry over modalities this invocation did not rebuild, so a long run
+        # can be done in stages (and resumed after a failure) and still end up
+        # with one report covering everything in this output root.
+        if summary_path.exists():
+            rebuilt = {manifest["modality"] for manifest in manifests}
+            previous = json.loads(summary_path.read_text(encoding="utf-8")).get("manifests", [])
+            carried = [
+                manifest
+                for manifest in previous
+                if manifest.get("modality") not in rebuilt
+            ]
+            if carried:
+                print(
+                    "[INFO] Reusing earlier manifests for: "
+                    + ", ".join(sorted(manifest["modality"] for manifest in carried))
+                )
+            manifests = manifests + carried
+
+    modality_rank = {
+        modality: index
+        for index, modality in enumerate(
+            ["table", "image", "fusion", "fusion_filter", "fusion_hadamard", "fusion_tensor", "fusion_wrapper"]
+        )
+    }
+    manifests.sort(key=lambda manifest: modality_rank.get(manifest.get("modality"), 99))
 
     report_outputs = write_report_outputs(manifests, report_root)
 
