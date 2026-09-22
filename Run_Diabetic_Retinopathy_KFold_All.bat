@@ -3,11 +3,24 @@ setlocal EnableExtensions
 
 cd /d "%~dp0"
 
-if not defined PYTHON_EXE (
-  if exist ".venv_deep_baselines\Scripts\python.exe" (
-    set "PYTHON_EXE=.venv_deep_baselines\Scripts\python.exe"
+if defined PYTHON_EXE (
+  if not defined FKG_PYTHON_EXE set "FKG_PYTHON_EXE=%PYTHON_EXE%"
+  if not defined DEEP_PYTHON_EXE set "DEEP_PYTHON_EXE=%PYTHON_EXE%"
+)
+
+if not defined FKG_PYTHON_EXE (
+  if exist ".venv\Scripts\python.exe" (
+    set "FKG_PYTHON_EXE=.venv\Scripts\python.exe"
   ) else (
-    set "PYTHON_EXE=python"
+    set "FKG_PYTHON_EXE=python"
+  )
+)
+
+if not defined DEEP_PYTHON_EXE (
+  if exist ".venv_deep_baselines\Scripts\python.exe" (
+    set "DEEP_PYTHON_EXE=.venv_deep_baselines\Scripts\python.exe"
+  ) else (
+    set "DEEP_PYTHON_EXE=%FKG_PYTHON_EXE%"
   )
 )
 
@@ -37,7 +50,8 @@ set "FOLD_MANIFEST_ROOT=ROOT_DATA\train_test_selection\train_kfold"
 echo ============================================================
 echo Diabetic Retinopathy KFold full rerun
 echo RUN_ID=%RUN_ID%
-echo PYTHON_EXE=%PYTHON_EXE%
+echo FKG_PYTHON_EXE=%FKG_PYTHON_EXE%
+echo DEEP_PYTHON_EXE=%DEEP_PYTHON_EXE%
 echo DEVICE=%DEVICE%
 echo RESNET_ARCH=%RESNET_ARCH%
 echo FKG_BACKEND=%FKG_BACKEND%
@@ -57,7 +71,7 @@ echo ============================================================
 echo.
 
 echo [1/4] Creating patient-aware train/test and train KFold manifests...
-"%PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\create_root_data_image_train_test_split.py" ^
+"%FKG_PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\create_root_data_image_train_test_split.py" ^
   --root-data "ROOT_DATA" ^
   --image-dir "ROOT_DATA\fundus_photos_224" ^
   --materialize none ^
@@ -67,7 +81,7 @@ if errorlevel 1 goto fail
 
 echo.
 echo [2/4] Running deep baselines on patient-aware KFold splits...
-"%PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\run_deep_multimodal_baselines.py" ^
+"%DEEP_PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\run_deep_multimodal_baselines.py" ^
   --split-root "ROOT_DATA\train_test_selection" ^
   --tabular-csv "Source_code\data\Dataset_diabetic\data_process.csv" ^
   --results-dir "%DEEP_RESULTS%" ^
@@ -80,7 +94,7 @@ if errorlevel 1 goto fail
 
 echo.
 echo [3/4] Running FIS + FKGS + native FKG for image, table, and fusion-strategy KFold splits...
-"%PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\Preprocess_kfold_feature_selection.py" ^
+"%FKG_PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\Preprocess_kfold_feature_selection.py" ^
   --modalities %FKG_MODALITIES% ^
   --run-fkgs ^
   --run-fkg ^
@@ -100,7 +114,7 @@ if errorlevel 1 goto fail
 
 echo.
 echo [4/4] Building comparison table...
-"%PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\collect_kfold_model_comparison.py" ^
+"%FKG_PYTHON_EXE%" "Source_code\main\diabetic_retinopathy\collect_kfold_model_comparison.py" ^
   --deep-summary "%DEEP_RESULTS%\summary.csv" ^
   --deep-config "%DEEP_RESULTS%\config.json" ^
   --fkgs-summary "%FKGS_REPORT_ABS%\kfold_fkgs_mean_std_summary.csv" ^

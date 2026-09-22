@@ -2661,6 +2661,11 @@ def write_fkgs_tables(stats_df, csv_path, markdown_path):
     }
 
     table_rows = []
+
+    def metric_percent(row, metric, statistic):
+        value = pd.to_numeric(row.get(f"fkgs_{metric}_{statistic}"), errors="coerce")
+        return float(value * 100.0) if pd.notna(value) else np.nan
+
     if not stats_df.empty:
         for ran, epsilon in table_configs:
             subset = stats_df[
@@ -2684,6 +2689,16 @@ def write_fkgs_tables(stats_df, csv_path, markdown_path):
                         "selected_feature_count": row.get("feature_count_mean"),
                         "accuracy_pct": row.get("fkgs_accuracy_pct_mean"),
                         "accuracy_std_pct": row.get("fkgs_accuracy_pct_std"),
+                        "sensitivity_pct": metric_percent(row, "sensitivity", "mean"),
+                        "sensitivity_std_pct": metric_percent(row, "sensitivity", "std"),
+                        "specificity_pct": metric_percent(row, "specificity", "mean"),
+                        "specificity_std_pct": metric_percent(row, "specificity", "std"),
+                        "f1_pct": metric_percent(row, "f1", "mean"),
+                        "f1_std_pct": metric_percent(row, "f1", "std"),
+                        "auc_roc_pct": metric_percent(row, "auc_roc", "mean"),
+                        "auc_roc_std_pct": metric_percent(row, "auc_roc", "std"),
+                        "auc_pr_pct": metric_percent(row, "auc_pr", "mean"),
+                        "auc_pr_std_pct": metric_percent(row, "auc_pr", "std"),
                         "train_time_s": row.get("fkgs_full_train_time_seconds_mean"),
                         "train_time_std_s": row.get("fkgs_full_train_time_seconds_std"),
                         "test_time_s": row.get("fkgs_test_time_seconds_mean"),
@@ -2703,6 +2718,7 @@ def write_fkgs_tables(stats_df, csv_path, markdown_path):
         "",
         "Note: KFold uses 5 folds. Timing starts from precomputed feature CSVs, so it does not include raw image preprocessing/feature extraction. Training time is fold preprocessing over those CSVs + FIS + FKGS sampling/train. Test time is FKGS test time. Total time is training + test.",
         "Selected feature counts are stored in selected_feature_count.",
+        "Sensitivity, Specificity and F1 use the positive diabetic-retinopathy class. Values are mean +/- sample standard deviation across the 5 validation folds.",
         "",
     ]
     for config in table_configs:
@@ -2711,8 +2727,8 @@ def write_fkgs_tables(stats_df, csv_path, markdown_path):
             [
                 f"## {title}",
                 "",
-                "| Mo hinh | Mo thuc | Acc (%) | Thoi gian huan luyen | Thoi gian kiem tra | Tong thoi gian (s) |",
-                "|---|---|---:|---:|---:|---:|",
+                "| Mo hinh | Mo thuc | Acc (%) | Sensitivity (%) | Specificity (%) | F1 (%) | AUC-ROC (%) | AUC-PR (%) | Thoi gian huan luyen | Thoi gian kiem tra | Tong thoi gian (s) |",
+                "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
             ]
         )
         subset = table_df[
@@ -2720,7 +2736,7 @@ def write_fkgs_tables(stats_df, csv_path, markdown_path):
             & (pd.to_numeric(table_df.get("epsilon", pd.Series(dtype=float)), errors="coerce").sub(config[1]).abs() < 1e-9)
         ]
         if subset.empty:
-            lines.append("|  | Chua co ket qua |  |  |  |  |")
+            lines.append("|  | Chua co ket qua |  |  |  |  |  |  |  |  |  |")
         else:
             subset = subset.sort_values(
                 by="modality_key",
@@ -2728,10 +2744,21 @@ def write_fkgs_tables(stats_df, csv_path, markdown_path):
             )
             for row in subset.to_dict("records"):
                 lines.append(
-                    "| {model} | {modality} | {acc:.2f} | {train:.2f} | {test:.2f} | {total:.2f} |".format(
+                    "| {model} | {modality} | {acc:.2f} +/- {acc_std:.2f} | {sens:.2f} +/- {sens_std:.2f} | {spec:.2f} +/- {spec_std:.2f} | {f1:.2f} +/- {f1_std:.2f} | {auc_roc:.2f} +/- {auc_roc_std:.2f} | {auc_pr:.2f} +/- {auc_pr_std:.2f} | {train:.2f} | {test:.2f} | {total:.2f} |".format(
                         model=row["model"],
                         modality=row["modality"],
                         acc=float(row["accuracy_pct"]),
+                        acc_std=float(row["accuracy_std_pct"]),
+                        sens=float(row["sensitivity_pct"]),
+                        sens_std=float(row["sensitivity_std_pct"]),
+                        spec=float(row["specificity_pct"]),
+                        spec_std=float(row["specificity_std_pct"]),
+                        f1=float(row["f1_pct"]),
+                        f1_std=float(row["f1_std_pct"]),
+                        auc_roc=float(row["auc_roc_pct"]),
+                        auc_roc_std=float(row["auc_roc_std_pct"]),
+                        auc_pr=float(row["auc_pr_pct"]),
+                        auc_pr_std=float(row["auc_pr_std_pct"]),
                         train=float(row["train_time_s"]),
                         test=float(row["test_time_s"]),
                         total=float(row["end_to_end_time_s"]),
