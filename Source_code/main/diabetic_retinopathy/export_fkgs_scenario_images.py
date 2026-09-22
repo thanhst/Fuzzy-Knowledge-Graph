@@ -50,7 +50,7 @@ def format_mean_std(row: pd.Series, mean_column: str, std_column: str) -> str:
     return f"{float(row[mean_column]):.2f} ± {float(row[std_column]):.2f}"
 
 
-def scenario_rows(frame: pd.DataFrame, modalities: list[str]) -> tuple[list[str], list[list[str]], list[float]]:
+def scenario_rows(frame: pd.DataFrame, modalities: list[str]) -> tuple[list[str], list[list[str]]]:
     ordered = frame[frame["modality_key"].isin(modalities)].copy()
     modality_order = {name: index for index, name in enumerate(modalities)}
     ordered["_order"] = ordered["modality_key"].map(modality_order)
@@ -65,7 +65,6 @@ def scenario_rows(frame: pd.DataFrame, modalities: list[str]) -> tuple[list[str]
         "Total (s)",
     ]
     rows: list[list[str]] = []
-    sensitivities: list[float] = []
     for _, row in ordered.iterrows():
         rows.append(
             [
@@ -80,8 +79,7 @@ def scenario_rows(frame: pd.DataFrame, modalities: list[str]) -> tuple[list[str]
                 f"{float(row['end_to_end_time_s']):.2f}",
             ]
         )
-        sensitivities.append(float(row["sensitivity_pct"]))
-    return headers, rows, sensitivities
+    return headers, rows
 
 
 def render_table(
@@ -91,9 +89,9 @@ def render_table(
     output_path: Path,
     dpi: int,
 ) -> None:
-    headers, rows, sensitivities = scenario_rows(frame, modalities)
-    figure_height = max(6.0, 1.9 + len(rows) * 0.48)
-    fig, ax = plt.subplots(figsize=(19.0, figure_height), facecolor="#f8f9fb")
+    headers, rows = scenario_rows(frame, modalities)
+    figure_height = max(5.6, 1.55 + len(rows) * 0.36)
+    fig, ax = plt.subplots(figsize=(19.0, figure_height), facecolor="white")
     ax.axis("off")
 
     column_widths = [0.095, 0.14, 0.095, 0.108, 0.108, 0.095, 0.105, 0.105, 0.067, 0.067, 0.067]
@@ -103,61 +101,55 @@ def render_table(
         cellLoc="center",
         colLoc="center",
         colWidths=column_widths,
-        bbox=[0.01, 0.09, 0.98, 0.82],
+        bbox=[0.01, 0.08, 0.98, 0.83],
     )
     table.auto_set_font_size(False)
     table.set_fontsize(9.0)
 
-    header_color = "#243447"
-    header_text = "#ffffff"
-    group_colors = ["#eef4fb", "#f5f7fa"]
-    model_colors = {"FKG-UM": "#dcecff", "FKG-MM": "#ddf3e8"}
-    low_sensitivity_color = "#fde5e2"
-
     for column in range(len(headers)):
         cell = table[(0, column)]
-        cell.set_facecolor(header_color)
-        cell.set_text_props(color=header_text, weight="bold")
-        cell.set_edgecolor("#ffffff")
-        cell.set_linewidth(0.8)
+        cell.set_facecolor("white")
+        cell.set_text_props(color="black", weight="bold")
+        cell.set_edgecolor("black")
+        cell.set_linewidth(1.0)
+        cell.visible_edges = "TB"
 
     rows_per_config = len(modalities)
     for row_index, row in enumerate(rows, start=1):
-        group_index = (row_index - 1) // rows_per_config
         for column in range(len(headers)):
             cell = table[(row_index, column)]
-            cell.set_facecolor(group_colors[group_index % len(group_colors)])
-            cell.set_edgecolor("#cbd3dc")
+            cell.set_facecolor("white")
+            cell.set_edgecolor("#777777")
             cell.set_linewidth(0.45)
-            cell.set_text_props(color="#17212b")
-        table[(row_index, 1)].set_facecolor(
-            model_colors["FKG-UM"] if row[1].startswith("FKG-UM") else model_colors["FKG-MM"]
-        )
-        if sensitivities[row_index - 1] < 10.0:
-            table[(row_index, 3)].set_facecolor(low_sensitivity_color)
-            table[(row_index, 3)].set_text_props(color="#9b1c1c", weight="bold")
+            cell.set_text_props(color="black")
+            cell.visible_edges = "B" if row_index % rows_per_config == 0 else "open"
+
+    for column in range(len(headers)):
+        cell = table[(len(rows), column)]
+        cell.set_edgecolor("black")
+        cell.set_linewidth(1.0)
+        cell.visible_edges = "B"
 
     for row_index in range(1, len(rows) + 1):
         table[(row_index, 0)].set_text_props(weight="bold")
         table[(row_index, 1)].set_text_props(ha="left")
 
-    fig.suptitle(title, fontsize=16, fontweight="bold", color="#17212b", y=0.965)
+    fig.suptitle(title, fontsize=15, fontweight="bold", color="black", y=0.97)
     fig.text(
         0.5,
         0.925,
         "Patient-grouped stratified 5-fold CV | Trung bình ± độ lệch chuẩn mẫu",
         ha="center",
         fontsize=10.5,
-        color="#4a5562",
+        color="black",
     )
     fig.text(
         0.012,
         0.035,
-        "Lớp dương: diabetic retinopathy. Số bệnh nhân trùng giữa train/validation = 0. "
-        "Ô đỏ đánh dấu Sensitivity < 10%.",
+        "Lớp dương: diabetic retinopathy. Số bệnh nhân trùng giữa train/validation = 0.",
         ha="left",
         fontsize=9.5,
-        color="#4a5562",
+        color="black",
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=dpi, facecolor=fig.get_facecolor(), bbox_inches="tight")
