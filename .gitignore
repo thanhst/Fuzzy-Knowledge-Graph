@@ -53,6 +53,8 @@ Source_code/module/module.zip
 # Generated outputs
 data/FKG/
 Data
+!fkge_v2/data/
+!fkge_v2/data/*.py
 Documentation
 ROOT_DATA/*
 !ROOT_DATA/*.csv
