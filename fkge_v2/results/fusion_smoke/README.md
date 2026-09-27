@@ -2,6 +2,8 @@
 
 > Diagnostic run only: one validation fold, one seed, and a small epoch budget.
 
+![BRSET fusion smoke result](result_summary.png)
+
 - Source revision: `929246b79e368c59d14aa4f2731f7941150dfd79`
 - Fold: `1`
 - Epochs: `1`
