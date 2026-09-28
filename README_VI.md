@@ -1,7 +1,9 @@
-# Baseline FKG-MM độc lập
+# FKG-MM chạy đầy đủ
 
-Nhánh này là gói tối giản để phản biện chạy lại tầng FKG-MM trên đúng dữ liệu
-FRB của thực nghiệm 5-fold theo bệnh nhân. Chạy:
+Nhánh `MM` chạy lại toàn bộ chuỗi thực nghiệm FKG-MM từ bảng đặc trưng liên tục:
+ghép ID bệnh nhân, kiểm tra chống rò rỉ, chuẩn hóa theo train fold, chọn 7 đặc
+trưng ảnh + 9 đặc trưng bảng, BorderlineSMOTE, FCM/FIS sinh luật mờ, huấn luyện
+FKG-MM và đánh giá 5 fold.
 
 ```bat
 python -m venv .venv
@@ -10,10 +12,7 @@ python -m pip install -r requirements.txt
 run.bat
 ```
 
-Kết quả tham chiếu mới nhất: Accuracy `91.7 +/- 0.3`, F1 lớp bệnh
-`16.6 +/- 12.9`, AUC-ROC `80.7 +/- 6.6`, Specificity `98.7 +/- 0.9`,
-Sensitivity `11.4 +/- 10.2` (đơn vị phần trăm, mean +/- sample std của 5 fold).
-
-Gói có sẵn rule data, ID bệnh nhân, feature map và dự đoán native để đối chiếu.
-Nó kiểm chứng độc lập tầng FKG-MM từ FRB; không chứa ảnh fundus gốc và không
-chạy lại bước trích xuất ảnh/FIS hay huấn luyện các baseline deep learning.
+Lệnh chạy còn đối chiếu luật và dự đoán mới sinh với bản native đã lưu. Kết quả
+đúng sẽ in `reference rules match: True` và
+`reference predictions match: True`. Dữ liệu đặc trưng, ID, split 5 fold và dữ
+liệu tham chiếu đều có sẵn trong nhánh; không cần build C++/CUDA.

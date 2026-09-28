@@ -1,15 +1,30 @@
-# FKG-MM reproducible baseline
+# FKG-MM: complete reviewer reproduction
 
-This is a small, standalone reviewer package for the proposed multimodal Fuzzy
-Knowledge Graph (FKG-MM). It reproduces the latest reported native FKG-MM row
-from the patient-aware five-fold experiment dated 2026-09-23.
+This compact branch reruns the complete reported FKG-MM experiment from the
+continuous multimodal feature table, rather than starting from saved fuzzy
+rules. It needs no compiled extension, Visual Studio, or CUDA.
 
-## Reproduce
+## Pipeline
 
-Python 3.10 or newer is recommended.
+For each of the five fixed patient-level folds, `run.py` performs:
+
+1. join feature rows to image and patient IDs;
+2. verify zero train/validation patient overlap;
+3. fit train-only standardization independently for image and tabular features;
+4. select 7 image and 9 tabular features with train-only ANOVA F scores;
+5. apply BorderlineSMOTE only to the training fold;
+6. generate fuzzy rules with 1-D fuzzy C-means (five clusters per feature);
+7. train and evaluate FKG-MM; and
+8. write predictions, metrics, intermediate data, selected features, and rules.
+
+The bundled archived rules and native predictions are used only as an
+independent equality check. The pipeline does not read them to make a
+prediction.
+
+## Run
 
 ```bash
-git clone --branch baseline --single-branch https://github.com/thanhst/Fuzzy-Knowledge-Graph.git
+git clone --branch MM --single-branch https://github.com/thanhst/Fuzzy-Knowledge-Graph.git
 cd Fuzzy-Knowledge-Graph
 python -m venv .venv
 # Windows: .venv\Scripts\activate
@@ -18,50 +33,30 @@ python -m pip install -r requirements.txt
 python run.py --check-reference
 ```
 
-On Windows, after installing the dependency, `run.bat` is the one-click entry
-point. A successful run prints:
+On Windows, `run.bat` is the one-command entry point after dependencies are
+installed. A verified run ends with:
 
 ```text
-accuracy       91.7 +/-  0.3
-f1             16.6 +/- 12.9
-auc_roc        80.7 +/-  6.6
-specificity    98.7 +/-  0.9
-sensitivity    11.4 +/- 10.2
-reference labels match: True
+accuracy       91.7 +/-  0.3 %
+f1             16.6 +/- 12.9 %
+auc_roc        80.7 +/-  6.6 %
+specificity    98.7 +/-  0.9 %
+sensitivity    11.4 +/- 10.2 %
+reference rules match: True
+reference predictions match: True
 ```
 
-Machine-readable outputs are written to `outputs/latest/`.
+Outputs are written below `outputs/latest/`. Use `--folds 1` for a short
+single-fold check.
 
-## What is included
+## Included data
 
-- `fkg_mm.py`: compact NumPy implementation of the published native FKG
-  training and inference equations.
-- `run.py`: patient-leakage checks, five-fold evaluation, metrics, and exact
-  comparison against archived native predictions.
-- `data/fold_01` ... `data/fold_05`: the exact multimodal fuzzy-rule inputs
-  consumed by FKG-MM, selected-feature maps, and patient/image IDs.
-- `results/reference_predictions`: predictions produced by the native runner.
-- `results/baseline_table.csv`: concise paper-facing comparison for the four
-  conventional baselines, two unimodal FKG controls, and proposed FKG-MM.
-- `results/latest_baseline_comparison.csv`: the complete latest comparison
-  table (MLP, ResNet-50, early/late fusion, FKG-UM, and FKG-MM variants).
+- `data/fusion_features.csv`: all continuous image and tabular features;
+- `data/row_ids.csv` and `data/labels_brset.csv`: row, image, patient and label provenance;
+- `data/splits/`: outer train/test and five patient-grouped folds;
+- `reference/fold_01` ... `fold_05`: archived FIS rules for equality checks;
+- `results/reference_predictions/`: archived native FKG-MM predictions.
 
-The split contains 1,208 outer-train images from 729 patients. K-fold is
-performed only inside this outer-train set. Each validation patient appears in
-exactly one fold, and every fold has zero train/validation patient overlap.
-Training FRB tables contain about 1,778 rows because SMOTE was applied only to
-the training part of each fold.
-
-## Scope and evidence boundary
-
-This package starts from exported FIS rule tables, which are the direct input
-to FKG-MM. It does not include the original fundus images or rerun image feature
-extraction, FIS clustering, MLP, ResNet-50, or early/late fusion training. Their
-latest reported numbers are retained only in the comparison CSV. Therefore,
-`python run.py --check-reference` independently verifies the FKG-MM stage and
-its metrics; it is not an end-to-end reproduction from raw images.
-
-Data provenance: `frb_patient_id_20260923`, source experiment
-`KFold_feature_selection_rerun_20260921`, patient-grouped split with
-`patient_overlap_count=0`. Metrics use the diabetic-retinopathy class as the
-positive class and sample standard deviation across five folds (`ddof=1`).
+The five-fold experiment uses the 1,208-image outer-train set (729 patients).
+Feature extraction from raw fundus images is outside the timed/reported FKG-MM
+experiment and is therefore not part of this compact branch.
