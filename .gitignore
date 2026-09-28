@@ -1,3 +1,6 @@
-.venv/
 __pycache__/
+*.py[cod]
+.venv/
 outputs/
+data/train_test_selection/deep_baselines/
+data/fundus_photos_224/

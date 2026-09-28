@@ -1,0 +1,5 @@
+model,modality,accuracy_mean_percent,accuracy_std_percent,f1_mean_percent,f1_std_percent,auc_roc_mean_percent,auc_roc_std_percent,specificity_mean_percent,specificity_std_percent,sensitivity_mean_percent,sensitivity_std_percent
+MLP,tabular,86.014,5.859,49.247,10.130,92.645,2.388,86.594,6.786,79.474,11.855
+ResNet-50,image,69.552,11.444,23.744,6.194,73.036,4.443,70.774,13.744,55.789,18.411
+Early Fusion,multimodal,88.579,3.105,48.720,4.794,89.225,3.849,90.555,3.751,66.053,5.243
+Late Fusion,multimodal,86.847,5.803,49.128,9.758,90.885,2.354,87.948,7.571,74.053,18.728

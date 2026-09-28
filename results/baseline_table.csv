@@ -1,8 +1,0 @@
-model,input,accuracy_mean_pct,accuracy_std_pct,f1_mean_pct,f1_std_pct,auc_roc_mean_pct,auc_roc_std_pct,specificity_mean_pct,specificity_std_pct,sensitivity_mean_pct,sensitivity_std_pct
-MLP,Tabular,86.014,5.859,49.247,10.130,92.645,2.388,86.594,6.786,79.474,11.855
-ResNet-50,Image,69.552,11.444,23.744,6.194,73.036,4.443,70.774,13.744,55.789,18.411
-Early Fusion (MLP),Multimodal,88.579,3.105,48.720,4.794,89.225,3.849,90.555,3.751,66.053,5.243
-Late Fusion (Ensemble),Multimodal,86.847,5.803,49.128,9.758,90.885,2.354,87.948,7.571,74.053,18.728
-FKG-UM (Tabular),Unimodal FKG,89.817,2.786,37.261,19.868,80.568,6.226,94.151,2.870,40.421,24.809
-FKG-UM (Image),Unimodal FKG,74.259,5.503,15.953,7.271,58.557,8.733,77.868,7.437,33.000,20.595
-FKG-MM (proposed),Multimodal FKG,91.722,0.281,16.618,12.910,80.729,6.557,98.742,0.861,11.421,10.181

@@ -1,2 +1,0 @@
-model,protocol,folds,accuracy_pct,accuracy_std_pct,f1_pct,f1_std_pct,auc_roc_pct,auc_roc_std_pct,specificity_pct,specificity_std_pct,sensitivity_pct,sensitivity_std_pct
-FKG-MM,Patient-aware 5-fold validation; no outer test,5,91.722,0.281,16.618,12.910,80.729,6.557,98.742,0.861,11.421,10.181

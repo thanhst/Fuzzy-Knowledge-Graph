@@ -1,0 +1,126 @@
+{
+  "enabled": true,
+  "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold",
+  "fold_count": 5,
+  "source_split": "train",
+  "manifest_columns": [
+    "image_id",
+    "patient_id",
+    "image_path",
+    "retinopathy"
+  ],
+  "folds": [
+    {
+      "fold": 1,
+      "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_1",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 966,
+        "patients": 583,
+        "retinopathy_counts": {
+          "0": 889,
+          "1": 77
+        }
+      },
+      "val": {
+        "images": 242,
+        "patients": 146,
+        "retinopathy_counts": {
+          "0": 222,
+          "1": 20
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_2",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 966,
+        "patients": 583,
+        "retinopathy_counts": {
+          "0": 888,
+          "1": 78
+        }
+      },
+      "val": {
+        "images": 242,
+        "patients": 146,
+        "retinopathy_counts": {
+          "0": 223,
+          "1": 19
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_3",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 966,
+        "patients": 583,
+        "retinopathy_counts": {
+          "0": 888,
+          "1": 78
+        }
+      },
+      "val": {
+        "images": 242,
+        "patients": 146,
+        "retinopathy_counts": {
+          "0": 223,
+          "1": 19
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_4",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 967,
+        "patients": 583,
+        "retinopathy_counts": {
+          "0": 890,
+          "1": 77
+        }
+      },
+      "val": {
+        "images": 241,
+        "patients": 146,
+        "retinopathy_counts": {
+          "0": 221,
+          "1": 20
+        }
+      }
+    },
+    {
+      "fold": 5,
+      "output_dir": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\ROOT_DATA\\train_test_selection\\train_kfold\\fold_5",
+      "patient_overlap_count": 0,
+      "train": {
+        "images": 967,
+        "patients": 584,
+        "retinopathy_counts": {
+          "0": 889,
+          "1": 78
+        }
+      },
+      "val": {
+        "images": 241,
+        "patients": 145,
+        "retinopathy_counts": {
+          "0": 222,
+          "1": 19
+        }
+      }
+    }
+  ],
+  "file_operations": {
+    "hardlinked": 0,
+    "copied": 0,
+    "copied_after_hardlink_failed": 0,
+    "existing": 0,
+    "not_materialized": 6040
+  }
+}
