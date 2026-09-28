@@ -447,6 +447,8 @@ Nếu không có, script tự lấy mẫu ngẫu nhiên từ FKG-MM đầy đủ
 
 ```bash
 python3 run_all.py --quick
+python3 run_all.py --quick --brset-only  # chỉ dùng gói FRB BRSET thật
+python3 run_all.py --quick --brset-only --epochs 1  # lượt kiểm chứng rất ngắn
 ```
 
 Chạy với epochs/n_seeds giảm, dùng dữ liệu tổng hợp nếu chưa có dữ liệu

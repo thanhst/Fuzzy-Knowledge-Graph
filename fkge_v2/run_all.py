@@ -23,6 +23,10 @@ def main():
                         help="Danh sách KB cách nhau bởi dấu phẩy, ví dụ: kb1,kb3,kb6")
     parser.add_argument("--allow-synthetic", action="store_true",
                         help="Cho phép dữ liệu synthetic khi thiếu dữ liệu thật (không dùng báo cáo)")
+    parser.add_argument("--brset-only", action="store_true",
+                        help="Chỉ chạy trên BRSET thật; bỏ hai bộ dữ liệu thô còn thiếu ở KB1")
+    parser.add_argument("--epochs", type=int, default=None,
+                        help="Ghi đè số epoch huấn luyện FKG-E (mặc định: 3 nếu --quick, 100 nếu đầy đủ)")
     parser.add_argument("--run-id", type=str, default="",
                         help="Mã lần chạy; mặc định sinh theo thời gian")
     args = parser.parse_args()
@@ -43,10 +47,21 @@ def main():
         C.KB5_K_GRID = [2, 5]
         C.KB6_SAMPLE_RATIOS = [0.4, 1.0]
 
+    if args.epochs is not None:
+        if args.epochs < 1:
+            parser.error("--epochs phải >= 1")
+        C.FKGE.epochs = args.epochs
+        print(f">>> FKG-E epochs={C.FKGE.epochs}")
+
     only = set(x.strip().lower() for x in args.only.split(",") if x.strip()) or None
 
+    if args.brset_only:
+        from data.frb_package import package_available
+        if not package_available(C.PATHS.BRSET_FRB_PACKAGE):
+            raise SystemExit("Không tìm thấy gói FRB BRSET thật; dừng để tránh dùng dữ liệu synthetic.")
+
     if ((only is None or "kb1" in only)
-            and not args.quick and not args.allow_synthetic
+            and not args.quick and not args.allow_synthetic and not args.brset_only
             and (not os.path.exists(C.PATHS.DIABETES_KAGGLE_RAW_FILE)
                  or not os.path.exists(C.PATHS.HEALTHCARE_DIABETES_RAW_FILE))):
         raise SystemExit(
@@ -70,7 +85,7 @@ def main():
         from experiments.kb1_kb2 import run_kb1, run_kb2
         import json
         if only is None or "kb1" in only:
-            r1 = run_kb1()
+            r1 = run_kb1(brset_only=args.brset_only)
             json.dump(r1, open(os.path.join(C.PATHS.OUTPUT_DIR, "kb1_results.json"), "w",
                                 encoding="utf-8"), ensure_ascii=False, indent=2)
         if only is None or "kb2" in only:

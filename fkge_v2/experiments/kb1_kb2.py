@@ -132,32 +132,34 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
     }
 
 
-def run_kb1():
+def run_kb1(brset_only=False):
     print("\n" + "=" * 72)
     print("KB1: FKG-E vs FISA sequential/lookup on the same fold-specific FKG")
     print("=" * 72)
-    datasets = [
-        (
-            "Diabetes-Kaggle",
-            _raw_dataset_specs(C.PATHS.DIABETES_KAGGLE_RAW_FILE,
-                               "Diabetes-Kaggle", 101),
-            lambda ratio, seed: RealisticSyntheticPipeline(
-                seed=seed, sample_ratio=ratio),
-        ),
-        (
-            "Healthcare-Diabetes-Kaggle",
-            _raw_dataset_specs(C.PATHS.HEALTHCARE_DIABETES_RAW_FILE,
-                               "Healthcare-Diabetes-Kaggle", 102),
-            lambda ratio, seed: RealisticSyntheticPipeline(
-                seed=seed, sample_ratio=ratio),
-        ),
-        (
-            f"BRSET {C.BRSET_PRIMARY_MODALITY}",
-            primary_fold_specs(),
-            lambda ratio, seed: PrefuzzifiedRulePipeline(
-                seed=seed, sample_ratio=ratio),
-        ),
-    ]
+    datasets = []
+    if not brset_only:
+        datasets.extend([
+            (
+                "Diabetes-Kaggle",
+                _raw_dataset_specs(C.PATHS.DIABETES_KAGGLE_RAW_FILE,
+                                   "Diabetes-Kaggle", 101),
+                lambda ratio, seed: RealisticSyntheticPipeline(
+                    seed=seed, sample_ratio=ratio),
+            ),
+            (
+                "Healthcare-Diabetes-Kaggle",
+                _raw_dataset_specs(C.PATHS.HEALTHCARE_DIABETES_RAW_FILE,
+                                   "Healthcare-Diabetes-Kaggle", 102),
+                lambda ratio, seed: RealisticSyntheticPipeline(
+                    seed=seed, sample_ratio=ratio),
+            ),
+        ])
+    datasets.append((
+        f"BRSET {C.BRSET_PRIMARY_MODALITY}",
+        primary_fold_specs(),
+        lambda ratio, seed: PrefuzzifiedRulePipeline(
+            seed=seed, sample_ratio=ratio),
+    ))
     return [
         _run_fold_specs(specs, name, "KB1", pipeline_factory)
         for name, specs, pipeline_factory in datasets

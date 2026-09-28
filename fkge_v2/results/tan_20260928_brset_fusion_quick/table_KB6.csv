@@ -1,0 +1,3 @@
+ratio,n_rules_mean,fisa_sequential_avg_time_per_query_ms_mean,fisa_lookup_avg_time_per_query_ms_mean,fkge_avg_time_per_query_ms_mean
+0.4,426.0,2.1294168204315436,0.04785218514686774,0.08595041320908166
+1.0,1064.0,5.479398837759476,0.04522071397008975,0.1046768594797184

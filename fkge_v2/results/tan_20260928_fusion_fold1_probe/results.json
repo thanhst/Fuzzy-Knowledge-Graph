@@ -1,0 +1,94 @@
+{
+  "status": "smoke_not_official",
+  "created_at": "2026-09-28T14:47:45.742582+00:00",
+  "source_revision": "306063eb42c92f92420d404cf44e5be2bbb7dc60",
+  "protocol": {
+    "fold": 1,
+    "epochs": 3,
+    "seed": 42,
+    "timing_repeats": 5
+  },
+  "data": {
+    "source": "brset_frb_package",
+    "modality": "fusion",
+    "modalities": [
+      "image",
+      "table"
+    ],
+    "input_graph_kind": "FKG-MM",
+    "train_rows": 1778,
+    "validation_rows": 242,
+    "patient_overlap_count": 0,
+    "majority_accuracy": 0.9173553719008265,
+    "majority_class": "class-0"
+  },
+  "graph": {
+    "rule_count": 1064,
+    "token_count": 79,
+    "intra_modal_edge_count": 1832,
+    "cross_modal_edge_count": 2352
+  },
+  "methods": {
+    "FISA sequential": {
+      "accuracy": 0.7272727272727273,
+      "balanced_accuracy": 0.8286036036036035,
+      "f1": 0.36538461538461536,
+      "f1_macro": 0.5958502024291498,
+      "auc_roc": 0.917454954954955,
+      "auc_pr": 0.4968929797771896,
+      "sensitivity": 0.95,
+      "specificity": 0.7072072072072072,
+      "avg_time_per_query_ms": 5.677163108321261,
+      "fit_time_s": 0.0062716007232666016
+    },
+    "FISA lookup": {
+      "accuracy": 0.7272727272727273,
+      "balanced_accuracy": 0.8286036036036035,
+      "f1": 0.36538461538461536,
+      "f1_macro": 0.5958502024291498,
+      "auc_roc": 0.917454954954955,
+      "auc_pr": 0.4968929797771896,
+      "sensitivity": 0.95,
+      "specificity": 0.7072072072072072,
+      "avg_time_per_query_ms": 0.04738224439384524,
+      "fit_time_s": 0.006192684173583984
+    },
+    "FKG-E unsupervised": {
+      "accuracy": 0.9173553719008265,
+      "balanced_accuracy": 0.5,
+      "f1": 0.0,
+      "f1_macro": 0.478448275862069,
+      "auc_roc": 0.5369369369369369,
+      "auc_pr": 0.14372363865351487,
+      "sensitivity": 0.0,
+      "specificity": 1.0,
+      "avg_time_per_query_ms": 0.11001983466109574,
+      "train_time_s": 211.19379949569702,
+      "agreement": 0.6528925619834711,
+      "mean_kl_divergence": 0.022250030786510996,
+      "n_parameters": 5056
+    },
+    "FKG-E full": {
+      "accuracy": 0.8760330578512396,
+      "balanced_accuracy": 0.8869369369369369,
+      "f1": 0.5454545454545454,
+      "f1_macro": 0.7368421052631579,
+      "auc_roc": 0.9490990990990991,
+      "auc_pr": 0.6417504478121862,
+      "sensitivity": 0.9,
+      "specificity": 0.8738738738738738,
+      "avg_time_per_query_ms": 0.10082809912700597,
+      "train_time_s": 189.04289841651917,
+      "agreement": 0.7520661157024794,
+      "mean_kl_divergence": 0.3510249632715727,
+      "n_parameters": 5056
+    }
+  },
+  "limitations": [
+    "one_validation_fold",
+    "one_seed",
+    "one_epoch_by_default",
+    "not_root_test",
+    "missing_extended_objective_terms_and_official_baselines"
+  ]
+}

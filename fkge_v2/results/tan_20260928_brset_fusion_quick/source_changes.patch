@@ -1,0 +1,122 @@
+diff --git a/fkge_v2/README.md b/fkge_v2/README.md
+index 7263b3d..3de7837 100644
+--- a/fkge_v2/README.md
++++ b/fkge_v2/README.md
+@@ -447,6 +447,8 @@ Nếu không có, script tự lấy mẫu ngẫu nhiên từ FKG-MM đầy đủ
+ 
+ ```bash
+ python3 run_all.py --quick
++python3 run_all.py --quick --brset-only  # chỉ dùng gói FRB BRSET thật
++python3 run_all.py --quick --brset-only --epochs 1  # lượt kiểm chứng rất ngắn
+ ```
+ 
+ Chạy với epochs/n_seeds giảm, dùng dữ liệu tổng hợp nếu chưa có dữ liệu
+diff --git a/fkge_v2/experiments/kb1_kb2.py b/fkge_v2/experiments/kb1_kb2.py
+index fcb6685..be1b522 100644
+--- a/fkge_v2/experiments/kb1_kb2.py
++++ b/fkge_v2/experiments/kb1_kb2.py
+@@ -132,32 +132,34 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
+     }
+ 
+ 
+-def run_kb1():
++def run_kb1(brset_only=False):
+     print("\n" + "=" * 72)
+     print("KB1: FKG-E vs FISA sequential/lookup on the same fold-specific FKG")
+     print("=" * 72)
+-    datasets = [
+-        (
+-            "Diabetes-Kaggle",
+-            _raw_dataset_specs(C.PATHS.DIABETES_KAGGLE_RAW_FILE,
+-                               "Diabetes-Kaggle", 101),
+-            lambda ratio, seed: RealisticSyntheticPipeline(
+-                seed=seed, sample_ratio=ratio),
+-        ),
+-        (
+-            "Healthcare-Diabetes-Kaggle",
+-            _raw_dataset_specs(C.PATHS.HEALTHCARE_DIABETES_RAW_FILE,
+-                               "Healthcare-Diabetes-Kaggle", 102),
+-            lambda ratio, seed: RealisticSyntheticPipeline(
+-                seed=seed, sample_ratio=ratio),
+-        ),
+-        (
+-            f"BRSET {C.BRSET_PRIMARY_MODALITY}",
+-            primary_fold_specs(),
+-            lambda ratio, seed: PrefuzzifiedRulePipeline(
+-                seed=seed, sample_ratio=ratio),
+-        ),
+-    ]
++    datasets = []
++    if not brset_only:
++        datasets.extend([
++            (
++                "Diabetes-Kaggle",
++                _raw_dataset_specs(C.PATHS.DIABETES_KAGGLE_RAW_FILE,
++                                   "Diabetes-Kaggle", 101),
++                lambda ratio, seed: RealisticSyntheticPipeline(
++                    seed=seed, sample_ratio=ratio),
++            ),
++            (
++                "Healthcare-Diabetes-Kaggle",
++                _raw_dataset_specs(C.PATHS.HEALTHCARE_DIABETES_RAW_FILE,
++                                   "Healthcare-Diabetes-Kaggle", 102),
++                lambda ratio, seed: RealisticSyntheticPipeline(
++                    seed=seed, sample_ratio=ratio),
++            ),
++        ])
++    datasets.append((
++        f"BRSET {C.BRSET_PRIMARY_MODALITY}",
++        primary_fold_specs(),
++        lambda ratio, seed: PrefuzzifiedRulePipeline(
++            seed=seed, sample_ratio=ratio),
++    ))
+     return [
+         _run_fold_specs(specs, name, "KB1", pipeline_factory)
+         for name, specs, pipeline_factory in datasets
+diff --git a/fkge_v2/run_all.py b/fkge_v2/run_all.py
+index 003d199..baeca89 100644
+--- a/fkge_v2/run_all.py
++++ b/fkge_v2/run_all.py
+@@ -23,6 +23,10 @@ def main():
+                         help="Danh sách KB cách nhau bởi dấu phẩy, ví dụ: kb1,kb3,kb6")
+     parser.add_argument("--allow-synthetic", action="store_true",
+                         help="Cho phép dữ liệu synthetic khi thiếu dữ liệu thật (không dùng báo cáo)")
++    parser.add_argument("--brset-only", action="store_true",
++                        help="Chỉ chạy trên BRSET thật; bỏ hai bộ dữ liệu thô còn thiếu ở KB1")
++    parser.add_argument("--epochs", type=int, default=None,
++                        help="Ghi đè số epoch huấn luyện FKG-E (mặc định: 3 nếu --quick, 100 nếu đầy đủ)")
+     parser.add_argument("--run-id", type=str, default="",
+                         help="Mã lần chạy; mặc định sinh theo thời gian")
+     args = parser.parse_args()
+@@ -43,10 +47,21 @@ def main():
+         C.KB5_K_GRID = [2, 5]
+         C.KB6_SAMPLE_RATIOS = [0.4, 1.0]
+ 
++    if args.epochs is not None:
++        if args.epochs < 1:
++            parser.error("--epochs phải >= 1")
++        C.FKGE.epochs = args.epochs
++        print(f">>> FKG-E epochs={C.FKGE.epochs}")
++
+     only = set(x.strip().lower() for x in args.only.split(",") if x.strip()) or None
+ 
++    if args.brset_only:
++        from data.frb_package import package_available
++        if not package_available(C.PATHS.BRSET_FRB_PACKAGE):
++            raise SystemExit("Không tìm thấy gói FRB BRSET thật; dừng để tránh dùng dữ liệu synthetic.")
++
+     if ((only is None or "kb1" in only)
+-            and not args.quick and not args.allow_synthetic
++            and not args.quick and not args.allow_synthetic and not args.brset_only
+             and (not os.path.exists(C.PATHS.DIABETES_KAGGLE_RAW_FILE)
+                  or not os.path.exists(C.PATHS.HEALTHCARE_DIABETES_RAW_FILE))):
+         raise SystemExit(
+@@ -70,7 +85,7 @@ def main():
+         from experiments.kb1_kb2 import run_kb1, run_kb2
+         import json
+         if only is None or "kb1" in only:
+-            r1 = run_kb1()
++            r1 = run_kb1(brset_only=args.brset_only)
+             json.dump(r1, open(os.path.join(C.PATHS.OUTPUT_DIR, "kb1_results.json"), "w",
+                                 encoding="utf-8"), ensure_ascii=False, indent=2)
+         if only is None or "kb2" in only:
