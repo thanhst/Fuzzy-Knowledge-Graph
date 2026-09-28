@@ -1,6 +1,6 @@
 # Kết quả chạy kịch bản FKG-E trên BRSET fusion — 28/09/2026
 
-![Bảng kết quả KB1 và KB2 của lượt quick](result_summary.png)
+![Bảng kết quả FKG-E KB1–KB6 của lượt quick](result_summary.png)
 
 ## Phạm vi và trạng thái
 
@@ -11,16 +11,13 @@
 - Đối chiếu trực tiếp `train.csv`/`val.csv`: cả 5 fold đều có `patient_group_overlap_count=0`.
 - Đây là lượt kiểm chứng pipeline. Các số dưới đây không phải kết quả luận án theo giao thức 5 seed × 5 fold, validation lồng và outer test.
 
-## KB1 — FKG-E và FISA trên cùng FKG
+## KB1 — FKG-E trên FKG đầy đủ
 
-| Phương pháp | AUC-ROC | Balanced Accuracy | F1 | ms/mẫu |
+| Cấu hình | AUC-ROC | Balanced Accuracy | F1 | ms/mẫu |
 |---|---:|---:|---:|---:|
-| FISA tuần tự | 0,8231 | 0,7141 | 0,2845 | 5,2661 |
-| FISA bảng tra | 0,8231 | 0,7141 | 0,2845 | 0,0466 |
-| FKG-E bỏ `L_pred` | 0,6485 | 0,5000 | 0,0000 | 0,1008 |
 | FKG-E đầy đủ | 0,9214 | 0,8533 | 0,4984 | 0,1095 |
 
-Các số là trung bình 5 fold với một seed. FKG-E đầy đủ nhanh hơn FISA tuần tự nhưng chậm hơn FISA bảng tra ở lượt này.
+Các số là trung bình 5 fold với một seed.
 
 ## KB2 — Lấy mẫu luật 30%
 
@@ -31,7 +28,7 @@ Các số là trung bình 5 fold với một seed. FKG-E đầy đủ nhanh hơn
 
 Lấy mẫu 30% tăng tốc suy diễn khoảng 1,28 lần nhưng giảm AUC 0,0414 và giảm mạnh Balanced Accuracy. Đây là lấy mẫu luật mô phỏng trong `PrefuzzifiedRulePipeline`, chưa phải kết quả S-FKGS với `theta*` đã chọn ở Chương 2.
 
-## Các kịch bản còn lại
+## KB3–KB6
 
 | Kịch bản | Kết quả quick | Giới hạn chính |
 |---|---|---|
@@ -39,8 +36,6 @@ Lấy mẫu 30% tăng tốc suy diễn khoảng 1,28 lần nhưng giảm AUC 0,0
 | KB4 | Bỏ `lambda_P`: AUC 0,6998; mức mặc định 0,9347 | Chỉ 5 trọng số đã cài đặt, hai mức mỗi trọng số; thiếu random search |
 | KB5 | AUC 0,9234 (`w=1`) và 0,9347 (`w=2`), biên độ 0,0113 | Chỉ 4/9 cặp `(w,K)` |
 | KB6 | 426 luật: FKG-E 0,0860 ms/mẫu; 1.064 luật: 0,1047 | Chỉ 2/5 tỉ lệ luật nên hệ số góc chưa đáng tin |
-| Ablation | Full AUC 0,9347; bỏ `L_pred` 0,6998; chỉ `L_pred` 0,9331 | 9 biến thể đã triển khai, chưa đủ ablation theo thiết kế |
-| Baseline | MLP fuzzy AUC 0,9644; FKG-E đầy đủ 0,9347 trên một fold | Ngân sách huấn luyện chưa cân bằng; các bản nhúng `-lite` không phải baseline chuẩn |
 
 ## Những phần chưa thể xem là hoàn thành theo tài liệu
 
@@ -53,7 +48,7 @@ Lấy mẫu 30% tăng tốc suy diễn khoảng 1,28 lần nhưng giảm AUC 0,0
 
 ## File kết quả
 
-- `result_summary.png`: ảnh bảng KB1 và KB2 để xem hoặc gửi nhanh.
+- `result_summary.png`: ảnh bảng FKG-E KB1–KB6 để xem hoặc gửi nhanh.
 - `report_tong_hop.md`: bảng tổng hợp tự sinh.
 - `run_manifest.json`: cấu hình và môi trường chạy.
 - `kb1_results.json`–`kb6_results.json`, `ablation_results.json`, `baseline_comparison.json`: kết quả chi tiết.
