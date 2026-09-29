@@ -179,12 +179,13 @@ class PrefuzzifiedRulePipeline(RuleMiningPipeline):
     khi mất cân bằng lớp, không phải lỗi cài đặt riêng của pipeline này.
     """
 
-    def __init__(self, sample_ratio=1.0, seed=0):
+    def __init__(self, sample_ratio=1.0, seed=0, min_class_fraction=0.0):
         self._fitted = False
         # sample_ratio<1.0: mô phỏng FKGS (nén luật) -- lấy mẫu con luật
         # NGAY SAU KHI khai phá đầy đủ, CHỈ trên train của fold này.
         self.sample_ratio = sample_ratio
         self.seed = seed
+        self.min_class_fraction = min_class_fraction
 
     def fit_and_mine(self, train_raw_records):
         from collections import Counter
@@ -235,7 +236,8 @@ class PrefuzzifiedRulePipeline(RuleMiningPipeline):
         }
         fkg = FKGRuleBase(vocab, rules, edges, meta)
         if self.sample_ratio < 1.0:
-            fkg = fkg.sample_subset(ratio=self.sample_ratio, seed=self.seed)
+            fkg = fkg.sample_subset(ratio=self.sample_ratio, seed=self.seed,
+                                    min_class_fraction=self.min_class_fraction)
         self._fitted = True
         return fkg, [self._to_sample(r) for r in train_raw_records]
 

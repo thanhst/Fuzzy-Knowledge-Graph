@@ -1,16 +1,15 @@
 """
-models/fkge.py — Mô hình FKG-E, cài đặt đúng công thức Chương 3 (Mục 3.4):
+models/fkge.py — Phần đã cài đặt của FKG-E (Mục 3.4); chưa có L_edge,
+L_A, L_B, L_rule và hiệu chỉnh giáo viên/ngưỡng theo inner validation:
 
   - Token hoá luật (Định nghĩa 3.7, Mục 3.4.2)
   - Skip-gram + negative sampling, 2 bảng nhúng nguồn/ngữ cảnh (Công thức 3.81-3.83)
   - Node Loss: shifted-cosine so khớp mu_ij (Công thức 3.91-3.94)
   - Nhúng luật bằng weighted/mean/max pooling (Định nghĩa 3.3, Mục 3.4.3)
-  - Suy diễn: p_E(c|x) = sum_k alpha_k(x) p_k(c)   (Công thức 3.107, 3.109)
-      với p_k(c) là phân phối CỐ ĐỊNH suy ra từ hệ quả ký hiệu của luật k
-      (one-hot làm mượt), KHÔNG có đầu phân loại W_class riêng — đúng kiến
-      trúc "suy luận mềm bằng trộn luật" của bản luận án đã hợp nhất.
+  - SGNS lấy đồng xuất hiện trên toàn luật; p_E lấy điểm luật lớn nhất
+    của từng lớp rồi chuẩn hóa softmax.
   - L_inf (KL với FISA đã hiệu chỉnh) và L_pred (cross-entropy với nhãn thật)
-    đều tác động lên CÙNG một p_E qua CÙNG một đường truyền gradient qua alpha.
+    đều tác động lên CÙNG một p_E qua điểm luật thắng của từng lớp.
 
 Toàn bộ gradient được viết tay và đã kiểm chứng bằng gradient checking
 (so khớp với sai phân hữu hạn) trong hàm _gradient_check() ở cuối file.
@@ -32,16 +31,25 @@ def softmax(x, axis=-1):
 
 
 class FKGE:
-    def __init__(self, fkg, d=32, w=2, K_neg=5, lam_node=1.0, beta_rule=1.0,
+    def __init__(self, fkg, d=32, w=None, K_neg=5, lam_node=1.0, beta_rule=1.0,
                  gamma_inf=0.5, delta_pred=1.0, lr=0.01, weight_decay=1e-5,
                  epochs=60, tau_softmax=1.0, pooling="weighted", alpha_pool=0.7,
-                 label_smooth=0.1, seed=42, verbose=False):
+                 label_smooth=0.1, seed=42, verbose=False,
+                 aggregation="class_max", max_pairs_per_epoch=20000):
         self.fkg = fkg
         self.vocab = fkg.vocab
         self.token2idx = fkg.token2idx
         self.V = len(self.vocab)
         self.d = d
         self.w = w
+        self.aggregation = aggregation
+        if aggregation not in {"class_max", "mixture"}:
+            raise ValueError("aggregation must be 'class_max' or 'mixture'.")
+        if w is not None and w < 1:
+            raise ValueError("w must be positive or None for full-rule co-occurrence.")
+        if max_pairs_per_epoch is not None and max_pairs_per_epoch < 1:
+            raise ValueError("max_pairs_per_epoch must be positive or None.")
+        self.max_pairs_per_epoch = max_pairs_per_epoch
         self.K_neg = K_neg
         self.lam_node = lam_node
         self.beta_rule = beta_rule
@@ -66,6 +74,9 @@ class FKGE:
         self._build_corpus()
         self._build_edges()
         self._build_rule_class_dist()
+        self.rule_class_indices = np.asarray([
+            self.class2idx[r["consequent_token"]] for r in self.fkg.rules
+        ], dtype=np.int64)
         self.verbose = verbose
         self.history = defaultdict(list)
 
@@ -88,7 +99,8 @@ class FKGE:
         for ids in self.rule_token_ids:
             n = len(ids)
             for t in range(n):
-                lo, hi = max(0, t - self.w), min(n, t + self.w + 1)
+                lo = 0 if self.w is None else max(0, t - self.w)
+                hi = n if self.w is None else min(n, t + self.w + 1)
                 for c in range(lo, hi):
                     if c != t:
                         pairs.append((ids[t], ids[c]))
@@ -154,7 +166,15 @@ class FKGE:
         q_x, active = self.query_embedding(membership)
         s = rule_emb @ q_x / self.tau
         alpha = softmax(s)
-        p_E = alpha @ self.rule_pk
+        if self.aggregation == "class_max":
+            class_scores = np.full(self.n_classes, -1e9)
+            for class_idx in range(self.n_classes):
+                eligible = np.flatnonzero(self.rule_class_indices == class_idx)
+                if eligible.size:
+                    class_scores[class_idx] = np.max(s[eligible])
+            p_E = softmax(class_scores)
+        else:
+            p_E = alpha @ self.rule_pk
         return p_E, alpha, s, q_x, active
 
     def loss_and_grad_step(self, batch_pairs, fisa_targets_batch=None,
@@ -164,7 +184,7 @@ class FKGE:
         gEc = np.zeros_like(self.Ec)
         total_loss = 0.0
 
-        # ---- 1) Rule Loss (SGNS), Công thức (3.83), sửa đúng dấu mẫu âm ----
+        # ---- 1) SGNS, Công thức (3.83); không phải L_rule độc lập ----
         # QUAN TRỌNG: chuẩn hóa theo SỐ CẶP trong batch (dùng trung bình thay
         # vì tổng). Nếu không chuẩn hóa, SGNS (thường có hàng trăm cặp/batch)
         # sẽ áp đảo hoàn toàn Pred/Inf Loss (thường chỉ vài mẫu/batch) về mặt
@@ -241,11 +261,24 @@ class FKGE:
                 dL_dpE = np.zeros(self.n_classes)
                 dL_dpE[y_idx] = -scale / (p_E[y_idx] + 1e-12)
 
-            # p_E = alpha @ rule_pk  =>  dL/dalpha_k = sum_c dL/dpE_c * pk[k,c]
-            dL_dalpha = self.rule_pk @ dL_dpE
-            # alpha = softmax(s) => dL/ds_j = alpha_j*(dL/dalpha_j - sum_k alpha_k dL/dalpha_k)
-            bar = np.sum(alpha * dL_dalpha)
-            dL_ds = alpha * (dL_dalpha - bar) / self.tau
+            if self.aggregation == "class_max":
+                # Softmax over class maxima. np.argmax gives a deterministic
+                # subgradient when several rules tie for the maximum.
+                dL_dclass = scale * p_E.copy()
+                if kind == "inf":
+                    dL_dclass -= scale * p_F
+                else:
+                    dL_dclass[y_idx] -= scale
+                dL_ds = np.zeros(len(self.fkg.rules))
+                for class_idx in range(self.n_classes):
+                    eligible = np.flatnonzero(self.rule_class_indices == class_idx)
+                    if eligible.size:
+                        winner = eligible[np.argmax(s[eligible])]
+                        dL_ds[winner] += dL_dclass[class_idx] / self.tau
+            else:
+                dL_dalpha = self.rule_pk @ dL_dpE
+                bar = np.sum(alpha * dL_dalpha)
+                dL_ds = alpha * (dL_dalpha - bar) / self.tau
 
             # s_k = rule_emb_k . q_x
             d_rule_emb += np.outer(dL_ds, q_x)
@@ -283,6 +316,8 @@ class FKGE:
         # ---- Cập nhật (SGD + weight decay), Công thức (3.98) tổng hợp ----
         gEs += self.weight_decay * self.Es
         gEc += self.weight_decay * self.Ec
+        total_loss += 0.5 * self.weight_decay * (
+            np.sum(self.Es ** 2) + np.sum(self.Ec ** 2))
         self.Es -= self.lr * gEs
         self.Ec -= self.lr * gEc
         return total_loss
@@ -298,13 +333,17 @@ class FKGE:
         random.seed(self.seed)
         np.random.seed(self.seed)
         t0 = time.time()
-        n_pairs = len(self.sg_pairs)
         for epoch in range(self.epochs):
-            random.shuffle(self.sg_pairs)
+            if self.max_pairs_per_epoch is not None and len(self.sg_pairs) > self.max_pairs_per_epoch:
+                epoch_pairs = random.sample(self.sg_pairs, self.max_pairs_per_epoch)
+            else:
+                epoch_pairs = list(self.sg_pairs)
+                random.shuffle(epoch_pairs)
+            n_pairs = len(epoch_pairs)
             epoch_loss = 0.0
             n_batches = max(1, (n_pairs + batch_size - 1) // batch_size)
             for b in range(n_batches):
-                batch_pairs = self.sg_pairs[b * batch_size:(b + 1) * batch_size]
+                batch_pairs = epoch_pairs[b * batch_size:(b + 1) * batch_size]
                 fisa_targets_batch, pred_batch = None, None
                 if train_samples:
                     mb = random.sample(train_samples, min(8, len(train_samples)))
@@ -423,14 +462,14 @@ def _gradient_check():
     for (tok, dim) in idx_check:
         Es_plus = Es_save.copy(); Es_plus[tok, dim] += eps
         Es_minus = Es_save.copy(); Es_minus[tok, dim] -= eps
-        random.seed(1); np.random.seed(1)
+        random.seed(0); np.random.seed(0)
         l_plus = compute_loss_only(Es_plus, Ec_save)
-        random.seed(1); np.random.seed(1)
+        random.seed(0); np.random.seed(0)
         l_minus = compute_loss_only(Es_minus, Ec_save)
         numeric_grad = (l_plus - l_minus) / (2 * eps)
 
         model.Es, model.Ec = Es_save.copy(), Ec_save.copy()
-        random.seed(1); np.random.seed(1)
+        random.seed(0); np.random.seed(0)
         gEs_analytic = np.zeros_like(model.Es)
         # Gọi lại nội bộ để lấy gradient thay vì cập nhật: tái dùng bằng cách
         # đọc chênh lệch tham số trước/sau 1 bước với lr biết trước.

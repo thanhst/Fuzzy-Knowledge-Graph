@@ -84,11 +84,16 @@ def run_baseline_comparison(n_seeds=None):
         "FKG-E unsupervised": [],
         "FKG-E full": [],
     }
+    fold_results = {method: {} for method in collected}
+
+    def record(method, fold, result):
+        collected[method].append(result)
+        fold_results[method].setdefault(fold, []).append(result)
 
     for spec, fkg, train, validation, fisa in contexts:
         fisa_result = benchmark_evaluate(fisa, validation)
         fisa_result["train_time_s"] = fisa_result["fit_time_s"]
-        collected["FISA lookup"].append(fisa_result)
+        record("FISA lookup", spec["fold"], fisa_result)
 
         for seed_offset in range(n_seeds):
             seed = C.FKGE.seed + seed_offset
@@ -107,29 +112,43 @@ def run_baseline_comparison(n_seeds=None):
                 result = benchmark_evaluate(classifier, validation)
                 result["train_time_s"] = embedding.train_time_s
                 result["n_parameters"] = int(embedding.E.size)
-                collected[method].append(result)
+                record(method, spec["fold"], result)
 
-            collected["MLP fuzzy features"].append(
-                _mlp_result(train, validation, fkg, seed))
+            record("MLP fuzzy features", spec["fold"],
+                   _mlp_result(train, validation, fkg, seed))
             for method, overrides in {
                 "FKG-E unsupervised": {"delta_pred": 0.0},
                 "FKG-E full": {},
             }.items():
                 model = FKGE(fkg, **default_fkge_kwargs(seed=seed, **overrides))
                 model.fit(fisa_model=fisa, train_samples=train)
-                collected[method].append(benchmark_evaluate(
+                record(method, spec["fold"], benchmark_evaluate(
                     model, validation, reference_model=fisa))
 
     rows = []
     for method, results in collected.items():
-        rows.append({
+        row = {
             "method": method,
             "status": "completed",
             "official_baseline": method in {
                 "FISA lookup", "MLP fuzzy features", "FKG-E unsupervised", "FKG-E full"
             },
             **aggregate_runs(results),
-        })
+        }
+        for metric in ("auc_roc", "balanced_accuracy", "f1", "agreement",
+                       "fidelity_balanced_accuracy", "cohen_kappa"):
+            means = [float(np.mean([result[metric] for result in per_seed
+                                    if metric in result and np.isfinite(result[metric])]))
+                     for per_seed in fold_results[method].values()
+                     if any(metric in result and np.isfinite(result[metric])
+                            for result in per_seed)]
+            if means:
+                sampled = np.random.RandomState(42).choice(
+                    means, size=(10000, len(means)), replace=True)
+                low, high = np.percentile(sampled.mean(axis=1), [2.5, 97.5])
+                row[f"{metric}_ci95_low"] = float(low)
+                row[f"{metric}_ci95_high"] = float(high)
+        rows.append(row)
 
     rows.extend([
         {
@@ -155,6 +174,7 @@ def run_baseline_comparison(n_seeds=None):
         "validation_folds": len(contexts),
         "n_seeds": n_seeds,
         "lite_models_are_smoke_only": True,
+        "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples",
     }
 
 

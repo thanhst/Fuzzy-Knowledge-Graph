@@ -100,14 +100,38 @@ def fidelity_metrics(reference_probabilities, candidate_probabilities, class_tok
 
     agreements = []
     divergences = []
+    reference_labels = []
+    candidate_labels = []
+    bound_holds = []
     for reference, candidate in zip(reference_probabilities, candidate_probabilities):
         p = np.asarray([reference.get(c, 0.0) for c in class_tokens], dtype=np.float64)
         q = np.asarray([candidate.get(c, 0.0) for c in class_tokens], dtype=np.float64)
         p = np.clip(p / max(p.sum(), 1e-12), 1e-12, 1.0)
         q = np.clip(q / max(q.sum(), 1e-12), 1e-12, 1.0)
-        agreements.append(int(np.argmax(p) == np.argmax(q)))
-        divergences.append(float(np.sum(p * np.log(p / q))))
+        reference_label = int(np.argmax(p))
+        candidate_label = int(np.argmax(q))
+        divergence = float(np.sum(p * np.log(p / q)))
+        margin = float(np.sort(p)[-1] - np.sort(p)[-2]) if len(p) > 1 else 1.0
+        reference_labels.append(reference_label)
+        candidate_labels.append(candidate_label)
+        agreements.append(int(reference_label == candidate_label))
+        divergences.append(divergence)
+        bound_holds.append(divergence < margin * margin / 2.0)
+    reference_labels = np.asarray(reference_labels)
+    candidate_labels = np.asarray(candidate_labels)
+    recalls = [float(np.mean(candidate_labels[reference_labels == index] == index))
+               for index in range(len(class_tokens)) if np.any(reference_labels == index)]
+    reference_freq = np.bincount(reference_labels, minlength=len(class_tokens)) / len(agreements)
+    candidate_freq = np.bincount(candidate_labels, minlength=len(class_tokens)) / len(agreements)
+    expected_agreement = float(np.dot(reference_freq, candidate_freq))
+    observed_agreement = float(np.mean(agreements))
     return {
-        "agreement": float(np.mean(agreements)),
+        "agreement": observed_agreement,
+        "fidelity_balanced_accuracy": float(np.mean(recalls)) if len(recalls) == len(class_tokens) else math.nan,
+        "cohen_kappa": ((observed_agreement - expected_agreement) / (1 - expected_agreement)
+                        if expected_agreement < 1 else math.nan),
         "mean_kl_divergence": float(np.mean(divergences)),
+        "fidelity_bound_coverage": float(np.mean(bound_holds)),
+        "fidelity_bound_violations": int(sum(hold and not agree
+                                              for hold, agree in zip(bound_holds, agreements))),
     }

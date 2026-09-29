@@ -43,7 +43,7 @@ def main():
         C.KB4_LAMBDA_GRID = [0.3, 1.0]
         C.KB4_BETA_GRID = [0.3, 1.0]
         C.KB4_MULTIPLIERS = [0.0, 1.0]
-        C.KB5_W_GRID = [1, 2]
+        C.KB5_W_GRID = [None, 2]
         C.KB5_K_GRID = [2, 5]
         C.KB6_SAMPLE_RATIOS = [0.4, 1.0]
 

@@ -74,6 +74,8 @@ def default_fkge_kwargs(**overrides):
         "gamma_inf": C.FKGE.gamma_inf,
         "delta_pred": C.FKGE.delta_pred,
         "weight_decay": C.FKGE.weight_decay,
+        "aggregation": C.FKGE.aggregation,
+        "max_pairs_per_epoch": C.FKGE.max_pairs_per_epoch,
         "lr": C.FKGE.lr,
         "epochs": C.FKGE.epochs,
         "pooling": C.FKGE.pooling,
@@ -105,6 +107,8 @@ def aggregate_runs(results, prefix=""):
         "accuracy", "balanced_accuracy", "f1", "f1_macro", "auc_roc", "auc_pr",
         "sensitivity", "specificity", "avg_time_per_query_ms", "total_time_s",
         "train_time_s", "representation_build_time_s", "agreement",
+        "fidelity_balanced_accuracy", "cohen_kappa", "fidelity_bound_coverage",
+        "fidelity_bound_violations",
         "mean_kl_divergence", "n_parameters", "embedding_memory_bytes",
     ]
     output = {}

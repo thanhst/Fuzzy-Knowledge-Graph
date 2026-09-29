@@ -18,6 +18,7 @@ def create_manifest(run_id, quick, requested_experiments, argv):
         "requested_experiments": requested_experiments,
         "argv": argv,
         "source_revision": _git_revision(),
+        "source_dirty": _git_dirty(),
         "environment": {
             "python": sys.version,
             "platform": platform.platform(),
@@ -39,6 +40,8 @@ def create_manifest(run_id, quick, requested_experiments, argv):
             "lambda_inf": C.FKGE.gamma_inf,
             "lambda_pred": C.FKGE.delta_pred,
             "weight_decay": C.FKGE.weight_decay,
+            "aggregation": C.FKGE.aggregation,
+            "max_pairs_per_epoch": C.FKGE.max_pairs_per_epoch,
             "brset_primary_modality": C.BRSET_PRIMARY_MODALITY,
         },
         "data_sources": {
@@ -80,5 +83,17 @@ def _git_revision():
             ["git", "-c", f"safe.directory={repository}", "rev-parse", "HEAD"],
             cwd=C.PATHS.REPOSITORY_ROOT, text=True, stderr=subprocess.DEVNULL,
         ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def _git_dirty():
+    repository = C.PATHS.REPOSITORY_ROOT.replace("\\", "/")
+    try:
+        return bool(subprocess.check_output(
+            ["git", "-c", f"safe.directory={repository}", "status", "--porcelain",
+             "--untracked-files=no", "--", "fkge_v2"],
+            cwd=C.PATHS.REPOSITORY_ROOT, text=True, stderr=subprocess.DEVNULL,
+        ).strip())
     except (OSError, subprocess.CalledProcessError):
         return None

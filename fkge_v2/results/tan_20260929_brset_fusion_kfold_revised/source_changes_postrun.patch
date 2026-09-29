@@ -1,0 +1,984 @@
+diff --git a/fkge_v2/README.md b/fkge_v2/README.md
+index 3de7837..4b7bd42 100644
+--- a/fkge_v2/README.md
++++ b/fkge_v2/README.md
+@@ -7,14 +7,25 @@
+   `patient_overlap_count=0`.
+ - KB1 tách FISA tuần tự, FISA bảng tra, FKG-E không nhãn và FKG-E đầy đủ;
+   báo AUC-ROC, AUC-PR, F1, Balanced Accuracy, độ trung thành, KL và thời gian.
+-- KB3-KB5 báo AUC trên validation folds, không dùng nhãn của outer test để
+-  chọn cấu hình. Đánh giá outer test còn chờ FRB dành riêng cho root test.
++- Ở chế độ không `--quick`, KB1/KB2, baseline và các quét dùng cả 5
++  validation folds theo bệnh nhân; CI bootstrap lấy fold làm đơn vị độc lập.
++  Đánh giá outer test còn chờ FRB dành riêng cho root test.
+ - KB6 benchmark trung vị 5 lần và báo hệ số góc log-log cho FISA tuần tự,
+   FISA bảng tra và FKG-E.
+-- Mô hình hiện thực sự có `L_SGNS`, `L_node`, `L_inf`, `L_pred`, L2 và
+-  weighted pooling. `L_edge`, `L_A`, `L_B`, `L_rule` độc lập và attention
++- Mô hình hiện thực sự có `L_SGNS` trên đồng xuất hiện toàn luật,
++  `L_node`, `L_inf`, `L_pred`, L2, gộp nhúng luật và cực đại điểm luật
++  theo lớp khi dự đoán. Mỗi epoch lấy mẫu đều 2.000 cặp SGNS từ toàn bộ
++  cặp trong luật; manifest ghi rõ cấu hình này. `L_edge`, `L_A`, `L_B`,
++  `L_rule` độc lập và attention
+   pooling trong bản thiết kế mở rộng chưa có công thức/cài đặt tương ứng;
+   output ghi rõ là chưa triển khai, không dùng tên thay thế.
++- FISA chưa hiệu chỉnh beta/T và ngưỡng quyết định chưa chọn bằng inner
++  validation theo bệnh nhân: train FRB trong gói hiện có chứa các dòng
++  SMOTE nhưng không giữ patient_id cho từng dòng. Các kết quả 5-fold từ
++  gói này là chẩn đoán trên validation của root train, chưa là outer test.
++- KB2 có tuỳ chọn hạn ngạch luật theo lớp. Lượt quota 40% ngày 29/09/2026
++  giữ AUC/BalAcc FKG-E nhưng làm FISA trên tập luật rút gọn có BalAcc=0.5;
++  vì vậy không dùng nhãn kết luận H-E2 tự động chỉ từ AUC và thời gian.
+ - DeepWalk/TransE/DistMult tự viết mang hậu tố `-lite` và chỉ dùng smoke test.
+   Node2Vec chuẩn, XGBoost và KGE chuẩn bằng PyKEEN chưa sẵn sàng trong môi
+   trường hiện tại nên không được tính là baseline chính thức.
+@@ -49,10 +60,9 @@ Phiên bản đầu tiên chỉ chia dữ liệu **một lần duy nhất** theo
+   bắt lỗi hoạt động thật, không chỉ "chạy qua".
+ - **KB1/KB2** (so sánh chính, cần độ tin cậy cao nhất): chạy **đầy đủ cả
+   5 fold**, tổng hợp mean±std qua (fold × seed).
+-- **KB3/KB4/KB5/Ablation/Baseline** (quét nhiều tổ hợp siêu tham số): dùng
+-  **1 fold cố định** (fold 0) để tiết kiệm thời gian tính toán — đúng tinh
+-  thần "inner loop" của nested cross-validation (Mục 3.5.2), vẫn đảm bảo
+-  patient-aware, không rò rỉ.
++- **KB3/KB4/KB5/Ablation/Baseline** dùng cả 5 fold khi không có `--quick`;
++  `--quick` mới giới hạn ở một fold. Đây là validation của root train,
++  không phải nested outer test.
+ - Định dạng file test **bắt buộc** phải có trường `"patient_id"` cho mỗi
+   mẫu — nếu thiếu, `make_patient_kfold()` sẽ dừng ngay với lỗi rõ ràng
+   thay vì âm thầm coi mỗi mẫu là một bệnh nhân riêng.
+@@ -371,7 +381,7 @@ fkge_v2/
+ │   ├── kb1_kb2.py                 # KB1: FKG-E vs FISA trên FKG gốc (3 bộ dữ liệu)
+ │   │                               # KB2: FKG-E vs FISA trên FKGS đã nén
+ │   ├── kb3_kb5.py                 # KB3: quét chiều nhúng d
+-│   │                               # KB5: quét (cửa sổ w, số mẫu âm K)
++│   │                               # KB5: toàn luật so với w=2, quét K
+ │   ├── kb4_kb6.py                 # KB4: quét lưới (λ, β) -> heatmap
+ │   │                               # KB6: đường cong khả năng mở rộng theo |R|
+ │   ├── ablation.py                 # Ablation: Rule-only / Node-only / Uniform / Full
+diff --git a/fkge_v2/config.py b/fkge_v2/config.py
+index 3fe3f97..062e6db 100644
+--- a/fkge_v2/config.py
++++ b/fkge_v2/config.py
+@@ -59,10 +59,10 @@ BRSET_PRIMARY_MODALITY = "fusion"
+ # ============================================================
+ class FKGE:
+     d = 32                  # chiều nhúng mặc định (KB3 sẽ quét d khác)
+-    w = 2                   # cửa sổ ngữ cảnh skip-gram (KB5 quét w khác)
++    w = None                # đồng xuất hiện trên toàn luật; KB5 giữ w=2 làm đối chứng cũ
+     K_neg = 5                # số mẫu âm negative sampling (KB5 quét K khác)
+     lam_node = 1.0           # lambda: trọng số L_node
+-    beta_rule = 1.0          # beta: trọng số L_rule (SGNS)
++    beta_rule = 1.0          # trọng số L_SGNS; L_rule độc lập chưa triển khai
+     # QUAN TRỌNG — ĐÃ HIỆU CHỈNH BẰNG THỰC NGHIỆM (xem ghi chú cuối file):
+     # dù loss_and_grad_step() đã CHUẨN HÓA mỗi thành phần theo số phần tử
+     # trong batch của nó (mean, không phải sum), gamma_inf=0.5/delta_pred=1.0
+@@ -79,6 +79,8 @@ class FKGE:
+     gamma_inf = 2.0           # gamma: trọng số L_inf (KL với FISA)
+     delta_pred = 20.0         # trọng số L_pred (cross-entropy với nhãn thật)
+     weight_decay = 1e-5
++    aggregation = "class_max"
++    max_pairs_per_epoch = 2000  # mẫu SGD đều từ mọi cặp toàn luật ở mỗi epoch
+     lr = 0.1                  # đã kiểm chứng: lr thấp hơn (0.01-0.05) khiến
+                                 # mô hình khó vượt qua baseline lớp đa số
+                                 # trong ngân sách epochs vừa phải
+@@ -105,7 +107,7 @@ KB4_MULTIPLIERS = [0.0, 0.1, 0.3, 1.0, 3.0, 10.0]
+ # ============================================================
+ # KB5: Độ nhạy theo (w, K) skip-gram
+ # ============================================================
+-KB5_W_GRID = [1, 2, 3]
++KB5_W_GRID = [None, 2]  # toàn luật (định nghĩa mới) so với cửa sổ w=2 (đối chứng)
+ KB5_K_GRID = [2, 5, 10]
+ 
+ # ============================================================
+diff --git a/fkge_v2/data/fkg_io.py b/fkge_v2/data/fkg_io.py
+index b32254f..c2bac6a 100644
+--- a/fkge_v2/data/fkg_io.py
++++ b/fkge_v2/data/fkg_io.py
+@@ -80,12 +80,27 @@ class FKGRuleBase:
+                 "rules": self.rules, "edges": self.edges,
+             }, f, ensure_ascii=False, indent=2)
+ 
+-    def sample_subset(self, ratio, seed=0):
+-        """Lấy mẫu ngẫu nhiên ratio% số luật — dùng mô phỏng KB6 khi chưa có
+-        đủ 5 mức nén thật từ FKGS Chương 2."""
++    def sample_subset(self, ratio, seed=0, min_class_fraction=0.0):
++        """Sample rules, optionally reserving a class quota within the subset."""
++        if not 0 < ratio <= 1 or not 0 <= min_class_fraction <= 1:
++            raise ValueError("ratio must be in (0, 1] and min_class_fraction in [0, 1].")
+         rng = random.Random(seed)
+         n_keep = max(1, int(math.ceil(len(self.rules) * ratio)))
+-        kept = rng.sample(self.rules, n_keep)
++        if min_class_fraction:
++            by_class = {}
++            for index, rule in enumerate(self.rules):
++                by_class.setdefault(rule["consequent_token"], []).append(index)
++            selected = set()
++            for label in sorted(by_class):
++                quota = min(len(by_class[label]), int(math.ceil(n_keep * min_class_fraction)))
++                selected.update(rng.sample(by_class[label], quota))
++            if len(selected) > n_keep:
++                raise ValueError("Class quotas exceed requested subset size.")
++            remainder = [index for index in range(len(self.rules)) if index not in selected]
++            selected.update(rng.sample(remainder, n_keep - len(selected)))
++            kept = [self.rules[index] for index in sorted(selected)]
++        else:
++            kept = rng.sample(self.rules, n_keep)
+         used_tokens = set()
+         for r in kept:
+             used_tokens.update(r["antecedent_tokens"])
+@@ -94,6 +109,14 @@ class FKGRuleBase:
+         new_edges = build_cooccurrence_edges(kept)
+         meta = dict(self.meta)
+         meta.update(edge_type_counts(new_edges))
++        meta["subset_sampling"] = {
++            "ratio": ratio,
++            "min_class_fraction": min_class_fraction,
++            "rule_class_counts": {
++                label: sum(rule["consequent_token"] == label for rule in kept)
++                for label in sorted({rule["consequent_token"] for rule in self.rules})
++            },
++        }
+         return FKGRuleBase(new_vocab, kept, new_edges, meta)
+ 
+ 
+diff --git a/fkge_v2/data/frb_package.py b/fkge_v2/data/frb_package.py
+index ca59474..75ad0e6 100644
+--- a/fkge_v2/data/frb_package.py
++++ b/fkge_v2/data/frb_package.py
+@@ -33,12 +33,28 @@ def load_frb_folds(package_root, modality="table"):
+         labels = sorted({entry[label_column] for entry in train_rows + test_rows},
+                         key=lambda value: float(value))
+         label_map = {value: index for index, value in enumerate(labels)}
+-        test_patient_ids = _load_validation_patient_ids(package_root, fold)
++        train_manifest = _load_split_rows(package_root, fold, "train")
++        validation_manifest = _load_split_rows(package_root, fold, "val")
++        test_patient_ids = [item["patient_id"] for item in validation_manifest]
+         if len(test_patient_ids) != len(test_rows):
+             raise ValueError(
+                 f"Fold {fold}: {len(test_rows)} FRB test rows but "
+                 f"{len(test_patient_ids)} validation patient IDs."
+             )
++        if len(train_manifest) != int(row["train_source_rows"]):
++            raise ValueError(f"Fold {fold}: source train row count differs from manifest.")
++        if len(train_rows) != int(row["train_rule_rows"]):
++            raise ValueError(f"Fold {fold}: FRB train row count differs from summary.")
++        train_patient_ids = {item["patient_id"] for item in train_manifest}
++        validation_patient_ids = set(test_patient_ids)
++        actual_overlap = train_patient_ids & validation_patient_ids
++        if actual_overlap:
++            raise ValueError(f"Fold {fold}: {len(actual_overlap)} patient IDs overlap.")
++        if len(train_patient_ids) != int(row["train_patient_count"]) or len(validation_patient_ids) != int(row["test_patient_count"]):
++            raise ValueError(f"Fold {fold}: patient counts differ from summary.")
++        for index, (rule, item) in enumerate(zip(test_rows, validation_manifest)):
++            if label_map[rule[label_column]] != int(item["retinopathy"]):
++                raise ValueError(f"Fold {fold}: validation label differs at row {index}.")
+ 
+         train_records = [
+             _to_record(entry, column_map, feature_modalities, label_column, label_map,
+@@ -52,9 +68,11 @@ def load_frb_folds(package_root, modality="table"):
+         ]
+         train_patients = int(row["train_patient_count"])
+         test_patients = int(row["test_patient_count"])
+-        overlap = int(row["patient_overlap_count"])
++        overlap = len(actual_overlap)
+         if overlap != 0:
+             raise ValueError(f"Fold {fold} has patient overlap count {overlap}.")
++        if int(row["patient_overlap_count"]) != overlap:
++            raise ValueError(f"Fold {fold}: summary overlap differs from manifest.")
+ 
+         folds.append({
+             "fold": fold,
+@@ -130,11 +148,11 @@ def _read_rule_rows(path):
+         return list(csv.DictReader(stream))
+ 
+ 
+-def _load_validation_patient_ids(package_root, fold):
++def _load_split_rows(package_root, fold, split):
+     path = os.path.join(package_root, "root_split", "train_kfold",
+-                        f"fold_{fold}", "val.csv")
++                        f"fold_{fold}", f"{split}.csv")
+     with open(path, "r", encoding="utf-8-sig", newline="") as stream:
+-        return [row["patient_id"] for row in csv.DictReader(stream)]
++        return list(csv.DictReader(stream))
+ 
+ 
+ def _to_record(row, column_map, feature_modalities, label_column, label_map, patient_id):
+diff --git a/fkge_v2/data/pipeline_interface.py b/fkge_v2/data/pipeline_interface.py
+index 9769e3c..a824e08 100644
+--- a/fkge_v2/data/pipeline_interface.py
++++ b/fkge_v2/data/pipeline_interface.py
+@@ -179,12 +179,13 @@ class PrefuzzifiedRulePipeline(RuleMiningPipeline):
+     khi mất cân bằng lớp, không phải lỗi cài đặt riêng của pipeline này.
+     """
+ 
+-    def __init__(self, sample_ratio=1.0, seed=0):
++    def __init__(self, sample_ratio=1.0, seed=0, min_class_fraction=0.0):
+         self._fitted = False
+         # sample_ratio<1.0: mô phỏng FKGS (nén luật) -- lấy mẫu con luật
+         # NGAY SAU KHI khai phá đầy đủ, CHỈ trên train của fold này.
+         self.sample_ratio = sample_ratio
+         self.seed = seed
++        self.min_class_fraction = min_class_fraction
+ 
+     def fit_and_mine(self, train_raw_records):
+         from collections import Counter
+@@ -235,7 +236,8 @@ class PrefuzzifiedRulePipeline(RuleMiningPipeline):
+         }
+         fkg = FKGRuleBase(vocab, rules, edges, meta)
+         if self.sample_ratio < 1.0:
+-            fkg = fkg.sample_subset(ratio=self.sample_ratio, seed=self.seed)
++            fkg = fkg.sample_subset(ratio=self.sample_ratio, seed=self.seed,
++                                    min_class_fraction=self.min_class_fraction)
+         self._fitted = True
+         return fkg, [self._to_sample(r) for r in train_raw_records]
+ 
+diff --git a/fkge_v2/experiments/baseline_comparison.py b/fkge_v2/experiments/baseline_comparison.py
+index 2017b90..0e7b58c 100644
+--- a/fkge_v2/experiments/baseline_comparison.py
++++ b/fkge_v2/experiments/baseline_comparison.py
+@@ -84,11 +84,16 @@ def run_baseline_comparison(n_seeds=None):
+         "FKG-E unsupervised": [],
+         "FKG-E full": [],
+     }
++    fold_results = {method: {} for method in collected}
++
++    def record(method, fold, result):
++        collected[method].append(result)
++        fold_results[method].setdefault(fold, []).append(result)
+ 
+     for spec, fkg, train, validation, fisa in contexts:
+         fisa_result = benchmark_evaluate(fisa, validation)
+         fisa_result["train_time_s"] = fisa_result["fit_time_s"]
+-        collected["FISA lookup"].append(fisa_result)
++        record("FISA lookup", spec["fold"], fisa_result)
+ 
+         for seed_offset in range(n_seeds):
+             seed = C.FKGE.seed + seed_offset
+@@ -107,29 +112,43 @@ def run_baseline_comparison(n_seeds=None):
+                 result = benchmark_evaluate(classifier, validation)
+                 result["train_time_s"] = embedding.train_time_s
+                 result["n_parameters"] = int(embedding.E.size)
+-                collected[method].append(result)
++                record(method, spec["fold"], result)
+ 
+-            collected["MLP fuzzy features"].append(
+-                _mlp_result(train, validation, fkg, seed))
++            record("MLP fuzzy features", spec["fold"],
++                   _mlp_result(train, validation, fkg, seed))
+             for method, overrides in {
+                 "FKG-E unsupervised": {"delta_pred": 0.0},
+                 "FKG-E full": {},
+             }.items():
+                 model = FKGE(fkg, **default_fkge_kwargs(seed=seed, **overrides))
+                 model.fit(fisa_model=fisa, train_samples=train)
+-                collected[method].append(benchmark_evaluate(
++                record(method, spec["fold"], benchmark_evaluate(
+                     model, validation, reference_model=fisa))
+ 
+     rows = []
+     for method, results in collected.items():
+-        rows.append({
++        row = {
+             "method": method,
+             "status": "completed",
+             "official_baseline": method in {
+                 "FISA lookup", "MLP fuzzy features", "FKG-E unsupervised", "FKG-E full"
+             },
+             **aggregate_runs(results),
+-        })
++        }
++        for metric in ("auc_roc", "balanced_accuracy", "f1", "agreement",
++                       "fidelity_balanced_accuracy", "cohen_kappa"):
++            means = [float(np.mean([result[metric] for result in per_seed
++                                    if metric in result and np.isfinite(result[metric])]))
++                     for per_seed in fold_results[method].values()
++                     if any(metric in result and np.isfinite(result[metric])
++                            for result in per_seed)]
++            if means:
++                sampled = np.random.RandomState(42).choice(
++                    means, size=(10000, len(means)), replace=True)
++                low, high = np.percentile(sampled.mean(axis=1), [2.5, 97.5])
++                row[f"{metric}_ci95_low"] = float(low)
++                row[f"{metric}_ci95_high"] = float(high)
++        rows.append(row)
+ 
+     rows.extend([
+         {
+@@ -155,6 +174,7 @@ def run_baseline_comparison(n_seeds=None):
+         "validation_folds": len(contexts),
+         "n_seeds": n_seeds,
+         "lite_models_are_smoke_only": True,
++        "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples",
+     }
+ 
+ 
+diff --git a/fkge_v2/experiments/common.py b/fkge_v2/experiments/common.py
+index 0caef9d..869e9ed 100644
+--- a/fkge_v2/experiments/common.py
++++ b/fkge_v2/experiments/common.py
+@@ -74,6 +74,8 @@ def default_fkge_kwargs(**overrides):
+         "gamma_inf": C.FKGE.gamma_inf,
+         "delta_pred": C.FKGE.delta_pred,
+         "weight_decay": C.FKGE.weight_decay,
++        "aggregation": C.FKGE.aggregation,
++        "max_pairs_per_epoch": C.FKGE.max_pairs_per_epoch,
+         "lr": C.FKGE.lr,
+         "epochs": C.FKGE.epochs,
+         "pooling": C.FKGE.pooling,
+@@ -105,6 +107,8 @@ def aggregate_runs(results, prefix=""):
+         "accuracy", "balanced_accuracy", "f1", "f1_macro", "auc_roc", "auc_pr",
+         "sensitivity", "specificity", "avg_time_per_query_ms", "total_time_s",
+         "train_time_s", "representation_build_time_s", "agreement",
++        "fidelity_balanced_accuracy", "cohen_kappa", "fidelity_bound_coverage",
++        "fidelity_bound_violations",
+         "mean_kl_divergence", "n_parameters", "embedding_memory_bytes",
+     ]
+     output = {}
+diff --git a/fkge_v2/experiments/kb1_kb2.py b/fkge_v2/experiments/kb1_kb2.py
+index be1b522..0426eb2 100644
+--- a/fkge_v2/experiments/kb1_kb2.py
++++ b/fkge_v2/experiments/kb1_kb2.py
+@@ -52,8 +52,10 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
+         "FKG-E unsupervised": [],
+         "FKG-E full": [],
+     }
++    fold_results = {method: {} for method in method_results}
+     observations = []
+     rule_counts = []
++    rule_class_counts = []
+ 
+     for spec in specs:
+         pipeline = pipeline_factory(sample_ratio, spec["fold"])
+@@ -62,6 +64,10 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
+         if not fkg.edges:
+             raise RuntimeError(f"Fold {spec['fold']} produced no FKG edges; L_node is undefined.")
+         rule_counts.append(len(fkg))
++        rule_class_counts.append({
++            label: sum(rule["consequent_token"] == label for rule in fkg.rules)
++            for label in fkg.class_tokens
++        })
+ 
+         fisa_sequential = FISA(fkg, inference_mode="sequential").fit()
+         fisa_lookup = FISA(fkg, inference_mode="lookup").fit()
+@@ -69,6 +75,8 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
+         lookup_result = benchmark_evaluate(fisa_lookup, test_samples)
+         method_results["FISA sequential"].append(sequential_result)
+         method_results["FISA lookup"].append(lookup_result)
++        fold_results["FISA sequential"][spec["fold"]] = [sequential_result]
++        fold_results["FISA lookup"][spec["fold"]] = [lookup_result]
+ 
+         if sequential_result["y_pred"] != lookup_result["y_pred"]:
+             raise AssertionError(
+@@ -90,6 +98,7 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
+                     result, test_samples,
+                     model_name=f"{method} ({dataset_name}, fold={spec['fold']}, seed={seed})")
+                 method_results[method].append(result)
++                fold_results[method].setdefault(spec["fold"], []).append(result)
+                 observations.append({
+                     "fold": spec["fold"],
+                     "seed": seed,
+@@ -99,6 +108,9 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
+                     "accuracy": result["accuracy"],
+                     "balanced_accuracy": result["balanced_accuracy"],
+                     "agreement": result["agreement"],
++                    "fidelity_balanced_accuracy": result["fidelity_balanced_accuracy"],
++                    "cohen_kappa": result["cohen_kappa"],
++                    "fidelity_bound_coverage": result["fidelity_bound_coverage"],
+                     "mean_kl_divergence": result["mean_kl_divergence"],
+                     "avg_time_per_query_ms": result["avg_time_per_query_ms"],
+                 })
+@@ -106,6 +118,21 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
+     methods = []
+     for method, results in method_results.items():
+         row = {"method": method, **aggregate_runs(results)}
++        # The fold, rather than the seed, is the independent unit for the
++        # interval. First average seeds within each fold, then bootstrap folds.
++        for metric in ("auc_roc", "balanced_accuracy", "agreement",
++                       "fidelity_balanced_accuracy", "cohen_kappa"):
++            fold_means = [float(np.mean([result[metric] for result in per_seed
++                                         if metric in result and np.isfinite(result[metric])]))
++                          for per_seed in fold_results[method].values()
++                          if any(metric in result and np.isfinite(result[metric])
++                                 for result in per_seed)]
++            if fold_means:
++                rng = np.random.RandomState(42)
++                sampled = rng.choice(fold_means, size=(10000, len(fold_means)), replace=True)
++                low, high = np.percentile(sampled.mean(axis=1), [2.5, 97.5])
++                row[f"{metric}_ci95_low"] = float(low)
++                row[f"{metric}_ci95_high"] = float(high)
+         if method.startswith("FISA"):
+             row["train_time_s_mean"] = float(np.mean(
+                 [result["fit_time_s"] for result in results]))
+@@ -124,8 +151,13 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
+         "n_seeds_per_fold": n_seeds_per_fold,
+         "n_rules_mean": float(np.mean(rule_counts)),
+         "n_rules_per_fold": rule_counts,
++        "n_rules_by_class_per_fold": rule_class_counts,
+         "patient_overlap_count": max(
+             item.get("patient_overlap_count", 0) for item in source_metadata),
++        "objective_status": "partial_L_SGNS_L_node_L_inf_L_pred_L2_only",
++        "teacher_calibration": "not_available_without_patient_linked_inner_training_rows",
++        "decision_threshold": "argmax_uncalibrated",
++        "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples",
+         "methods": methods,
+         "observations": observations,
+         "fold_metadata": source_metadata,
+@@ -172,7 +204,8 @@ def run_kb2():
+     print("=" * 72)
+     specs = primary_fold_specs()
+     pipeline_factory = lambda ratio, seed: PrefuzzifiedRulePipeline(
+-        seed=seed, sample_ratio=ratio)
++        seed=seed, sample_ratio=ratio,
++        min_class_fraction=0.4 if ratio < 1 else 0.0)
+     full = _run_fold_specs(specs, f"BRSET {C.BRSET_PRIMARY_MODALITY} / FKG", "KB2-full",
+                            pipeline_factory, sample_ratio=1.0)
+     sampled = _run_fold_specs(specs, f"BRSET {C.BRSET_PRIMARY_MODALITY} / FKGS 30%", "KB2-sampled",
+@@ -184,13 +217,24 @@ def run_kb2():
+ 
+     full_auc = method_value(full, "FKG-E full", "auc_roc_mean")
+     sampled_auc = method_value(sampled, "FKG-E full", "auc_roc_mean")
++    full_balacc = method_value(full, "FKG-E full", "balanced_accuracy_mean")
++    sampled_balacc = method_value(sampled, "FKG-E full", "balanced_accuracy_mean")
++    sampled_teacher_balacc = method_value(sampled, "FISA lookup", "balanced_accuracy_mean")
++    sampled_agreement = method_value(sampled, "FKG-E full", "agreement_mean")
+     full_time = method_value(full, "FKG-E full", "avg_time_per_query_ms_mean")
+     sampled_time = method_value(sampled, "FKG-E full", "avg_time_per_query_ms_mean")
+     verdict = {
++        "sampled_min_class_fraction": 0.4,
+         "delta_auc_sampled_minus_full": sampled_auc - full_auc,
++        "delta_balanced_accuracy_sampled_minus_full": sampled_balacc - full_balacc,
++        "sampled_fisa_balanced_accuracy": sampled_teacher_balacc,
++        "sampled_fkge_fisa_agreement": sampled_agreement,
+         "inference_speed_ratio_full_over_sampled": full_time / max(sampled_time, 1e-12),
+         "interpretation": (
+-            "cong_huong" if sampled_auc >= full_auc - 0.02 and sampled_time < full_time
++            "fisa_teacher_collapsed_fidelity_unresolved" if sampled_teacher_balacc <= 0.52
++            else "quality_cost_descriptive_only"
++            if sampled_auc >= full_auc - 0.02
++            and sampled_balacc >= full_balacc - 0.02 and sampled_time < full_time
+             else "triet_tieu_hoac_khong_ro"
+         ),
+     }
+diff --git a/fkge_v2/experiments/kb3_kb5.py b/fkge_v2/experiments/kb3_kb5.py
+index eca5493..134dd41 100644
+--- a/fkge_v2/experiments/kb3_kb5.py
++++ b/fkge_v2/experiments/kb3_kb5.py
+@@ -80,19 +80,21 @@ def run_kb5(w_grid=None, k_grid=None, n_seeds=None):
+                         model, validation, reference_model=fisa))
+             row = {
+                 "w": window,
++                "cooccurrence": "full_rule" if window is None else f"window_{window}",
+                 "K": negatives,
+                 **aggregate_runs(results),
+                 "validation_folds": len(contexts),
+                 "n_seeds": n_seeds,
+             }
+             rows.append(row)
+-            print(f"  w={window}, K={negatives}: AUC validation={row['auc_roc_mean']:.4f}")
++            print(f"  {row['cooccurrence']}, K={negatives}: AUC validation={row['auc_roc_mean']:.4f}")
+     auc_values = [row["auc_roc_mean"] for row in rows]
+     return {
+         "metric": "auc_roc_validation",
+         "rows": rows,
+         "auc_range": float(max(auc_values) - min(auc_values)),
+         "hypothesis_variation_below_0_02": max(auc_values) - min(auc_values) < 0.02,
++        "hypothesis_status": "descriptive_only_requires_sgns_contribution",
+         "test_evaluation_status": "pending_outer_test_frb",
+     }
+ 
+diff --git a/fkge_v2/models/fisa.py b/fkge_v2/models/fisa.py
+index ac6d437..2df6b49 100644
+--- a/fkge_v2/models/fisa.py
++++ b/fkge_v2/models/fisa.py
+@@ -197,16 +197,19 @@ def majority_class_baseline(samples):
+ 
+ 
+ def warn_if_not_beating_majority(result, samples, model_name="Mô hình", margin=0.02):
+-    """In cảnh báo rõ ràng nếu accuracy không vượt majority baseline + margin."""
++    """Flag class collapse using balanced accuracy, not raw accuracy alone."""
+     base_acc, base_label = majority_class_baseline(samples)
+     acc = result["accuracy"]
+-    if acc <= base_acc + margin:
+-        print(f"  !! CẢNH BÁO: {model_name} có accuracy={acc:.4f}, KHÔNG vượt rõ rệt "
+-              f"baseline lớp đa số ({base_acc:.4f}, luôn đoán '{base_label}'). "
+-              f"Có thể mô hình đang sụp về đoán theo lớp đa số -- kiểm tra lại "
+-              f"siêu tham số (đặc biệt delta_pred/gamma_inf) trước khi báo cáo "
+-              f"kết quả này.")
++    bal_acc = result.get("balanced_accuracy", 0.5)
++    if bal_acc <= 0.52:
++        print(f"  !! CẢNH BÁO: {model_name} có BalAcc={bal_acc:.4f}; "
++              f"cần kiểm tra dự đoán một lớp (accuracy={acc:.4f}, "
++              f"baseline đa số={base_acc:.4f}, lớp '{base_label}').")
+         return False
++    if acc <= base_acc + margin:
++        print(f"  {model_name}: accuracy={acc:.4f} gần hoặc dưới mốc lớp đa số "
++              f"{base_acc:.4f}, nhưng BalAcc={bal_acc:.4f}; "
++              "đọc AUC/BalAcc/F1 thay cho accuracy đơn lẻ.")
+     return True
+ 
+ 
+diff --git a/fkge_v2/models/fkge.py b/fkge_v2/models/fkge.py
+index d058948..b0a6fdb 100644
+--- a/fkge_v2/models/fkge.py
++++ b/fkge_v2/models/fkge.py
+@@ -1,16 +1,15 @@
+ """
+-models/fkge.py — Mô hình FKG-E, cài đặt đúng công thức Chương 3 (Mục 3.4):
++models/fkge.py — Phần đã cài đặt của FKG-E (Mục 3.4); chưa có L_edge,
++L_A, L_B, L_rule và hiệu chỉnh giáo viên/ngưỡng theo inner validation:
+ 
+   - Token hoá luật (Định nghĩa 3.7, Mục 3.4.2)
+   - Skip-gram + negative sampling, 2 bảng nhúng nguồn/ngữ cảnh (Công thức 3.81-3.83)
+   - Node Loss: shifted-cosine so khớp mu_ij (Công thức 3.91-3.94)
+   - Nhúng luật bằng weighted/mean/max pooling (Định nghĩa 3.3, Mục 3.4.3)
+-  - Suy diễn: p_E(c|x) = sum_k alpha_k(x) p_k(c)   (Công thức 3.107, 3.109)
+-      với p_k(c) là phân phối CỐ ĐỊNH suy ra từ hệ quả ký hiệu của luật k
+-      (one-hot làm mượt), KHÔNG có đầu phân loại W_class riêng — đúng kiến
+-      trúc "suy luận mềm bằng trộn luật" của bản luận án đã hợp nhất.
++  - SGNS lấy đồng xuất hiện trên toàn luật; p_E lấy điểm luật lớn nhất
++    của từng lớp rồi chuẩn hóa softmax.
+   - L_inf (KL với FISA đã hiệu chỉnh) và L_pred (cross-entropy với nhãn thật)
+-    đều tác động lên CÙNG một p_E qua CÙNG một đường truyền gradient qua alpha.
++    đều tác động lên CÙNG một p_E qua điểm luật thắng của từng lớp.
+ 
+ Toàn bộ gradient được viết tay và đã kiểm chứng bằng gradient checking
+ (so khớp với sai phân hữu hạn) trong hàm _gradient_check() ở cuối file.
+@@ -32,16 +31,25 @@ def softmax(x, axis=-1):
+ 
+ 
+ class FKGE:
+-    def __init__(self, fkg, d=32, w=2, K_neg=5, lam_node=1.0, beta_rule=1.0,
++    def __init__(self, fkg, d=32, w=None, K_neg=5, lam_node=1.0, beta_rule=1.0,
+                  gamma_inf=0.5, delta_pred=1.0, lr=0.01, weight_decay=1e-5,
+                  epochs=60, tau_softmax=1.0, pooling="weighted", alpha_pool=0.7,
+-                 label_smooth=0.1, seed=42, verbose=False):
++                 label_smooth=0.1, seed=42, verbose=False,
++                 aggregation="class_max", max_pairs_per_epoch=20000):
+         self.fkg = fkg
+         self.vocab = fkg.vocab
+         self.token2idx = fkg.token2idx
+         self.V = len(self.vocab)
+         self.d = d
+         self.w = w
++        self.aggregation = aggregation
++        if aggregation not in {"class_max", "mixture"}:
++            raise ValueError("aggregation must be 'class_max' or 'mixture'.")
++        if w is not None and w < 1:
++            raise ValueError("w must be positive or None for full-rule co-occurrence.")
++        if max_pairs_per_epoch is not None and max_pairs_per_epoch < 1:
++            raise ValueError("max_pairs_per_epoch must be positive or None.")
++        self.max_pairs_per_epoch = max_pairs_per_epoch
+         self.K_neg = K_neg
+         self.lam_node = lam_node
+         self.beta_rule = beta_rule
+@@ -66,6 +74,9 @@ class FKGE:
+         self._build_corpus()
+         self._build_edges()
+         self._build_rule_class_dist()
++        self.rule_class_indices = np.asarray([
++            self.class2idx[r["consequent_token"]] for r in self.fkg.rules
++        ], dtype=np.int64)
+         self.verbose = verbose
+         self.history = defaultdict(list)
+ 
+@@ -88,7 +99,8 @@ class FKGE:
+         for ids in self.rule_token_ids:
+             n = len(ids)
+             for t in range(n):
+-                lo, hi = max(0, t - self.w), min(n, t + self.w + 1)
++                lo = 0 if self.w is None else max(0, t - self.w)
++                hi = n if self.w is None else min(n, t + self.w + 1)
+                 for c in range(lo, hi):
+                     if c != t:
+                         pairs.append((ids[t], ids[c]))
+@@ -154,7 +166,15 @@ class FKGE:
+         q_x, active = self.query_embedding(membership)
+         s = rule_emb @ q_x / self.tau
+         alpha = softmax(s)
+-        p_E = alpha @ self.rule_pk
++        if self.aggregation == "class_max":
++            class_scores = np.full(self.n_classes, -1e9)
++            for class_idx in range(self.n_classes):
++                eligible = np.flatnonzero(self.rule_class_indices == class_idx)
++                if eligible.size:
++                    class_scores[class_idx] = np.max(s[eligible])
++            p_E = softmax(class_scores)
++        else:
++            p_E = alpha @ self.rule_pk
+         return p_E, alpha, s, q_x, active
+ 
+     def loss_and_grad_step(self, batch_pairs, fisa_targets_batch=None,
+@@ -164,7 +184,7 @@ class FKGE:
+         gEc = np.zeros_like(self.Ec)
+         total_loss = 0.0
+ 
+-        # ---- 1) Rule Loss (SGNS), Công thức (3.83), sửa đúng dấu mẫu âm ----
++        # ---- 1) SGNS, Công thức (3.83); không phải L_rule độc lập ----
+         # QUAN TRỌNG: chuẩn hóa theo SỐ CẶP trong batch (dùng trung bình thay
+         # vì tổng). Nếu không chuẩn hóa, SGNS (thường có hàng trăm cặp/batch)
+         # sẽ áp đảo hoàn toàn Pred/Inf Loss (thường chỉ vài mẫu/batch) về mặt
+@@ -241,11 +261,24 @@ class FKGE:
+                 dL_dpE = np.zeros(self.n_classes)
+                 dL_dpE[y_idx] = -scale / (p_E[y_idx] + 1e-12)
+ 
+-            # p_E = alpha @ rule_pk  =>  dL/dalpha_k = sum_c dL/dpE_c * pk[k,c]
+-            dL_dalpha = self.rule_pk @ dL_dpE
+-            # alpha = softmax(s) => dL/ds_j = alpha_j*(dL/dalpha_j - sum_k alpha_k dL/dalpha_k)
+-            bar = np.sum(alpha * dL_dalpha)
+-            dL_ds = alpha * (dL_dalpha - bar) / self.tau
++            if self.aggregation == "class_max":
++                # Softmax over class maxima. np.argmax gives a deterministic
++                # subgradient when several rules tie for the maximum.
++                dL_dclass = scale * p_E.copy()
++                if kind == "inf":
++                    dL_dclass -= scale * p_F
++                else:
++                    dL_dclass[y_idx] -= scale
++                dL_ds = np.zeros(len(self.fkg.rules))
++                for class_idx in range(self.n_classes):
++                    eligible = np.flatnonzero(self.rule_class_indices == class_idx)
++                    if eligible.size:
++                        winner = eligible[np.argmax(s[eligible])]
++                        dL_ds[winner] += dL_dclass[class_idx] / self.tau
++            else:
++                dL_dalpha = self.rule_pk @ dL_dpE
++                bar = np.sum(alpha * dL_dalpha)
++                dL_ds = alpha * (dL_dalpha - bar) / self.tau
+ 
+             # s_k = rule_emb_k . q_x
+             d_rule_emb += np.outer(dL_ds, q_x)
+@@ -283,6 +316,8 @@ class FKGE:
+         # ---- Cập nhật (SGD + weight decay), Công thức (3.98) tổng hợp ----
+         gEs += self.weight_decay * self.Es
+         gEc += self.weight_decay * self.Ec
++        total_loss += 0.5 * self.weight_decay * (
++            np.sum(self.Es ** 2) + np.sum(self.Ec ** 2))
+         self.Es -= self.lr * gEs
+         self.Ec -= self.lr * gEc
+         return total_loss
+@@ -298,13 +333,17 @@ class FKGE:
+         random.seed(self.seed)
+         np.random.seed(self.seed)
+         t0 = time.time()
+-        n_pairs = len(self.sg_pairs)
+         for epoch in range(self.epochs):
+-            random.shuffle(self.sg_pairs)
++            if self.max_pairs_per_epoch is not None and len(self.sg_pairs) > self.max_pairs_per_epoch:
++                epoch_pairs = random.sample(self.sg_pairs, self.max_pairs_per_epoch)
++            else:
++                epoch_pairs = list(self.sg_pairs)
++                random.shuffle(epoch_pairs)
++            n_pairs = len(epoch_pairs)
+             epoch_loss = 0.0
+             n_batches = max(1, (n_pairs + batch_size - 1) // batch_size)
+             for b in range(n_batches):
+-                batch_pairs = self.sg_pairs[b * batch_size:(b + 1) * batch_size]
++                batch_pairs = epoch_pairs[b * batch_size:(b + 1) * batch_size]
+                 fisa_targets_batch, pred_batch = None, None
+                 if train_samples:
+                     mb = random.sample(train_samples, min(8, len(train_samples)))
+@@ -423,14 +462,14 @@ def _gradient_check():
+     for (tok, dim) in idx_check:
+         Es_plus = Es_save.copy(); Es_plus[tok, dim] += eps
+         Es_minus = Es_save.copy(); Es_minus[tok, dim] -= eps
+-        random.seed(1); np.random.seed(1)
++        random.seed(0); np.random.seed(0)
+         l_plus = compute_loss_only(Es_plus, Ec_save)
+-        random.seed(1); np.random.seed(1)
++        random.seed(0); np.random.seed(0)
+         l_minus = compute_loss_only(Es_minus, Ec_save)
+         numeric_grad = (l_plus - l_minus) / (2 * eps)
+ 
+         model.Es, model.Ec = Es_save.copy(), Ec_save.copy()
+-        random.seed(1); np.random.seed(1)
++        random.seed(0); np.random.seed(0)
+         gEs_analytic = np.zeros_like(model.Es)
+         # Gọi lại nội bộ để lấy gradient thay vì cập nhật: tái dùng bằng cách
+         # đọc chênh lệch tham số trước/sau 1 bước với lr biết trước.
+diff --git a/fkge_v2/models/metrics.py b/fkge_v2/models/metrics.py
+index 14b4d2c..f3be418 100644
+--- a/fkge_v2/models/metrics.py
++++ b/fkge_v2/models/metrics.py
+@@ -100,14 +100,38 @@ def fidelity_metrics(reference_probabilities, candidate_probabilities, class_tok
+ 
+     agreements = []
+     divergences = []
++    reference_labels = []
++    candidate_labels = []
++    bound_holds = []
+     for reference, candidate in zip(reference_probabilities, candidate_probabilities):
+         p = np.asarray([reference.get(c, 0.0) for c in class_tokens], dtype=np.float64)
+         q = np.asarray([candidate.get(c, 0.0) for c in class_tokens], dtype=np.float64)
+         p = np.clip(p / max(p.sum(), 1e-12), 1e-12, 1.0)
+         q = np.clip(q / max(q.sum(), 1e-12), 1e-12, 1.0)
+-        agreements.append(int(np.argmax(p) == np.argmax(q)))
+-        divergences.append(float(np.sum(p * np.log(p / q))))
++        reference_label = int(np.argmax(p))
++        candidate_label = int(np.argmax(q))
++        divergence = float(np.sum(p * np.log(p / q)))
++        margin = float(np.sort(p)[-1] - np.sort(p)[-2]) if len(p) > 1 else 1.0
++        reference_labels.append(reference_label)
++        candidate_labels.append(candidate_label)
++        agreements.append(int(reference_label == candidate_label))
++        divergences.append(divergence)
++        bound_holds.append(divergence < margin * margin / 2.0)
++    reference_labels = np.asarray(reference_labels)
++    candidate_labels = np.asarray(candidate_labels)
++    recalls = [float(np.mean(candidate_labels[reference_labels == index] == index))
++               for index in range(len(class_tokens)) if np.any(reference_labels == index)]
++    reference_freq = np.bincount(reference_labels, minlength=len(class_tokens)) / len(agreements)
++    candidate_freq = np.bincount(candidate_labels, minlength=len(class_tokens)) / len(agreements)
++    expected_agreement = float(np.dot(reference_freq, candidate_freq))
++    observed_agreement = float(np.mean(agreements))
+     return {
+-        "agreement": float(np.mean(agreements)),
++        "agreement": observed_agreement,
++        "fidelity_balanced_accuracy": float(np.mean(recalls)) if len(recalls) == len(class_tokens) else math.nan,
++        "cohen_kappa": ((observed_agreement - expected_agreement) / (1 - expected_agreement)
++                        if expected_agreement < 1 else math.nan),
+         "mean_kl_divergence": float(np.mean(divergences)),
++        "fidelity_bound_coverage": float(np.mean(bound_holds)),
++        "fidelity_bound_violations": int(sum(hold and not agree
++                                              for hold, agree in zip(bound_holds, agreements))),
+     }
+diff --git a/fkge_v2/report/generate_report.py b/fkge_v2/report/generate_report.py
+index f8c69f7..4af9493 100644
+--- a/fkge_v2/report/generate_report.py
++++ b/fkge_v2/report/generate_report.py
+@@ -42,7 +42,8 @@ def _table(rows, fields, headers=None):
+         for field in fields:
+             value = row.get(field, "")
+             if isinstance(value, float):
+-                value = f"{value:.4f}"
++                value = (f"{value:.2e}" if 0 < abs(value) < 0.00005
++                         else f"{value:.4f}")
+             values.append(str(value))
+         lines.append("| " + " | ".join(values) + " |")
+     return "\n".join(lines)
+@@ -67,9 +68,14 @@ def report_kb1():
+     if not data:
+         return ""
+     rows = _flatten_kb1(data)
+-    fields = ["dataset", "method", "n_rules", "auc_roc_mean", "f1_mean",
+-              "accuracy_mean", "balanced_accuracy_mean", "agreement_mean",
+-              "mean_kl_divergence_mean", "avg_time_per_query_ms_mean",
++    fields = ["dataset", "method", "n_rules", "auc_roc_mean",
++              "auc_roc_ci95_low", "auc_roc_ci95_high", "f1_mean",
++              "accuracy_mean", "balanced_accuracy_mean",
++              "balanced_accuracy_ci95_low", "balanced_accuracy_ci95_high",
++              "agreement_mean", "agreement_ci95_low", "agreement_ci95_high",
++              "fidelity_balanced_accuracy_mean", "cohen_kappa_mean",
++              "fidelity_bound_coverage_mean", "mean_kl_divergence_mean",
++              "avg_time_per_query_ms_mean",
+               "train_time_s_mean", "synthetic"]
+     _write_csv("table_KB1.csv", rows, fields)
+ 
+@@ -99,7 +105,12 @@ def report_kb1():
+     fig.tight_layout()
+     fig.savefig(os.path.join(FIG_DIR, "kb1_comparison.png"), dpi=150)
+     plt.close(fig)
+-    return _table(rows, fields)
++    return (_table(rows, fields)
++            + "\n\nKhoảng tin cậy 95%: bootstrap theo 5 fold, lấy trung bình seed "
++              "trong từng fold (10.000 lượt lấy mẫu). Objective hiện chỉ gồm "
++              "L_SGNS, L_node, L_inf, L_pred và L2; chưa có L_edge, L_A, "
++              "L_B, L_rule. FISA và ngưỡng quyết định chưa được hiệu chỉnh "
++              "trên tập xác thực lồng theo bệnh nhân.")
+ 
+ 
+ def report_kb2():
+@@ -108,13 +119,20 @@ def report_kb2():
+         return ""
+     rows = _flatten_kb1(data["rows"])
+     fields = ["dataset", "method", "n_rules", "auc_roc_mean",
+-              "balanced_accuracy_mean", "avg_time_per_query_ms_mean"]
++              "auc_roc_ci95_low", "auc_roc_ci95_high", "balanced_accuracy_mean",
++              "balanced_accuracy_ci95_low", "balanced_accuracy_ci95_high",
++              "agreement_mean", "agreement_ci95_low", "agreement_ci95_high",
++              "fidelity_balanced_accuracy_mean",
++              "avg_time_per_query_ms_mean"]
+     _write_csv("table_KB2.csv", rows, fields)
+     verdict = data["verdict"]
+     return (_table(rows, fields) + "\n\n"
+-            + f"Kết luận tự động: `{verdict['interpretation']}`; "
++            + f"Trạng thái đánh giá: `{verdict['interpretation']}`; "
+             + f"delta AUC={verdict['delta_auc_sampled_minus_full']:.4f}, "
+-            + f"tỉ số thời gian={verdict['inference_speed_ratio_full_over_sampled']:.4f}.")
++            + f"delta BalAcc={verdict['delta_balanced_accuracy_sampled_minus_full']:.4f}, "
++            + f"tỉ số thời gian={verdict['inference_speed_ratio_full_over_sampled']:.4f}. "
++            + "Tập con 30% dùng hạn ngạch tối thiểu 40% luật cho mỗi lớp; "
++              "đây là mô phỏng lấy mẫu, không phải FKGS chính thức.")
+ 
+ 
+ def report_kb3():
+@@ -168,13 +186,14 @@ def report_kb5():
+     if not data:
+         return ""
+     rows = data["rows"]
+-    fields = ["w", "K", "auc_roc_mean", "auc_pr_mean", "agreement_mean"]
++    fields = ["cooccurrence", "K", "auc_roc_mean", "auc_pr_mean", "agreement_mean"]
+     _write_csv("table_KB5.csv", rows, fields)
+     fig, axis = plt.subplots(figsize=(6.5, 4.2))
+-    for window in sorted({row["w"] for row in rows}):
++    for window in sorted({row["w"] for row in rows}, key=lambda value: (-1 if value is None else value)):
+         subset = [row for row in rows if row["w"] == window]
+         axis.plot([row["K"] for row in subset],
+-                  [row["auc_roc_mean"] for row in subset], marker="o", label=f"w={window}")
++                  [row["auc_roc_mean"] for row in subset], marker="o",
++                  label="toàn luật" if window is None else f"w={window}")
+     axis.set_xlabel("Số mẫu âm K")
+     axis.set_ylabel("AUC-ROC validation")
+     axis.legend()
+@@ -182,8 +201,8 @@ def report_kb5():
+     fig.savefig(os.path.join(FIG_DIR, "kb5_wK_sensitivity.png"), dpi=150)
+     plt.close(fig)
+     return (_table(rows, fields) + "\n\n"
+-            + f"Biên độ AUC={data['auc_range']:.4f}; H-E5="
+-            + ("ủng hộ" if data["hypothesis_variation_below_0_02"] else "không ủng hộ"))
++            + f"Biên độ AUC={data['auc_range']:.4f}. Đây là thống kê mô tả; "
++            "chưa kết luận H-E5 khi đóng góp của SGNS chưa được xác nhận.")
+ 
+ 
+ def report_kb6():
+@@ -242,7 +261,10 @@ def report_baseline():
+         return ""
+     rows = data["rows"]
+     fields = ["method", "status", "official_baseline", "auc_roc_mean",
+-              "f1_mean", "accuracy_mean", "train_time_s_mean",
++              "auc_roc_ci95_low", "auc_roc_ci95_high", "f1_mean",
++              "balanced_accuracy_mean", "balanced_accuracy_ci95_low",
++              "balanced_accuracy_ci95_high", "accuracy_mean", "agreement_mean",
++              "fidelity_balanced_accuracy_mean", "cohen_kappa_mean", "train_time_s_mean",
+               "avg_time_per_query_ms_mean", "n_parameters_mean"]
+     _write_csv("table_baseline.csv", rows, fields)
+     completed = [row for row in rows if row["status"] == "completed"]
+@@ -255,7 +277,9 @@ def report_baseline():
+     fig.tight_layout()
+     fig.savefig(os.path.join(FIG_DIR, "baseline_comparison.png"), dpi=150)
+     plt.close(fig)
+-    return _table(rows, fields)
++    return (_table(rows, fields) + "\n\nKhoảng tin cậy 95% lấy mẫu lại theo "
++            "5 fold (trung bình seed trong từng fold). Các baseline hậu tố "
++            "-lite chỉ dùng kiểm tra luồng, không là đối chứng chuẩn.")
+ 
+ 
+ def main():
+diff --git a/fkge_v2/report/run_manifest.py b/fkge_v2/report/run_manifest.py
+index 0e3021d..7deab1c 100644
+--- a/fkge_v2/report/run_manifest.py
++++ b/fkge_v2/report/run_manifest.py
+@@ -18,6 +18,7 @@ def create_manifest(run_id, quick, requested_experiments, argv):
+         "requested_experiments": requested_experiments,
+         "argv": argv,
+         "source_revision": _git_revision(),
++        "source_dirty": _git_dirty(),
+         "environment": {
+             "python": sys.version,
+             "platform": platform.platform(),
+@@ -39,6 +40,8 @@ def create_manifest(run_id, quick, requested_experiments, argv):
+             "lambda_inf": C.FKGE.gamma_inf,
+             "lambda_pred": C.FKGE.delta_pred,
+             "weight_decay": C.FKGE.weight_decay,
++            "aggregation": C.FKGE.aggregation,
++            "max_pairs_per_epoch": C.FKGE.max_pairs_per_epoch,
+             "brset_primary_modality": C.BRSET_PRIMARY_MODALITY,
+         },
+         "data_sources": {
+@@ -82,3 +85,15 @@ def _git_revision():
+         ).strip()
+     except (OSError, subprocess.CalledProcessError):
+         return None
++
++
++def _git_dirty():
++    repository = C.PATHS.REPOSITORY_ROOT.replace("\\", "/")
++    try:
++        return bool(subprocess.check_output(
++            ["git", "-c", f"safe.directory={repository}", "status", "--porcelain",
++             "--untracked-files=no", "--", "fkge_v2"],
++            cwd=C.PATHS.REPOSITORY_ROOT, text=True, stderr=subprocess.DEVNULL,
++        ).strip())
++    except (OSError, subprocess.CalledProcessError):
++        return None
+diff --git a/fkge_v2/run_all.py b/fkge_v2/run_all.py
+index baeca89..d9308a5 100644
+--- a/fkge_v2/run_all.py
++++ b/fkge_v2/run_all.py
+@@ -43,7 +43,7 @@ def main():
+         C.KB4_LAMBDA_GRID = [0.3, 1.0]
+         C.KB4_BETA_GRID = [0.3, 1.0]
+         C.KB4_MULTIPLIERS = [0.0, 1.0]
+-        C.KB5_W_GRID = [1, 2]
++        C.KB5_W_GRID = [None, 2]
+         C.KB5_K_GRID = [2, 5]
+         C.KB6_SAMPLE_RATIOS = [0.4, 1.0]
+ 
+diff --git a/fkge_v2/tests/test_protocol.py b/fkge_v2/tests/test_protocol.py
+index 7dff273..75cfdba 100644
+--- a/fkge_v2/tests/test_protocol.py
++++ b/fkge_v2/tests/test_protocol.py
+@@ -10,7 +10,8 @@ from data.frb_package import load_frb_folds
+ from data.fkg_io import generate_synthetic_prefuzzified_records, token_attribute
+ from data.pipeline_interface import PrefuzzifiedRulePipeline
+ from models.fisa import FISA
+-from models.metrics import classification_metrics
++from models.metrics import classification_metrics, fidelity_metrics
++from models.fkge import FKGE, _gradient_check
+ 
+ 
+ class ProtocolTests(unittest.TestCase):
+@@ -63,12 +64,54 @@ class ProtocolTests(unittest.TestCase):
+         self.assertGreater(fkg.meta["intra_modal_edge_count"], 0)
+         self.assertGreater(fkg.meta["cross_modal_edge_count"], 0)
+ 
++    def test_kb2_subset_reserves_both_rule_classes(self):
++        fold = load_frb_folds(
++            C.PATHS.BRSET_FRB_PACKAGE, modality=C.BRSET_PRIMARY_MODALITY)[0]
++        fkg, _ = PrefuzzifiedRulePipeline().fit_and_mine(fold["train_records"])
++        sampled = fkg.sample_subset(ratio=0.3, seed=7, min_class_fraction=0.4)
++        import math
++        expected_size = math.ceil(len(fkg.rules) * 0.3)
++        self.assertEqual(len(sampled.rules), expected_size)
++        counts = sampled.meta["subset_sampling"]["rule_class_counts"]
++        self.assertTrue(all(count >= math.ceil(expected_size * 0.4)
++                            for count in counts.values()))
++
+     def test_real_frb_token_attribute_parsing(self):
+         self.assertEqual(
+             token_attribute("image::Dissimilarity Feature=L3"),
+             "image::Dissimilarity Feature",
+         )
+ 
++    def test_full_rule_cooccurrence_and_class_max(self):
++        records = generate_synthetic_prefuzzified_records(n_patients=20, seed=8)
++        fkg, samples = PrefuzzifiedRulePipeline().fit_and_mine(records)
++        model = FKGE(fkg, d=4, w=None, K_neg=1, seed=9)
++        self.assertEqual(len(model.sg_pairs), sum(
++            len(ids) * (len(ids) - 1) for ids in model.rule_token_ids))
++        rule_emb = model.rule_embeddings()
++        probability, _, scores, _, _ = model._forward_predict(
++            samples[0]["membership"], rule_emb)
++        class_maxima = [max(scores[model.rule_class_indices == index])
++                        for index in range(model.n_classes)]
++        import numpy as np
++        expected = np.exp(class_maxima - np.max(class_maxima))
++        expected /= expected.sum()
++        np.testing.assert_allclose(probability, expected)
++
++    def test_fidelity_reports_teacher_balance_and_bound(self):
++        reference = [{"class-0": .9, "class-1": .1},
++                     {"class-0": .2, "class-1": .8}]
++        candidate = [{"class-0": .8, "class-1": .2},
++                     {"class-0": .1, "class-1": .9}]
++        result = fidelity_metrics(reference, candidate, ["class-0", "class-1"])
++        self.assertEqual(result["agreement"], 1.0)
++        self.assertEqual(result["fidelity_balanced_accuracy"], 1.0)
++        self.assertEqual(result["cohen_kappa"], 1.0)
++        self.assertEqual(result["fidelity_bound_violations"], 0)
++
++    def test_class_max_gradient(self):
++        _gradient_check()
++
+ 
+ if __name__ == "__main__":
+     unittest.main()

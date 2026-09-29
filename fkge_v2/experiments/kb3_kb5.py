@@ -80,19 +80,21 @@ def run_kb5(w_grid=None, k_grid=None, n_seeds=None):
                         model, validation, reference_model=fisa))
             row = {
                 "w": window,
+                "cooccurrence": "full_rule" if window is None else f"window_{window}",
                 "K": negatives,
                 **aggregate_runs(results),
                 "validation_folds": len(contexts),
                 "n_seeds": n_seeds,
             }
             rows.append(row)
-            print(f"  w={window}, K={negatives}: AUC validation={row['auc_roc_mean']:.4f}")
+            print(f"  {row['cooccurrence']}, K={negatives}: AUC validation={row['auc_roc_mean']:.4f}")
     auc_values = [row["auc_roc_mean"] for row in rows]
     return {
         "metric": "auc_roc_validation",
         "rows": rows,
         "auc_range": float(max(auc_values) - min(auc_values)),
         "hypothesis_variation_below_0_02": max(auc_values) - min(auc_values) < 0.02,
+        "hypothesis_status": "descriptive_only_requires_sgns_contribution",
         "test_evaluation_status": "pending_outer_test_frb",
     }
 

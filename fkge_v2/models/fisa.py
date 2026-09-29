@@ -197,16 +197,19 @@ def majority_class_baseline(samples):
 
 
 def warn_if_not_beating_majority(result, samples, model_name="Mô hình", margin=0.02):
-    """In cảnh báo rõ ràng nếu accuracy không vượt majority baseline + margin."""
+    """Flag class collapse using balanced accuracy, not raw accuracy alone."""
     base_acc, base_label = majority_class_baseline(samples)
     acc = result["accuracy"]
-    if acc <= base_acc + margin:
-        print(f"  !! CẢNH BÁO: {model_name} có accuracy={acc:.4f}, KHÔNG vượt rõ rệt "
-              f"baseline lớp đa số ({base_acc:.4f}, luôn đoán '{base_label}'). "
-              f"Có thể mô hình đang sụp về đoán theo lớp đa số -- kiểm tra lại "
-              f"siêu tham số (đặc biệt delta_pred/gamma_inf) trước khi báo cáo "
-              f"kết quả này.")
+    bal_acc = result.get("balanced_accuracy", 0.5)
+    if bal_acc <= 0.52:
+        print(f"  !! CẢNH BÁO: {model_name} có BalAcc={bal_acc:.4f}; "
+              f"cần kiểm tra dự đoán một lớp (accuracy={acc:.4f}, "
+              f"baseline đa số={base_acc:.4f}, lớp '{base_label}').")
         return False
+    if acc <= base_acc + margin:
+        print(f"  {model_name}: accuracy={acc:.4f} gần hoặc dưới mốc lớp đa số "
+              f"{base_acc:.4f}, nhưng BalAcc={bal_acc:.4f}; "
+              "đọc AUC/BalAcc/F1 thay cho accuracy đơn lẻ.")
     return True
 
 

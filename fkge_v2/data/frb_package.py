@@ -33,12 +33,28 @@ def load_frb_folds(package_root, modality="table"):
         labels = sorted({entry[label_column] for entry in train_rows + test_rows},
                         key=lambda value: float(value))
         label_map = {value: index for index, value in enumerate(labels)}
-        test_patient_ids = _load_validation_patient_ids(package_root, fold)
+        train_manifest = _load_split_rows(package_root, fold, "train")
+        validation_manifest = _load_split_rows(package_root, fold, "val")
+        test_patient_ids = [item["patient_id"] for item in validation_manifest]
         if len(test_patient_ids) != len(test_rows):
             raise ValueError(
                 f"Fold {fold}: {len(test_rows)} FRB test rows but "
                 f"{len(test_patient_ids)} validation patient IDs."
             )
+        if len(train_manifest) != int(row["train_source_rows"]):
+            raise ValueError(f"Fold {fold}: source train row count differs from manifest.")
+        if len(train_rows) != int(row["train_rule_rows"]):
+            raise ValueError(f"Fold {fold}: FRB train row count differs from summary.")
+        train_patient_ids = {item["patient_id"] for item in train_manifest}
+        validation_patient_ids = set(test_patient_ids)
+        actual_overlap = train_patient_ids & validation_patient_ids
+        if actual_overlap:
+            raise ValueError(f"Fold {fold}: {len(actual_overlap)} patient IDs overlap.")
+        if len(train_patient_ids) != int(row["train_patient_count"]) or len(validation_patient_ids) != int(row["test_patient_count"]):
+            raise ValueError(f"Fold {fold}: patient counts differ from summary.")
+        for index, (rule, item) in enumerate(zip(test_rows, validation_manifest)):
+            if label_map[rule[label_column]] != int(item["retinopathy"]):
+                raise ValueError(f"Fold {fold}: validation label differs at row {index}.")
 
         train_records = [
             _to_record(entry, column_map, feature_modalities, label_column, label_map,
@@ -52,9 +68,11 @@ def load_frb_folds(package_root, modality="table"):
         ]
         train_patients = int(row["train_patient_count"])
         test_patients = int(row["test_patient_count"])
-        overlap = int(row["patient_overlap_count"])
+        overlap = len(actual_overlap)
         if overlap != 0:
             raise ValueError(f"Fold {fold} has patient overlap count {overlap}.")
+        if int(row["patient_overlap_count"]) != overlap:
+            raise ValueError(f"Fold {fold}: summary overlap differs from manifest.")
 
         folds.append({
             "fold": fold,
@@ -130,11 +148,11 @@ def _read_rule_rows(path):
         return list(csv.DictReader(stream))
 
 
-def _load_validation_patient_ids(package_root, fold):
+def _load_split_rows(package_root, fold, split):
     path = os.path.join(package_root, "root_split", "train_kfold",
-                        f"fold_{fold}", "val.csv")
+                        f"fold_{fold}", f"{split}.csv")
     with open(path, "r", encoding="utf-8-sig", newline="") as stream:
-        return [row["patient_id"] for row in csv.DictReader(stream)]
+        return list(csv.DictReader(stream))
 
 
 def _to_record(row, column_map, feature_modalities, label_column, label_map, patient_id):

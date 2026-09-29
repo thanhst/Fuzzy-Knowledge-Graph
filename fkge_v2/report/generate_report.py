@@ -42,7 +42,8 @@ def _table(rows, fields, headers=None):
         for field in fields:
             value = row.get(field, "")
             if isinstance(value, float):
-                value = f"{value:.4f}"
+                value = (f"{value:.2e}" if 0 < abs(value) < 0.00005
+                         else f"{value:.4f}")
             values.append(str(value))
         lines.append("| " + " | ".join(values) + " |")
     return "\n".join(lines)
@@ -67,9 +68,16 @@ def report_kb1():
     if not data:
         return ""
     rows = _flatten_kb1(data)
-    fields = ["dataset", "method", "n_rules", "auc_roc_mean", "f1_mean",
-              "accuracy_mean", "balanced_accuracy_mean", "agreement_mean",
-              "mean_kl_divergence_mean", "avg_time_per_query_ms_mean",
+    fields = ["dataset", "method", "n_rules", "auc_roc_mean",
+              "auc_roc_std", "auc_roc_ci95_low", "auc_roc_ci95_high",
+              "f1_mean", "f1_std", "accuracy_mean", "balanced_accuracy_mean",
+              "balanced_accuracy_std",
+              "balanced_accuracy_ci95_low", "balanced_accuracy_ci95_high",
+              "agreement_mean", "agreement_std", "agreement_ci95_low",
+              "agreement_ci95_high", "fidelity_balanced_accuracy_mean",
+              "fidelity_balanced_accuracy_std", "cohen_kappa_mean",
+              "fidelity_bound_coverage_mean", "mean_kl_divergence_mean",
+              "avg_time_per_query_ms_mean",
               "train_time_s_mean", "synthetic"]
     _write_csv("table_KB1.csv", rows, fields)
 
@@ -99,7 +107,14 @@ def report_kb1():
     fig.tight_layout()
     fig.savefig(os.path.join(FIG_DIR, "kb1_comparison.png"), dpi=150)
     plt.close(fig)
-    return _table(rows, fields)
+    return (_table(rows, fields)
+            + "\n\n`*_std` là độ lệch chuẩn mẫu của 25 lượt fold × seed "
+              "(FISA: 5 fold). Khoảng tin cậy 95%: bootstrap theo 5 fold, "
+              "lấy trung bình seed "
+              "trong từng fold (10.000 lượt lấy mẫu). Objective hiện chỉ gồm "
+              "L_SGNS, L_node, L_inf, L_pred và L2; chưa có L_edge, L_A, "
+              "L_B, L_rule. FISA và ngưỡng quyết định chưa được hiệu chỉnh "
+              "trên tập xác thực lồng theo bệnh nhân.")
 
 
 def report_kb2():
@@ -108,13 +123,24 @@ def report_kb2():
         return ""
     rows = _flatten_kb1(data["rows"])
     fields = ["dataset", "method", "n_rules", "auc_roc_mean",
-              "balanced_accuracy_mean", "avg_time_per_query_ms_mean"]
+              "auc_roc_std", "auc_roc_ci95_low", "auc_roc_ci95_high",
+              "balanced_accuracy_mean", "balanced_accuracy_std",
+              "balanced_accuracy_ci95_low", "balanced_accuracy_ci95_high",
+              "agreement_mean", "agreement_std", "agreement_ci95_low",
+              "agreement_ci95_high", "fidelity_balanced_accuracy_mean",
+              "fidelity_balanced_accuracy_std",
+              "avg_time_per_query_ms_mean"]
     _write_csv("table_KB2.csv", rows, fields)
     verdict = data["verdict"]
     return (_table(rows, fields) + "\n\n"
-            + f"Kết luận tự động: `{verdict['interpretation']}`; "
+            + "`*_std` là độ lệch chuẩn mẫu của 25 lượt fold × seed "
+              "(FISA: 5 fold). "
+            + f"Trạng thái đánh giá: `{verdict['interpretation']}`; "
             + f"delta AUC={verdict['delta_auc_sampled_minus_full']:.4f}, "
-            + f"tỉ số thời gian={verdict['inference_speed_ratio_full_over_sampled']:.4f}.")
+            + f"delta BalAcc={verdict['delta_balanced_accuracy_sampled_minus_full']:.4f}, "
+            + f"tỉ số thời gian={verdict['inference_speed_ratio_full_over_sampled']:.4f}. "
+            + "Tập con 30% dùng hạn ngạch tối thiểu 40% luật cho mỗi lớp; "
+              "đây là mô phỏng lấy mẫu, không phải FKGS chính thức.")
 
 
 def report_kb3():
@@ -168,13 +194,14 @@ def report_kb5():
     if not data:
         return ""
     rows = data["rows"]
-    fields = ["w", "K", "auc_roc_mean", "auc_pr_mean", "agreement_mean"]
+    fields = ["cooccurrence", "K", "auc_roc_mean", "auc_pr_mean", "agreement_mean"]
     _write_csv("table_KB5.csv", rows, fields)
     fig, axis = plt.subplots(figsize=(6.5, 4.2))
-    for window in sorted({row["w"] for row in rows}):
+    for window in sorted({row["w"] for row in rows}, key=lambda value: (-1 if value is None else value)):
         subset = [row for row in rows if row["w"] == window]
         axis.plot([row["K"] for row in subset],
-                  [row["auc_roc_mean"] for row in subset], marker="o", label=f"w={window}")
+                  [row["auc_roc_mean"] for row in subset], marker="o",
+                  label="toàn luật" if window is None else f"w={window}")
     axis.set_xlabel("Số mẫu âm K")
     axis.set_ylabel("AUC-ROC validation")
     axis.legend()
@@ -182,8 +209,8 @@ def report_kb5():
     fig.savefig(os.path.join(FIG_DIR, "kb5_wK_sensitivity.png"), dpi=150)
     plt.close(fig)
     return (_table(rows, fields) + "\n\n"
-            + f"Biên độ AUC={data['auc_range']:.4f}; H-E5="
-            + ("ủng hộ" if data["hypothesis_variation_below_0_02"] else "không ủng hộ"))
+            + f"Biên độ AUC={data['auc_range']:.4f}. Đây là thống kê mô tả; "
+            "chưa kết luận H-E5 khi đóng góp của SGNS chưa được xác nhận.")
 
 
 def report_kb6():
@@ -242,7 +269,11 @@ def report_baseline():
         return ""
     rows = data["rows"]
     fields = ["method", "status", "official_baseline", "auc_roc_mean",
-              "f1_mean", "accuracy_mean", "train_time_s_mean",
+              "auc_roc_std", "auc_roc_ci95_low", "auc_roc_ci95_high",
+              "f1_mean", "f1_std", "balanced_accuracy_mean",
+              "balanced_accuracy_std", "balanced_accuracy_ci95_low",
+              "balanced_accuracy_ci95_high", "accuracy_mean", "agreement_mean",
+              "fidelity_balanced_accuracy_mean", "cohen_kappa_mean", "train_time_s_mean",
               "avg_time_per_query_ms_mean", "n_parameters_mean"]
     _write_csv("table_baseline.csv", rows, fields)
     completed = [row for row in rows if row["status"] == "completed"]
@@ -255,7 +286,10 @@ def report_baseline():
     fig.tight_layout()
     fig.savefig(os.path.join(FIG_DIR, "baseline_comparison.png"), dpi=150)
     plt.close(fig)
-    return _table(rows, fields)
+    return (_table(rows, fields) + "\n\n`*_std` là độ lệch chuẩn mẫu của "
+            "25 lượt fold × seed (FISA: 5 fold). Khoảng tin cậy 95% lấy mẫu lại theo "
+            "5 fold (trung bình seed trong từng fold). Các baseline hậu tố "
+            "-lite chỉ dùng kiểm tra luồng, không là đối chứng chuẩn.")
 
 
 def main():
@@ -263,8 +297,8 @@ def main():
     manifest = _load("run_manifest.json") or {}
     sections = [
         "# Báo cáo thực nghiệm FKG-E",
-        f"Run ID: `{manifest.get('run_id', 'unknown')}`  ",
-        f"Trạng thái: `{manifest.get('status', 'unknown')}`  ",
+        f"Run ID: `{manifest.get('run_id', 'unknown')}`",
+        f"Trạng thái: `{manifest.get('status', 'unknown')}`",
         f"Chế độ quick: `{manifest.get('quick', 'unknown')}`",
     ]
     builders = [

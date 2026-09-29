@@ -52,8 +52,10 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
         "FKG-E unsupervised": [],
         "FKG-E full": [],
     }
+    fold_results = {method: {} for method in method_results}
     observations = []
     rule_counts = []
+    rule_class_counts = []
 
     for spec in specs:
         pipeline = pipeline_factory(sample_ratio, spec["fold"])
@@ -62,6 +64,10 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
         if not fkg.edges:
             raise RuntimeError(f"Fold {spec['fold']} produced no FKG edges; L_node is undefined.")
         rule_counts.append(len(fkg))
+        rule_class_counts.append({
+            label: sum(rule["consequent_token"] == label for rule in fkg.rules)
+            for label in fkg.class_tokens
+        })
 
         fisa_sequential = FISA(fkg, inference_mode="sequential").fit()
         fisa_lookup = FISA(fkg, inference_mode="lookup").fit()
@@ -69,6 +75,8 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
         lookup_result = benchmark_evaluate(fisa_lookup, test_samples)
         method_results["FISA sequential"].append(sequential_result)
         method_results["FISA lookup"].append(lookup_result)
+        fold_results["FISA sequential"][spec["fold"]] = [sequential_result]
+        fold_results["FISA lookup"][spec["fold"]] = [lookup_result]
 
         if sequential_result["y_pred"] != lookup_result["y_pred"]:
             raise AssertionError(
@@ -90,6 +98,7 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
                     result, test_samples,
                     model_name=f"{method} ({dataset_name}, fold={spec['fold']}, seed={seed})")
                 method_results[method].append(result)
+                fold_results[method].setdefault(spec["fold"], []).append(result)
                 observations.append({
                     "fold": spec["fold"],
                     "seed": seed,
@@ -99,6 +108,9 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
                     "accuracy": result["accuracy"],
                     "balanced_accuracy": result["balanced_accuracy"],
                     "agreement": result["agreement"],
+                    "fidelity_balanced_accuracy": result["fidelity_balanced_accuracy"],
+                    "cohen_kappa": result["cohen_kappa"],
+                    "fidelity_bound_coverage": result["fidelity_bound_coverage"],
                     "mean_kl_divergence": result["mean_kl_divergence"],
                     "avg_time_per_query_ms": result["avg_time_per_query_ms"],
                 })
@@ -106,6 +118,21 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
     methods = []
     for method, results in method_results.items():
         row = {"method": method, **aggregate_runs(results)}
+        # The fold, rather than the seed, is the independent unit for the
+        # interval. First average seeds within each fold, then bootstrap folds.
+        for metric in ("auc_roc", "balanced_accuracy", "agreement",
+                       "fidelity_balanced_accuracy", "cohen_kappa"):
+            fold_means = [float(np.mean([result[metric] for result in per_seed
+                                         if metric in result and np.isfinite(result[metric])]))
+                          for per_seed in fold_results[method].values()
+                          if any(metric in result and np.isfinite(result[metric])
+                                 for result in per_seed)]
+            if fold_means:
+                rng = np.random.RandomState(42)
+                sampled = rng.choice(fold_means, size=(10000, len(fold_means)), replace=True)
+                low, high = np.percentile(sampled.mean(axis=1), [2.5, 97.5])
+                row[f"{metric}_ci95_low"] = float(low)
+                row[f"{metric}_ci95_high"] = float(high)
         if method.startswith("FISA"):
             row["train_time_s_mean"] = float(np.mean(
                 [result["fit_time_s"] for result in results]))
@@ -124,8 +151,13 @@ def _run_fold_specs(specs, dataset_name, tag, pipeline_factory,
         "n_seeds_per_fold": n_seeds_per_fold,
         "n_rules_mean": float(np.mean(rule_counts)),
         "n_rules_per_fold": rule_counts,
+        "n_rules_by_class_per_fold": rule_class_counts,
         "patient_overlap_count": max(
             item.get("patient_overlap_count", 0) for item in source_metadata),
+        "objective_status": "partial_L_SGNS_L_node_L_inf_L_pred_L2_only",
+        "teacher_calibration": "not_available_without_patient_linked_inner_training_rows",
+        "decision_threshold": "argmax_uncalibrated",
+        "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples",
         "methods": methods,
         "observations": observations,
         "fold_metadata": source_metadata,
@@ -172,7 +204,8 @@ def run_kb2():
     print("=" * 72)
     specs = primary_fold_specs()
     pipeline_factory = lambda ratio, seed: PrefuzzifiedRulePipeline(
-        seed=seed, sample_ratio=ratio)
+        seed=seed, sample_ratio=ratio,
+        min_class_fraction=0.4 if ratio < 1 else 0.0)
     full = _run_fold_specs(specs, f"BRSET {C.BRSET_PRIMARY_MODALITY} / FKG", "KB2-full",
                            pipeline_factory, sample_ratio=1.0)
     sampled = _run_fold_specs(specs, f"BRSET {C.BRSET_PRIMARY_MODALITY} / FKGS 30%", "KB2-sampled",
@@ -184,13 +217,24 @@ def run_kb2():
 
     full_auc = method_value(full, "FKG-E full", "auc_roc_mean")
     sampled_auc = method_value(sampled, "FKG-E full", "auc_roc_mean")
+    full_balacc = method_value(full, "FKG-E full", "balanced_accuracy_mean")
+    sampled_balacc = method_value(sampled, "FKG-E full", "balanced_accuracy_mean")
+    sampled_teacher_balacc = method_value(sampled, "FISA lookup", "balanced_accuracy_mean")
+    sampled_agreement = method_value(sampled, "FKG-E full", "agreement_mean")
     full_time = method_value(full, "FKG-E full", "avg_time_per_query_ms_mean")
     sampled_time = method_value(sampled, "FKG-E full", "avg_time_per_query_ms_mean")
     verdict = {
+        "sampled_min_class_fraction": 0.4,
         "delta_auc_sampled_minus_full": sampled_auc - full_auc,
+        "delta_balanced_accuracy_sampled_minus_full": sampled_balacc - full_balacc,
+        "sampled_fisa_balanced_accuracy": sampled_teacher_balacc,
+        "sampled_fkge_fisa_agreement": sampled_agreement,
         "inference_speed_ratio_full_over_sampled": full_time / max(sampled_time, 1e-12),
         "interpretation": (
-            "cong_huong" if sampled_auc >= full_auc - 0.02 and sampled_time < full_time
+            "fisa_teacher_collapsed_fidelity_unresolved" if sampled_teacher_balacc <= 0.52
+            else "quality_cost_descriptive_only"
+            if sampled_auc >= full_auc - 0.02
+            and sampled_balacc >= full_balacc - 0.02 and sampled_time < full_time
             else "triet_tieu_hoac_khong_ro"
         ),
     }

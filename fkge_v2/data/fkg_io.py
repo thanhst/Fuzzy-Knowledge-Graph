@@ -80,12 +80,27 @@ class FKGRuleBase:
                 "rules": self.rules, "edges": self.edges,
             }, f, ensure_ascii=False, indent=2)
 
-    def sample_subset(self, ratio, seed=0):
-        """Lấy mẫu ngẫu nhiên ratio% số luật — dùng mô phỏng KB6 khi chưa có
-        đủ 5 mức nén thật từ FKGS Chương 2."""
+    def sample_subset(self, ratio, seed=0, min_class_fraction=0.0):
+        """Sample rules, optionally reserving a class quota within the subset."""
+        if not 0 < ratio <= 1 or not 0 <= min_class_fraction <= 1:
+            raise ValueError("ratio must be in (0, 1] and min_class_fraction in [0, 1].")
         rng = random.Random(seed)
         n_keep = max(1, int(math.ceil(len(self.rules) * ratio)))
-        kept = rng.sample(self.rules, n_keep)
+        if min_class_fraction:
+            by_class = {}
+            for index, rule in enumerate(self.rules):
+                by_class.setdefault(rule["consequent_token"], []).append(index)
+            selected = set()
+            for label in sorted(by_class):
+                quota = min(len(by_class[label]), int(math.ceil(n_keep * min_class_fraction)))
+                selected.update(rng.sample(by_class[label], quota))
+            if len(selected) > n_keep:
+                raise ValueError("Class quotas exceed requested subset size.")
+            remainder = [index for index in range(len(self.rules)) if index not in selected]
+            selected.update(rng.sample(remainder, n_keep - len(selected)))
+            kept = [self.rules[index] for index in sorted(selected)]
+        else:
+            kept = rng.sample(self.rules, n_keep)
         used_tokens = set()
         for r in kept:
             used_tokens.update(r["antecedent_tokens"])
@@ -94,6 +109,14 @@ class FKGRuleBase:
         new_edges = build_cooccurrence_edges(kept)
         meta = dict(self.meta)
         meta.update(edge_type_counts(new_edges))
+        meta["subset_sampling"] = {
+            "ratio": ratio,
+            "min_class_fraction": min_class_fraction,
+            "rule_class_counts": {
+                label: sum(rule["consequent_token"] == label for rule in kept)
+                for label in sorted({rule["consequent_token"] for rule in self.rules})
+            },
+        }
         return FKGRuleBase(new_vocab, kept, new_edges, meta)
 
 

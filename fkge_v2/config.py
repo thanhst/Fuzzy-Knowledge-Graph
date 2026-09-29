@@ -59,10 +59,10 @@ BRSET_PRIMARY_MODALITY = "fusion"
 # ============================================================
 class FKGE:
     d = 32                  # chiều nhúng mặc định (KB3 sẽ quét d khác)
-    w = 2                   # cửa sổ ngữ cảnh skip-gram (KB5 quét w khác)
+    w = None                # đồng xuất hiện trên toàn luật; KB5 giữ w=2 làm đối chứng cũ
     K_neg = 5                # số mẫu âm negative sampling (KB5 quét K khác)
     lam_node = 1.0           # lambda: trọng số L_node
-    beta_rule = 1.0          # beta: trọng số L_rule (SGNS)
+    beta_rule = 1.0          # trọng số L_SGNS; L_rule độc lập chưa triển khai
     # QUAN TRỌNG — ĐÃ HIỆU CHỈNH BẰNG THỰC NGHIỆM (xem ghi chú cuối file):
     # dù loss_and_grad_step() đã CHUẨN HÓA mỗi thành phần theo số phần tử
     # trong batch của nó (mean, không phải sum), gamma_inf=0.5/delta_pred=1.0
@@ -79,6 +79,8 @@ class FKGE:
     gamma_inf = 2.0           # gamma: trọng số L_inf (KL với FISA)
     delta_pred = 20.0         # trọng số L_pred (cross-entropy với nhãn thật)
     weight_decay = 1e-5
+    aggregation = "class_max"
+    max_pairs_per_epoch = 2000  # mẫu SGD đều từ mọi cặp toàn luật ở mỗi epoch
     lr = 0.1                  # đã kiểm chứng: lr thấp hơn (0.01-0.05) khiến
                                 # mô hình khó vượt qua baseline lớp đa số
                                 # trong ngân sách epochs vừa phải
@@ -105,7 +107,7 @@ KB4_MULTIPLIERS = [0.0, 0.1, 0.3, 1.0, 3.0, 10.0]
 # ============================================================
 # KB5: Độ nhạy theo (w, K) skip-gram
 # ============================================================
-KB5_W_GRID = [1, 2, 3]
+KB5_W_GRID = [None, 2]  # toàn luật (định nghĩa mới) so với cửa sổ w=2 (đối chứng)
 KB5_K_GRID = [2, 5, 10]
 
 # ============================================================

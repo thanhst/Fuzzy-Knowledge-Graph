@@ -7,14 +7,25 @@
   `patient_overlap_count=0`.
 - KB1 tách FISA tuần tự, FISA bảng tra, FKG-E không nhãn và FKG-E đầy đủ;
   báo AUC-ROC, AUC-PR, F1, Balanced Accuracy, độ trung thành, KL và thời gian.
-- KB3-KB5 báo AUC trên validation folds, không dùng nhãn của outer test để
-  chọn cấu hình. Đánh giá outer test còn chờ FRB dành riêng cho root test.
+- Ở chế độ không `--quick`, KB1/KB2, baseline và các quét dùng cả 5
+  validation folds theo bệnh nhân; CI bootstrap lấy fold làm đơn vị độc lập.
+  Đánh giá outer test còn chờ FRB dành riêng cho root test.
 - KB6 benchmark trung vị 5 lần và báo hệ số góc log-log cho FISA tuần tự,
   FISA bảng tra và FKG-E.
-- Mô hình hiện thực sự có `L_SGNS`, `L_node`, `L_inf`, `L_pred`, L2 và
-  weighted pooling. `L_edge`, `L_A`, `L_B`, `L_rule` độc lập và attention
+- Mô hình hiện thực sự có `L_SGNS` trên đồng xuất hiện toàn luật,
+  `L_node`, `L_inf`, `L_pred`, L2, gộp nhúng luật và cực đại điểm luật
+  theo lớp khi dự đoán. Mỗi epoch lấy mẫu đều 2.000 cặp SGNS từ toàn bộ
+  cặp trong luật; manifest ghi rõ cấu hình này. `L_edge`, `L_A`, `L_B`,
+  `L_rule` độc lập và attention
   pooling trong bản thiết kế mở rộng chưa có công thức/cài đặt tương ứng;
   output ghi rõ là chưa triển khai, không dùng tên thay thế.
+- FISA chưa hiệu chỉnh beta/T và ngưỡng quyết định chưa chọn bằng inner
+  validation theo bệnh nhân: train FRB trong gói hiện có chứa các dòng
+  SMOTE nhưng không giữ patient_id cho từng dòng. Các kết quả 5-fold từ
+  gói này là chẩn đoán trên validation của root train, chưa là outer test.
+- KB2 có tuỳ chọn hạn ngạch luật theo lớp. Lượt quota 40% ngày 29/09/2026
+  giữ AUC/BalAcc FKG-E nhưng làm FISA trên tập luật rút gọn có BalAcc=0.5;
+  vì vậy không dùng nhãn kết luận H-E2 tự động chỉ từ AUC và thời gian.
 - DeepWalk/TransE/DistMult tự viết mang hậu tố `-lite` và chỉ dùng smoke test.
   Node2Vec chuẩn, XGBoost và KGE chuẩn bằng PyKEEN chưa sẵn sàng trong môi
   trường hiện tại nên không được tính là baseline chính thức.
@@ -49,10 +60,9 @@ Phiên bản đầu tiên chỉ chia dữ liệu **một lần duy nhất** theo
   bắt lỗi hoạt động thật, không chỉ "chạy qua".
 - **KB1/KB2** (so sánh chính, cần độ tin cậy cao nhất): chạy **đầy đủ cả
   5 fold**, tổng hợp mean±std qua (fold × seed).
-- **KB3/KB4/KB5/Ablation/Baseline** (quét nhiều tổ hợp siêu tham số): dùng
-  **1 fold cố định** (fold 0) để tiết kiệm thời gian tính toán — đúng tinh
-  thần "inner loop" của nested cross-validation (Mục 3.5.2), vẫn đảm bảo
-  patient-aware, không rò rỉ.
+- **KB3/KB4/KB5/Ablation/Baseline** dùng cả 5 fold khi không có `--quick`;
+  `--quick` mới giới hạn ở một fold. Đây là validation của root train,
+  không phải nested outer test.
 - Định dạng file test **bắt buộc** phải có trường `"patient_id"` cho mỗi
   mẫu — nếu thiếu, `make_patient_kfold()` sẽ dừng ngay với lỗi rõ ràng
   thay vì âm thầm coi mỗi mẫu là một bệnh nhân riêng.
@@ -371,7 +381,7 @@ fkge_v2/
 │   ├── kb1_kb2.py                 # KB1: FKG-E vs FISA trên FKG gốc (3 bộ dữ liệu)
 │   │                               # KB2: FKG-E vs FISA trên FKGS đã nén
 │   ├── kb3_kb5.py                 # KB3: quét chiều nhúng d
-│   │                               # KB5: quét (cửa sổ w, số mẫu âm K)
+│   │                               # KB5: toàn luật so với w=2, quét K
 │   ├── kb4_kb6.py                 # KB4: quét lưới (λ, β) -> heatmap
 │   │                               # KB6: đường cong khả năng mở rộng theo |R|
 │   ├── ablation.py                 # Ablation: Rule-only / Node-only / Uniform / Full
@@ -486,6 +496,14 @@ python3 report/generate_report.py
 ```
 
 ## 5. Đọc kết quả
+
+Lượt chẩn đoán BRSET fusion ngày 29/09/2026 (5 fold theo bệnh nhân × 5 seed,
+20 epoch) đã được lưu tại
+[`results/tan_20260929_fkg_e_kfold_summary.md`](results/tan_20260929_fkg_e_kfold_summary.md).
+Các bảng CSV có cả `*_mean`, `*_std` và khoảng tin cậy 95%. `*_std` là
+độ lệch chuẩn mẫu trên các lượt fold × seed; CI bootstrap lấy fold làm đơn vị
+lấy mẫu sau khi trung bình các seed trong mỗi fold. Đây chưa phải lượt
+đánh giá outer test hay mô hình Chương 3 đầy đủ.
 
 Sau khi chạy xong, thư mục `outputs/` chứa:
 - `*.json` — kết quả thô từng KB
