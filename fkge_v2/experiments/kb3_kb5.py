@@ -7,9 +7,10 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import config as C
-from experiments.common import (aggregate_runs, benchmark_evaluate,
-                                default_fkge_kwargs, prepare_fold,
-                                primary_fold_specs)
+from experiments.common import (FOLD_QUALITY_METRICS, aggregate_runs,
+                                benchmark_evaluate, compact_fold_observations,
+                                default_fkge_kwargs, fold_bootstrap_summary,
+                                prepare_fold, primary_fold_specs)
 from models.fisa import FISA
 from models.fkge import FKGE
 
@@ -39,10 +40,13 @@ def run_kb3(dims=None, n_seeds=None):
                 model.fit(fisa_model=fisa, train_samples=train)
                 result = benchmark_evaluate(model, validation, reference_model=fisa)
                 result["fold"] = spec["fold"]
+                result["seed"] = C.FKGE.seed + seed_offset
                 results.append(result)
         rows.append({
             "d": dimension,
             **aggregate_runs(results),
+            **fold_bootstrap_summary(results, FOLD_QUALITY_METRICS),
+            "observations": compact_fold_observations(results, FOLD_QUALITY_METRICS),
             "validation_folds": len(contexts),
             "n_seeds": n_seeds,
         })
@@ -58,6 +62,7 @@ def run_kb3(dims=None, n_seeds=None):
         "selected_d": selected,
         "selection_rule": "smallest_d_within_0.005_of_max_validation_auc",
         "test_evaluation_status": "pending_outer_test_frb",
+        "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples",
     }
 
 
@@ -76,13 +81,19 @@ def run_kb5(w_grid=None, k_grid=None, n_seeds=None):
                         w=window, K_neg=negatives,
                         seed=C.FKGE.seed + seed_offset))
                     model.fit(fisa_model=fisa, train_samples=train)
-                    results.append(benchmark_evaluate(
-                        model, validation, reference_model=fisa))
+                    result = benchmark_evaluate(
+                        model, validation, reference_model=fisa)
+                    result["fold"] = spec["fold"]
+                    result["seed"] = C.FKGE.seed + seed_offset
+                    results.append(result)
             row = {
                 "w": window,
                 "cooccurrence": "full_rule" if window is None else f"window_{window}",
                 "K": negatives,
                 **aggregate_runs(results),
+                **fold_bootstrap_summary(results, FOLD_QUALITY_METRICS),
+                "observations": compact_fold_observations(
+                    results, FOLD_QUALITY_METRICS),
                 "validation_folds": len(contexts),
                 "n_seeds": n_seeds,
             }
@@ -96,6 +107,7 @@ def run_kb5(w_grid=None, k_grid=None, n_seeds=None):
         "hypothesis_variation_below_0_02": max(auc_values) - min(auc_values) < 0.02,
         "hypothesis_status": "descriptive_only_requires_sgns_contribution",
         "test_evaluation_status": "pending_outer_test_frb",
+        "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples",
     }
 
 

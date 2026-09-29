@@ -10,6 +10,12 @@ from data.kfold_utils import make_patient_kfold
 from data.pipeline_interface import PrefuzzifiedRulePipeline
 
 
+FOLD_QUALITY_METRICS = (
+    "auc_roc", "auc_pr", "f1", "balanced_accuracy", "agreement",
+    "fidelity_balanced_accuracy", "cohen_kappa", "mean_kl_divergence",
+)
+
+
 def primary_fold_specs(modality=None):
     modality = modality or C.BRSET_PRIMARY_MODALITY
     if package_available(C.PATHS.BRSET_FRB_PACKAGE):
@@ -122,3 +128,43 @@ def aggregate_runs(results, prefix=""):
         output[f"{key}_mean"] = float(np.mean(values))
         output[f"{key}_std"] = float(np.std(values, ddof=1)) if len(values) > 1 else 0.0
     return output
+
+
+def fold_bootstrap_summary(results, metrics, prefix=""):
+    """Bootstrap patient folds after averaging seeds within each fold."""
+    output = {}
+    for metric in metrics:
+        folds = sorted({int(result["fold"]) for result in results})
+        fold_means = []
+        for fold in folds:
+            values = [float(result[metric]) for result in results
+                      if int(result["fold"]) == fold and metric in result
+                      and result[metric] is not None
+                      and np.isfinite(float(result[metric]))]
+            if values:
+                fold_means.append(float(np.mean(values)))
+        if not fold_means:
+            continue
+        key = f"{prefix}{metric}"
+        output[f"{key}_fold_std"] = (
+            float(np.std(fold_means, ddof=1)) if len(fold_means) > 1 else 0.0)
+        draws = np.random.RandomState(42).choice(
+            fold_means, size=(10000, len(fold_means)), replace=True).mean(axis=1)
+        low, high = np.percentile(draws, [2.5, 97.5])
+        output[f"{key}_ci95_low"] = float(low)
+        output[f"{key}_ci95_high"] = float(high)
+    return output
+
+
+def compact_fold_observations(results, metrics):
+    """Persist the small fold/seed metric records needed to audit intervals."""
+    observations = []
+    for result in results:
+        row = {"fold": int(result["fold"])}
+        if "seed" in result:
+            row["seed"] = int(result["seed"])
+        for metric in metrics:
+            if metric in result and result[metric] is not None:
+                row[metric] = float(result[metric])
+        observations.append(row)
+    return observations

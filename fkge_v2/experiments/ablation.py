@@ -5,9 +5,10 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import config as C
-from experiments.common import (aggregate_runs, benchmark_evaluate,
-                                default_fkge_kwargs, prepare_fold,
-                                primary_fold_specs)
+from experiments.common import (FOLD_QUALITY_METRICS, aggregate_runs,
+                                benchmark_evaluate, compact_fold_observations,
+                                default_fkge_kwargs, fold_bootstrap_summary,
+                                prepare_fold, primary_fold_specs)
 from models.fisa import FISA
 from models.fkge import FKGE
 
@@ -49,12 +50,18 @@ def run_ablation(n_seeds=None):
                 model = FKGE(fkg, **default_fkge_kwargs(
                     seed=C.FKGE.seed + seed_offset, **overrides))
                 model.fit(fisa_model=fisa, train_samples=train)
-                results.append(benchmark_evaluate(
-                    model, validation, reference_model=fisa))
+                result = benchmark_evaluate(
+                    model, validation, reference_model=fisa)
+                result["fold"] = spec["fold"]
+                result["seed"] = C.FKGE.seed + seed_offset
+                results.append(result)
         row = {
             "variant": name,
             "overrides": overrides,
             **aggregate_runs(results),
+            **fold_bootstrap_summary(results, FOLD_QUALITY_METRICS),
+            "observations": compact_fold_observations(
+                results, FOLD_QUALITY_METRICS),
             "validation_folds": len(contexts),
             "n_seeds": n_seeds,
         }
@@ -74,6 +81,7 @@ def run_ablation(n_seeds=None):
             "L_SGNS", "L_node", "L_inf", "L_pred", "L2", "weighted_pooling"
         ],
         "unimplemented_components": ["L_edge", "L_A", "L_B", "L_rule", "attention_pooling"],
+        "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples",
     }
 
 

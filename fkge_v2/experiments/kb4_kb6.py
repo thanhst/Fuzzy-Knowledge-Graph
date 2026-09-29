@@ -7,9 +7,10 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import config as C
-from experiments.common import (aggregate_runs, benchmark_evaluate,
-                                default_fkge_kwargs, prepare_fold,
-                                primary_fold_specs)
+from experiments.common import (FOLD_QUALITY_METRICS, aggregate_runs,
+                                benchmark_evaluate, compact_fold_observations,
+                                default_fkge_kwargs, fold_bootstrap_summary,
+                                prepare_fold, primary_fold_specs)
 from models.fisa import FISA
 from models.fkge import FKGE
 
@@ -50,8 +51,11 @@ def run_kb4(multipliers=None, n_seeds=None):
                     model = FKGE(fkg, **default_fkge_kwargs(
                         seed=C.FKGE.seed + seed_offset, **override))
                     model.fit(fisa_model=fisa, train_samples=train)
-                    results.append(benchmark_evaluate(
-                        model, validation, reference_model=fisa))
+                    result = benchmark_evaluate(
+                        model, validation, reference_model=fisa)
+                    result["fold"] = spec["fold"]
+                    result["seed"] = C.FKGE.seed + seed_offset
+                    results.append(result)
             row = {
                 "weight": weight_name,
                 "argument": argument,
@@ -59,6 +63,9 @@ def run_kb4(multipliers=None, n_seeds=None):
                 "multiplier": multiplier,
                 "effective_value": default_value * multiplier,
                 **aggregate_runs(results),
+                **fold_bootstrap_summary(results, FOLD_QUALITY_METRICS),
+                "observations": compact_fold_observations(
+                    results, FOLD_QUALITY_METRICS),
                 "validation_folds": len(contexts),
                 "n_seeds": n_seeds,
             }
@@ -71,6 +78,7 @@ def run_kb4(multipliers=None, n_seeds=None):
         "supported_weights": list(SUPPORTED_WEIGHTS),
         "unimplemented_weights": UNIMPLEMENTED_WEIGHTS,
         "random_search_status": "pending_full_objective_implementation",
+        "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples",
     }
 
 
@@ -94,6 +102,8 @@ def run_kb6(ratios=None, n_seeds=None):
             lookup = FISA(fkg, "lookup").fit()
             sequential_result = benchmark_evaluate(sequential, validation)
             lookup_result = benchmark_evaluate(lookup, validation)
+            sequential_result["fold"] = spec["fold"]
+            lookup_result["fold"] = spec["fold"]
             if sequential_result["y_pred"] != lookup_result["y_pred"]:
                 raise AssertionError(
                     f"Fold {spec['fold']}, ratio {ratio}: FISA modes disagree."
@@ -104,8 +114,11 @@ def run_kb6(ratios=None, n_seeds=None):
                 model = FKGE(fkg, **default_fkge_kwargs(
                     seed=C.FKGE.seed + seed_offset))
                 model.fit(fisa_model=lookup, train_samples=train)
-                fkge_results.append(benchmark_evaluate(
-                    model, validation, reference_model=lookup))
+                result = benchmark_evaluate(
+                    model, validation, reference_model=lookup)
+                result["fold"] = spec["fold"]
+                result["seed"] = C.FKGE.seed + seed_offset
+                fkge_results.append(result)
 
         row = {
             "ratio": ratio,
@@ -114,6 +127,23 @@ def run_kb6(ratios=None, n_seeds=None):
             **aggregate_runs(sequential_results, prefix="fisa_sequential_"),
             **aggregate_runs(lookup_results, prefix="fisa_lookup_"),
             **aggregate_runs(fkge_results, prefix="fkge_"),
+            **fold_bootstrap_summary(
+                sequential_results, ("avg_time_per_query_ms", "auc_roc"),
+                prefix="fisa_sequential_"),
+            **fold_bootstrap_summary(
+                lookup_results, ("avg_time_per_query_ms", "auc_roc"),
+                prefix="fisa_lookup_"),
+            **fold_bootstrap_summary(
+                fkge_results, ("avg_time_per_query_ms", "auc_roc"),
+                prefix="fkge_"),
+            "observations": {
+                "fisa_sequential": compact_fold_observations(
+                    sequential_results, ("avg_time_per_query_ms", "auc_roc")),
+                "fisa_lookup": compact_fold_observations(
+                    lookup_results, ("avg_time_per_query_ms", "auc_roc")),
+                "fkge": compact_fold_observations(
+                    fkge_results, ("avg_time_per_query_ms", "auc_roc")),
+            },
             "validation_folds": len(specs),
             "n_seeds": n_seeds,
         }
@@ -132,7 +162,10 @@ def run_kb6(ratios=None, n_seeds=None):
     }.items():
         y = np.log([max(row[field], 1e-12) for row in rows])
         slopes[method] = float(np.polyfit(x, y, 1)[0]) if len(rows) > 1 else float("nan")
-    return {"rows": rows, "log_log_slopes": slopes, "timing_repeats": 5}
+    return {
+        "rows": rows, "log_log_slopes": slopes, "timing_repeats": 5,
+        "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples",
+    }
 
 
 if __name__ == "__main__":

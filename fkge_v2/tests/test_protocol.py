@@ -9,6 +9,7 @@ import config as C
 from data.frb_package import load_frb_folds
 from data.fkg_io import generate_synthetic_prefuzzified_records, token_attribute
 from data.pipeline_interface import PrefuzzifiedRulePipeline
+from experiments.common import compact_fold_observations, fold_bootstrap_summary
 from models.fisa import FISA
 from models.metrics import classification_metrics, fidelity_metrics
 from models.fkge import FKGE, _gradient_check
@@ -24,6 +25,20 @@ class ProtocolTests(unittest.TestCase):
         )
         self.assertEqual(metrics["auc_roc"], 1.0)
         self.assertEqual(metrics["auc_pr"], 1.0)
+
+    def test_fold_bootstrap_averages_seeds_before_resampling(self):
+        rows = [
+            {"fold": 1, "seed": 42, "auc_roc": 0.4},
+            {"fold": 1, "seed": 43, "auc_roc": 0.6},
+            {"fold": 2, "seed": 42, "auc_roc": 0.8},
+            {"fold": 2, "seed": 43, "auc_roc": 1.0},
+        ]
+        summary = fold_bootstrap_summary(rows, ("auc_roc",))
+        repeated = fold_bootstrap_summary(rows * 3, ("auc_roc",))
+        self.assertEqual(summary, repeated)
+        self.assertAlmostEqual(summary["auc_roc_ci95_low"], 0.5)
+        self.assertAlmostEqual(summary["auc_roc_ci95_high"], 0.9)
+        self.assertEqual(len(compact_fold_observations(rows, ("auc_roc",))), 4)
 
     def test_pipeline_builds_node_edges(self):
         records = generate_synthetic_prefuzzified_records(n_patients=20, seed=7)

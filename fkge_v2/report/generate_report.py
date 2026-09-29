@@ -148,8 +148,11 @@ def report_kb3():
     if not data:
         return ""
     rows = data["rows"]
-    fields = ["d", "auc_roc_mean", "auc_roc_std", "auc_pr_mean",
-              "auc_pr_std", "n_parameters_mean",
+    fields = ["d", "auc_roc_mean", "auc_roc_std", "auc_roc_ci95_low",
+              "auc_roc_ci95_high", "auc_pr_mean", "auc_pr_std",
+              "balanced_accuracy_mean", "balanced_accuracy_std",
+              "balanced_accuracy_ci95_low", "balanced_accuracy_ci95_high",
+              "n_parameters_mean",
               "train_time_s_mean", "avg_time_per_query_ms_mean",
               "embedding_memory_bytes_mean"]
     _write_csv("table_KB3.csv", rows, fields)
@@ -164,7 +167,8 @@ def report_kb3():
     plt.close(fig)
     return (_table(rows, fields)
             + f"\n\nChọn `d*={data['selected_d']}`. `*_std` là SD mẫu "
-              "trên 5 fold × 5 seed.")
+              "trên 5 fold × 5 seed; CI bootstrap theo fold sau khi lấy "
+              "trung bình seed.")
 
 
 def report_kb4():
@@ -173,7 +177,9 @@ def report_kb4():
         return ""
     rows = data["rows"]
     fields = ["weight", "multiplier", "effective_value", "auc_roc_mean",
-              "auc_roc_std", "agreement_mean", "agreement_std",
+              "auc_roc_std", "auc_roc_ci95_low", "auc_roc_ci95_high",
+              "agreement_mean", "agreement_std", "agreement_ci95_low",
+              "agreement_ci95_high",
               "mean_kl_divergence_mean", "mean_kl_divergence_std"]
     _write_csv("table_KB4.csv", rows, fields)
     fig, axis = plt.subplots(figsize=(7.2, 4.5))
@@ -192,7 +198,7 @@ def report_kb4():
     missing = ", ".join(data["unimplemented_weights"])
     return (_table(rows, fields)
             + f"\n\nChưa triển khai trong model hiện tại: `{missing}`. "
-              "`*_std` là SD mẫu trên 5 fold × 5 seed.")
+              "`*_std` là SD mẫu trên 5 fold × 5 seed; CI bootstrap theo fold.")
 
 
 def report_kb5():
@@ -201,7 +207,8 @@ def report_kb5():
         return ""
     rows = data["rows"]
     fields = ["cooccurrence", "K", "auc_roc_mean", "auc_roc_std",
-              "auc_pr_mean", "auc_pr_std", "agreement_mean", "agreement_std"]
+              "auc_roc_ci95_low", "auc_roc_ci95_high", "auc_pr_mean",
+              "auc_pr_std", "agreement_mean", "agreement_std"]
     _write_csv("table_KB5.csv", rows, fields)
     fig, axis = plt.subplots(figsize=(6.5, 4.2))
     for window in sorted({row["w"] for row in rows}, key=lambda value: (-1 if value is None else value)):
@@ -218,7 +225,7 @@ def report_kb5():
     return (_table(rows, fields) + "\n\n"
             + f"Biên độ AUC={data['auc_range']:.4f}. Đây là thống kê mô tả; "
             "chưa kết luận H-E5 khi đóng góp của SGNS chưa được xác nhận. "
-            "`*_std` là SD mẫu trên 5 fold × 5 seed.")
+            "`*_std` là SD mẫu trên 5 fold × 5 seed; CI bootstrap theo fold.")
 
 
 def report_kb6():
@@ -228,10 +235,16 @@ def report_kb6():
     rows = data["rows"]
     fields = ["ratio", "n_rules_mean", "fisa_sequential_avg_time_per_query_ms_mean",
               "fisa_sequential_avg_time_per_query_ms_std",
+              "fisa_sequential_avg_time_per_query_ms_ci95_low",
+              "fisa_sequential_avg_time_per_query_ms_ci95_high",
               "fisa_lookup_avg_time_per_query_ms_mean",
               "fisa_lookup_avg_time_per_query_ms_std",
+              "fisa_lookup_avg_time_per_query_ms_ci95_low",
+              "fisa_lookup_avg_time_per_query_ms_ci95_high",
               "fkge_avg_time_per_query_ms_mean",
-              "fkge_avg_time_per_query_ms_std"]
+              "fkge_avg_time_per_query_ms_std",
+              "fkge_avg_time_per_query_ms_ci95_low",
+              "fkge_avg_time_per_query_ms_ci95_high"]
     _write_csv("table_KB6.csv", rows, fields)
     fig, axis = plt.subplots(figsize=(6.7, 4.4))
     for label, field in {
@@ -253,7 +266,7 @@ def report_kb6():
     return (_table(rows, fields) + "\n\nHệ số góc log-log: "
             + ", ".join(f"{key}={value:.4f}" for key, value in slopes.items())
             + ". `*_std` là SD mẫu trên 5 fold (FISA) hoặc 25 lượt "
-              "fold × seed (FKG-E).")
+              "fold × seed (FKG-E); CI bootstrap theo fold.")
 
 
 def report_ablation():
@@ -261,8 +274,10 @@ def report_ablation():
     if not data:
         return ""
     rows = data["rows"]
-    fields = ["variant", "auc_roc_mean", "auc_roc_std", "f1_mean",
+    fields = ["variant", "auc_roc_mean", "auc_roc_std",
+              "auc_roc_ci95_low", "auc_roc_ci95_high", "f1_mean",
               "f1_std", "balanced_accuracy_mean", "balanced_accuracy_std",
+              "balanced_accuracy_ci95_low", "balanced_accuracy_ci95_high",
               "agreement_mean", "agreement_std", "mean_kl_divergence_mean",
               "mean_kl_divergence_std", "delta_auc_vs_full"]
     _write_csv("table_ablation.csv", rows, fields)
@@ -278,7 +293,7 @@ def report_ablation():
     missing = ", ".join(data["unimplemented_components"])
     return (_table(rows, fields)
             + f"\n\nChưa triển khai: `{missing}`. `*_std` là SD mẫu "
-              "trên 5 fold × 5 seed.")
+              "trên 5 fold × 5 seed; CI bootstrap theo fold.")
 
 
 def report_baseline():
