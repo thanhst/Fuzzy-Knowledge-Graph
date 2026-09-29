@@ -1,0 +1,1606 @@
+{
+  "rows": [
+    {
+      "ratio": 0.2,
+      "n_rules_mean": 211.0,
+      "n_rules_per_fold": [
+        213,
+        222,
+        202,
+        222,
+        196
+      ],
+      "fisa_sequential_accuracy_mean": 0.8981584993655911,
+      "fisa_sequential_accuracy_std": 0.027699895819645014,
+      "fisa_sequential_balanced_accuracy_mean": 0.664310392729224,
+      "fisa_sequential_balanced_accuracy_std": 0.12249039196046685,
+      "fisa_sequential_f1_mean": 0.3271649847845621,
+      "fisa_sequential_f1_std": 0.2028313009087701,
+      "fisa_sequential_f1_macro_mean": 0.6356256838397945,
+      "fisa_sequential_f1_macro_std": 0.09791319409788693,
+      "fisa_sequential_auc_roc_mean": 0.7983712129903942,
+      "fisa_sequential_auc_roc_std": 0.0757295263629805,
+      "fisa_sequential_auc_pr_mean": 0.3330774600178358,
+      "fisa_sequential_auc_pr_std": 0.1012444966573297,
+      "fisa_sequential_sensitivity_mean": 0.3863157894736842,
+      "fisa_sequential_sensitivity_std": 0.2845112930979665,
+      "fisa_sequential_specificity_mean": 0.9423049959847638,
+      "fisa_sequential_specificity_std": 0.04750220457765844,
+      "fisa_sequential_avg_time_per_query_ms_mean": 1.0909305548112762,
+      "fisa_sequential_avg_time_per_query_ms_std": 0.08663000131691434,
+      "fisa_sequential_total_time_s_mean": 0.26356019973754885,
+      "fisa_sequential_total_time_s_std": 0.020774682240004342,
+      "fisa_lookup_accuracy_mean": 0.8981584993655911,
+      "fisa_lookup_accuracy_std": 0.027699895819645014,
+      "fisa_lookup_balanced_accuracy_mean": 0.664310392729224,
+      "fisa_lookup_balanced_accuracy_std": 0.12249039196046685,
+      "fisa_lookup_f1_mean": 0.3271649847845621,
+      "fisa_lookup_f1_std": 0.2028313009087701,
+      "fisa_lookup_f1_macro_mean": 0.6356256838397945,
+      "fisa_lookup_f1_macro_std": 0.09791319409788693,
+      "fisa_lookup_auc_roc_mean": 0.7983712129903942,
+      "fisa_lookup_auc_roc_std": 0.0757295263629805,
+      "fisa_lookup_auc_pr_mean": 0.3330774600178358,
+      "fisa_lookup_auc_pr_std": 0.1012444966573297,
+      "fisa_lookup_sensitivity_mean": 0.3863157894736842,
+      "fisa_lookup_sensitivity_std": 0.2845112930979665,
+      "fisa_lookup_specificity_mean": 0.9423049959847638,
+      "fisa_lookup_specificity_std": 0.04750220457765844,
+      "fisa_lookup_avg_time_per_query_ms_mean": 0.04548553184105582,
+      "fisa_lookup_avg_time_per_query_ms_std": 0.0005446574525639999,
+      "fisa_lookup_total_time_s_mean": 0.010989522933959961,
+      "fisa_lookup_total_time_s_std": 0.000154619237065336,
+      "fkge_accuracy_mean": 0.8902678234628442,
+      "fkge_accuracy_std": 0.02778977664923787,
+      "fkge_balanced_accuracy_mean": 0.8486508651656023,
+      "fkge_balanced_accuracy_std": 0.05075501032996339,
+      "fkge_f1_mean": 0.5424257877058544,
+      "fkge_f1_std": 0.0380138339007762,
+      "fkge_f1_macro_mean": 0.7398712894514581,
+      "fkge_f1_macro_std": 0.026304452510118998,
+      "fkge_auc_roc_mean": 0.9340778491014925,
+      "fkge_auc_roc_std": 0.019937591870091958,
+      "fkge_auc_pr_mean": 0.6230955646956037,
+      "fkge_auc_pr_std": 0.0613866309533795,
+      "fkge_sensitivity_mean": 0.7989473684210527,
+      "fkge_sensitivity_std": 0.13180900939787368,
+      "fkge_specificity_mean": 0.8983543619101519,
+      "fkge_specificity_std": 0.03910593985172915,
+      "fkge_avg_time_per_query_ms_mean": 0.14556578399935483,
+      "fkge_avg_time_per_query_ms_std": 0.028276816202050692,
+      "fkge_total_time_s_mean": 0.03516692799341399,
+      "fkge_total_time_s_std": 0.0068159898857446275,
+      "fkge_train_time_s_mean": 7.89238395690918,
+      "fkge_train_time_s_std": 0.3753601872026575,
+      "fkge_representation_build_time_s_mean": 9.39599983394146e-05,
+      "fkge_representation_build_time_s_std": 2.3835408856355098e-05,
+      "fkge_agreement_mean": 0.8735578340934811,
+      "fkge_agreement_std": 0.034068649338765855,
+      "fkge_fidelity_balanced_accuracy_mean": 0.799869659507475,
+      "fkge_fidelity_balanced_accuracy_std": 0.038836995844518885,
+      "fkge_cohen_kappa_mean": 0.3591333738328322,
+      "fkge_cohen_kappa_std": 0.2310461311836492,
+      "fkge_fidelity_bound_coverage_mean": 0.00165769349473612,
+      "fkge_fidelity_bound_coverage_std": 0.003167460419868556,
+      "fkge_fidelity_bound_violations_mean": 0.0,
+      "fkge_fidelity_bound_violations_std": 0.0,
+      "fkge_mean_kl_divergence_mean": 0.7756252141282366,
+      "fkge_mean_kl_divergence_std": 0.08807437509875952,
+      "fkge_n_parameters_mean": 4838.4,
+      "fkge_n_parameters_std": 127.99999999999999,
+      "fkge_embedding_memory_bytes_mean": 38707.2,
+      "fkge_embedding_memory_bytes_std": 1023.9999999999999,
+      "fisa_sequential_avg_time_per_query_ms_fold_std": 0.08663000131691434,
+      "fisa_sequential_avg_time_per_query_ms_ci95_low": 1.0258159488322032,
+      "fisa_sequential_avg_time_per_query_ms_ci95_high": 1.1566363229316954,
+      "fisa_sequential_auc_roc_fold_std": 0.0757295263629805,
+      "fisa_sequential_auc_roc_ci95_low": 0.7497196727578934,
+      "fisa_sequential_auc_roc_ci95_high": 0.8629171902608297,
+      "fisa_lookup_avg_time_per_query_ms_fold_std": 0.0005446574525639999,
+      "fisa_lookup_avg_time_per_query_ms_ci95_low": 0.04501444727406205,
+      "fisa_lookup_avg_time_per_query_ms_ci95_high": 0.04587961622506134,
+      "fisa_lookup_auc_roc_fold_std": 0.0757295263629805,
+      "fisa_lookup_auc_roc_ci95_low": 0.7497196727578934,
+      "fisa_lookup_auc_roc_ci95_high": 0.8629171902608297,
+      "fkge_avg_time_per_query_ms_fold_std": 0.013732167731195418,
+      "fkge_avg_time_per_query_ms_ci95_low": 0.13564608266677186,
+      "fkge_avg_time_per_query_ms_ci95_high": 0.15695760385351376,
+      "fkge_auc_roc_fold_std": 0.021644723836367563,
+      "fkge_auc_roc_ci95_low": 0.9162610188182944,
+      "fkge_auc_roc_ci95_high": 0.9509093230110877,
+      "observations": {
+        "fisa_sequential": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 1.0918290161889446,
+            "auc_roc": 0.9254504504504505
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 1.1301878070043139,
+            "auc_roc": 0.7384942176067972
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 1.0076633169631328,
+            "auc_roc": 0.7997403823459995
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 1.2140105868770867,
+            "auc_roc": 0.7434389140271493
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 1.0109620470229026,
+            "auc_roc": 0.7847321005215742
+          }
+        ],
+        "fisa_lookup": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 0.045739914760116705,
+            "auc_roc": 0.9254504504504505
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 0.04610936503765011,
+            "auc_roc": 0.7384942176067972
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 0.04569952152977305,
+            "auc_roc": 0.7997403823459995
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 0.0451521260115121,
+            "auc_roc": 0.7434389140271493
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 0.044726731866227144,
+            "auc_roc": 0.7847321005215742
+          }
+        ],
+        "fkge": [
+          {
+            "fold": 1,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.14264462714146992,
+            "auc_roc": 0.9493243243243243
+          },
+          {
+            "fold": 1,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.135652479739217,
+            "auc_roc": 0.9436936936936937
+          },
+          {
+            "fold": 1,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.1339037189609371,
+            "auc_roc": 0.9490990990990991
+          },
+          {
+            "fold": 1,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.13606694197688204,
+            "auc_roc": 0.9463963963963964
+          },
+          {
+            "fold": 1,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.13522355385992507,
+            "auc_roc": 0.9454954954954955
+          },
+          {
+            "fold": 2,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.13593140519791752,
+            "auc_roc": 0.9615293839981118
+          },
+          {
+            "fold": 2,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.14934338844998948,
+            "auc_roc": 0.9542128864762804
+          },
+          {
+            "fold": 2,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.13963305729312422,
+            "auc_roc": 0.9603493037526551
+          },
+          {
+            "fold": 2,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.2214553715922862,
+            "auc_roc": 0.9586971914090158
+          },
+          {
+            "fold": 2,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.13477355392105214,
+            "auc_roc": 0.9605853198017466
+          },
+          {
+            "fold": 3,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.13525950424623298,
+            "auc_roc": 0.9295492093462355
+          },
+          {
+            "fold": 3,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1354388429514856,
+            "auc_roc": 0.9335614821807883
+          },
+          {
+            "fold": 3,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.13393801674275652,
+            "auc_roc": 0.9337974982298797
+          },
+          {
+            "fold": 3,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.13555619873593305,
+            "auc_roc": 0.934741562426245
+          },
+          {
+            "fold": 3,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.1345305784277364,
+            "auc_roc": 0.9316733537880576
+          },
+          {
+            "fold": 4,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.13496473070989554,
+            "auc_roc": 0.9288461538461539
+          },
+          {
+            "fold": 4,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.13536597507632883,
+            "auc_roc": 0.9302036199095023
+          },
+          {
+            "fold": 4,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.1346759331587478,
+            "auc_roc": 0.9295248868778281
+          },
+          {
+            "fold": 4,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.13624522799995045,
+            "auc_roc": 0.9358597285067873
+          },
+          {
+            "fold": 4,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.13703651423372823,
+            "auc_roc": 0.9281674208144797
+          },
+          {
+            "fold": 5,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.164002904495035,
+            "auc_roc": 0.9037458511142722
+          },
+          {
+            "fold": 5,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.25059253150545047,
+            "auc_roc": 0.896633475580844
+          },
+          {
+            "fold": 5,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.13693402515515624,
+            "auc_roc": 0.8982930298719772
+          },
+          {
+            "fold": 5,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.13387593352796193,
+            "auc_roc": 0.9058795637743006
+          },
+          {
+            "fold": 5,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.13609958488467105,
+            "auc_roc": 0.9020862968231389
+          }
+        ]
+      },
+      "validation_folds": 5,
+      "n_seeds": 5
+    },
+    {
+      "ratio": 0.4,
+      "n_rules_mean": 422.0,
+      "n_rules_per_fold": [
+        426,
+        444,
+        404,
+        444,
+        392
+      ],
+      "fisa_sequential_accuracy_mean": 0.7880422482082233,
+      "fisa_sequential_accuracy_std": 0.12074364523821525,
+      "fisa_sequential_balanced_accuracy_mean": 0.6995806671846877,
+      "fisa_sequential_balanced_accuracy_std": 0.08173213551674495,
+      "fisa_sequential_f1_mean": 0.31904590841299857,
+      "fisa_sequential_f1_std": 0.05106622495491674,
+      "fisa_sequential_f1_macro_mean": 0.593736283665219,
+      "fisa_sequential_f1_macro_std": 0.06053923218152019,
+      "fisa_sequential_auc_roc_mean": 0.7920122527889191,
+      "fisa_sequential_auc_roc_std": 0.06121073490709083,
+      "fisa_sequential_auc_pr_mean": 0.34738061008669785,
+      "fisa_sequential_auc_pr_std": 0.10303727693614814,
+      "fisa_sequential_sensitivity_mean": 0.5947368421052632,
+      "fisa_sequential_sensitivity_std": 0.2679497927088998,
+      "fisa_sequential_specificity_mean": 0.8044244922641124,
+      "fisa_sequential_specificity_std": 0.14998764559571504,
+      "fisa_sequential_avg_time_per_query_ms_mean": 2.0975987568897767,
+      "fisa_sequential_avg_time_per_query_ms_std": 0.12742045000088265,
+      "fisa_sequential_total_time_s_mean": 0.5067887306213379,
+      "fisa_sequential_total_time_s_std": 0.03094736008095867,
+      "fisa_lookup_accuracy_mean": 0.7880422482082233,
+      "fisa_lookup_accuracy_std": 0.12074364523821525,
+      "fisa_lookup_balanced_accuracy_mean": 0.6995806671846877,
+      "fisa_lookup_balanced_accuracy_std": 0.08173213551674495,
+      "fisa_lookup_f1_mean": 0.31904590841299857,
+      "fisa_lookup_f1_std": 0.05106622495491674,
+      "fisa_lookup_f1_macro_mean": 0.593736283665219,
+      "fisa_lookup_f1_macro_std": 0.06053923218152019,
+      "fisa_lookup_auc_roc_mean": 0.7920122527889191,
+      "fisa_lookup_auc_roc_std": 0.06121073490709083,
+      "fisa_lookup_auc_pr_mean": 0.34738061008669785,
+      "fisa_lookup_auc_pr_std": 0.10303727693614814,
+      "fisa_lookup_sensitivity_mean": 0.5947368421052632,
+      "fisa_lookup_sensitivity_std": 0.2679497927088998,
+      "fisa_lookup_specificity_mean": 0.8044244922641124,
+      "fisa_lookup_specificity_std": 0.14998764559571504,
+      "fisa_lookup_avg_time_per_query_ms_mean": 0.04583895237111189,
+      "fisa_lookup_avg_time_per_query_ms_std": 0.000568897703230253,
+      "fisa_lookup_total_time_s_mean": 0.01107487678527832,
+      "fisa_lookup_total_time_s_std": 0.00015699520375262612,
+      "fkge_accuracy_mean": 0.8828263776962382,
+      "fkge_accuracy_std": 0.041903063366339054,
+      "fkge_balanced_accuracy_mean": 0.8351884046818863,
+      "fkge_balanced_accuracy_std": 0.03976665255334842,
+      "fkge_f1_mean": 0.5260050204585862,
+      "fkge_f1_std": 0.05530714853052478,
+      "fkge_f1_macro_mean": 0.7292726646747917,
+      "fkge_f1_macro_std": 0.04040333391937467,
+      "fkge_auc_roc_mean": 0.9325927990407575,
+      "fkge_auc_roc_std": 0.0190681315810177,
+      "fkge_auc_pr_mean": 0.6149315234307728,
+      "fkge_auc_pr_std": 0.062347617818296244,
+      "fkge_sensitivity_mean": 0.7783157894736843,
+      "fkge_sensitivity_std": 0.11466328319644754,
+      "fkge_specificity_mean": 0.8920610198900887,
+      "fkge_specificity_std": 0.05304350723187111,
+      "fkge_avg_time_per_query_ms_mean": 0.14644539397956927,
+      "fkge_avg_time_per_query_ms_std": 0.019636832571449513,
+      "fkge_total_time_s_mean": 0.03538231598213315,
+      "fkge_total_time_s_std": 0.004760650914297602,
+      "fkge_train_time_s_mean": 8.362790040969848,
+      "fkge_train_time_s_std": 0.3893770176014759,
+      "fkge_representation_build_time_s_mean": 0.00014244799793232234,
+      "fkge_representation_build_time_s_std": 2.575205691834892e-05,
+      "fkge_agreement_mean": 0.8032989266486059,
+      "fkge_agreement_std": 0.0792591692968687,
+      "fkge_fidelity_balanced_accuracy_mean": 0.75175974169758,
+      "fkge_fidelity_balanced_accuracy_std": 0.12139179980122122,
+      "fkge_cohen_kappa_mean": 0.3891028884190536,
+      "fkge_cohen_kappa_std": 0.09993081282536535,
+      "fkge_fidelity_bound_coverage_mean": 0.0023188505195295083,
+      "fkge_fidelity_bound_coverage_std": 0.003603597872911368,
+      "fkge_fidelity_bound_violations_mean": 0.0,
+      "fkge_fidelity_bound_violations_std": 0.0,
+      "fkge_mean_kl_divergence_mean": 0.7681504584466622,
+      "fkge_mean_kl_divergence_std": 0.12213965088901839,
+      "fkge_n_parameters_mean": 4979.2,
+      "fkge_n_parameters_std": 76.17523657112372,
+      "fkge_embedding_memory_bytes_mean": 39833.6,
+      "fkge_embedding_memory_bytes_std": 609.4018925689898,
+      "fisa_sequential_avg_time_per_query_ms_fold_std": 0.12742045000088265,
+      "fisa_sequential_avg_time_per_query_ms_ci95_low": 1.997280293361938,
+      "fisa_sequential_avg_time_per_query_ms_ci95_high": 2.1953590399999605,
+      "fisa_sequential_auc_roc_fold_std": 0.06121073490709083,
+      "fisa_sequential_auc_roc_ci95_low": 0.7442490929218497,
+      "fisa_sequential_auc_roc_ci95_high": 0.8397754126559885,
+      "fisa_lookup_avg_time_per_query_ms_fold_std": 0.000568897703230253,
+      "fisa_lookup_avg_time_per_query_ms_ci95_low": 0.045419276478089354,
+      "fisa_lookup_avg_time_per_query_ms_ci95_high": 0.046250390187240566,
+      "fisa_lookup_auc_roc_fold_std": 0.06121073490709083,
+      "fisa_lookup_auc_roc_ci95_low": 0.7442490929218497,
+      "fisa_lookup_auc_roc_ci95_high": 0.8397754126559885,
+      "fkge_avg_time_per_query_ms_fold_std": 0.008263430453600723,
+      "fkge_avg_time_per_query_ms_ci95_low": 0.14201992281878523,
+      "fkge_avg_time_per_query_ms_ci95_high": 0.1538965723481121,
+      "fkge_auc_roc_fold_std": 0.0206108861512826,
+      "fkge_auc_roc_ci95_low": 0.9154816354816354,
+      "fkge_auc_roc_ci95_high": 0.9469897780353291,
+      "observations": {
+        "fisa_sequential": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 2.1228337090862683,
+            "auc_roc": 0.8629504504504505
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 2.2001660559788223,
+            "auc_roc": 0.806702855794194
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 2.014151289443339,
+            "auc_roc": 0.8331366532924239
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 2.226814689477944,
+            "auc_roc": 0.7313348416289592
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 1.9240280404625099,
+            "auc_roc": 0.725936462778568
+          }
+        ],
+        "fisa_lookup": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 0.04567489151127082,
+            "auc_roc": 0.8629504504504505
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 0.04630344958344767,
+            "auc_roc": 0.806702855794194
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 0.04646797810704255,
+            "auc_roc": 0.8331366532924239
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 0.04570909555522238,
+            "auc_roc": 0.7313348416289592
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 0.045039347098576085,
+            "auc_roc": 0.725936462778568
+          }
+        ],
+        "fkge": [
+          {
+            "fold": 1,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.14202479420524197,
+            "auc_roc": 0.9463963963963964
+          },
+          {
+            "fold": 1,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1412438015739264,
+            "auc_roc": 0.9490990990990991
+          },
+          {
+            "fold": 1,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.14261735468758424,
+            "auc_roc": 0.9509009009009008
+          },
+          {
+            "fold": 1,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.14624628063997502,
+            "auc_roc": 0.9504504504504504
+          },
+          {
+            "fold": 1,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.14226115741651538,
+            "auc_roc": 0.9421171171171171
+          },
+          {
+            "fold": 2,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.14151115711751464,
+            "auc_roc": 0.9544489025253717
+          },
+          {
+            "fold": 2,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.14071859571359252,
+            "auc_roc": 0.9480764691999056
+          },
+          {
+            "fold": 2,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.14026239635817292,
+            "auc_roc": 0.951144677838093
+          },
+          {
+            "fold": 2,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.14359834691757828,
+            "auc_roc": 0.9537408543780977
+          },
+          {
+            "fold": 2,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.2393289259923545,
+            "auc_roc": 0.9551569506726457
+          },
+          {
+            "fold": 3,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.14207438063809708,
+            "auc_roc": 0.9342695303280623
+          },
+          {
+            "fold": 3,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.14142189969833988,
+            "auc_roc": 0.9309653056407836
+          },
+          {
+            "fold": 3,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.14060743742147153,
+            "auc_roc": 0.9321453858862403
+          },
+          {
+            "fold": 3,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.1395723147727626,
+            "auc_roc": 0.932617417984423
+          },
+          {
+            "fold": 3,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.14091198327075613,
+            "auc_roc": 0.9352135945244276
+          },
+          {
+            "fold": 4,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.14461203256314736,
+            "auc_roc": 0.9358597285067873
+          },
+          {
+            "fold": 4,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.14312489602388234,
+            "auc_roc": 0.9297511312217195
+          },
+          {
+            "fold": 4,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.14272406623607958,
+            "auc_roc": 0.9286199095022625
+          },
+          {
+            "fold": 4,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.14341161772318925,
+            "auc_roc": 0.9302036199095023
+          },
+          {
+            "fold": 4,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.14289004133562114,
+            "auc_roc": 0.9236425339366516
+          },
+          {
+            "fold": 5,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.14224273803077747,
+            "auc_roc": 0.8999525841631105
+          },
+          {
+            "fold": 5,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.15664854846774945,
+            "auc_roc": 0.9016121384542437
+          },
+          {
+            "fold": 5,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.1419049791418812,
+            "auc_roc": 0.8963963963963963
+          },
+          {
+            "fold": 5,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.1385643155264757,
+            "auc_roc": 0.896633475580844
+          },
+          {
+            "fold": 5,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.14061078801654528,
+            "auc_roc": 0.9054054054054054
+          }
+        ]
+      },
+      "validation_folds": 5,
+      "n_seeds": 5
+    },
+    {
+      "ratio": 0.6,
+      "n_rules_mean": 633.0,
+      "n_rules_per_fold": [
+        639,
+        666,
+        606,
+        666,
+        588
+      ],
+      "fisa_sequential_accuracy_mean": 0.3659373821199547,
+      "fisa_sequential_accuracy_std": 0.14911112746492766,
+      "fisa_sequential_balanced_accuracy_mean": 0.6070485494085711,
+      "fisa_sequential_balanced_accuracy_std": 0.05149928976475386,
+      "fisa_sequential_f1_mean": 0.18598784145195954,
+      "fisa_sequential_f1_std": 0.019018940367669854,
+      "fisa_sequential_f1_macro_mean": 0.3227807202945823,
+      "fisa_sequential_f1_macro_std": 0.09869798984576986,
+      "fisa_sequential_auc_roc_mean": 0.7929728721675369,
+      "fisa_sequential_auc_roc_std": 0.06419978579443392,
+      "fisa_sequential_auc_pr_mean": 0.3425193180013995,
+      "fisa_sequential_auc_pr_std": 0.08925943678634202,
+      "fisa_sequential_sensitivity_mean": 0.8947368421052632,
+      "fisa_sequential_sensitivity_std": 0.18232113763882918,
+      "fisa_sequential_specificity_mean": 0.31936025671187895,
+      "fisa_sequential_specificity_std": 0.17609072884458019,
+      "fisa_sequential_avg_time_per_query_ms_mean": 3.1088356953590135,
+      "fisa_sequential_avg_time_per_query_ms_std": 0.20431927199373837,
+      "fisa_sequential_total_time_s_mean": 0.7510957241058349,
+      "fisa_sequential_total_time_s_std": 0.049356778971343565,
+      "fisa_lookup_accuracy_mean": 0.3659373821199547,
+      "fisa_lookup_accuracy_std": 0.14911112746492766,
+      "fisa_lookup_balanced_accuracy_mean": 0.6070485494085711,
+      "fisa_lookup_balanced_accuracy_std": 0.05149928976475386,
+      "fisa_lookup_f1_mean": 0.18598784145195954,
+      "fisa_lookup_f1_std": 0.019018940367669854,
+      "fisa_lookup_f1_macro_mean": 0.3227807202945823,
+      "fisa_lookup_f1_macro_std": 0.09869798984576986,
+      "fisa_lookup_auc_roc_mean": 0.7929728721675369,
+      "fisa_lookup_auc_roc_std": 0.06419978579443392,
+      "fisa_lookup_auc_pr_mean": 0.3425193180013995,
+      "fisa_lookup_auc_pr_std": 0.08925943678634202,
+      "fisa_lookup_sensitivity_mean": 0.8947368421052632,
+      "fisa_lookup_sensitivity_std": 0.18232113763882918,
+      "fisa_lookup_specificity_mean": 0.31936025671187895,
+      "fisa_lookup_specificity_std": 0.17609072884458019,
+      "fisa_lookup_avg_time_per_query_ms_mean": 0.046223850269212316,
+      "fisa_lookup_avg_time_per_query_ms_std": 0.0005226070897067112,
+      "fisa_lookup_total_time_s_mean": 0.011167669296264648,
+      "fisa_lookup_total_time_s_std": 0.00012757339061850368,
+      "fkge_accuracy_mean": 0.8767003875038578,
+      "fkge_accuracy_std": 0.03036901050326003,
+      "fkge_balanced_accuracy_mean": 0.8480113314257894,
+      "fkge_balanced_accuracy_std": 0.04837329288980878,
+      "fkge_f1_mean": 0.5185939333574585,
+      "fkge_f1_std": 0.04144227761291782,
+      "fkge_f1_macro_mean": 0.7237546047691014,
+      "fkge_f1_macro_std": 0.02898334361275995,
+      "fkge_auc_roc_mean": 0.9324105215879639,
+      "fkge_auc_roc_std": 0.01619655413454476,
+      "fkge_auc_pr_mean": 0.6127151304416673,
+      "fkge_auc_pr_std": 0.05234392620705387,
+      "fkge_sensitivity_mean": 0.8136842105263158,
+      "fkge_sensitivity_std": 0.12732600424634677,
+      "fkge_specificity_mean": 0.8823384523252633,
+      "fkge_specificity_std": 0.04142196839083745,
+      "fkge_avg_time_per_query_ms_mean": 0.1507386020783765,
+      "fkge_avg_time_per_query_ms_std": 0.0015817628745265178,
+      "fkge_total_time_s_mean": 0.0364185479603475,
+      "fkge_total_time_s_std": 0.00039946989045972197,
+      "fkge_train_time_s_mean": 8.825060968399049,
+      "fkge_train_time_s_std": 0.3412129925569213,
+      "fkge_representation_build_time_s_mean": 0.00017954399983864279,
+      "fkge_representation_build_time_s_std": 1.0917917946302938e-05,
+      "fkge_agreement_mean": 0.46140118651623746,
+      "fkge_agreement_std": 0.14296775169305373,
+      "fkge_fidelity_balanced_accuracy_mean": 0.6116491758611363,
+      "fkge_fidelity_balanced_accuracy_std": 0.03210910318688166,
+      "fkge_cohen_kappa_mean": 0.14913424785486096,
+      "fkge_cohen_kappa_std": 0.07481774233022447,
+      "fkge_fidelity_bound_coverage_mean": 0.003969685538904702,
+      "fkge_fidelity_bound_coverage_std": 0.004381108713511568,
+      "fkge_fidelity_bound_violations_mean": 0.0,
+      "fkge_fidelity_bound_violations_std": 0.0,
+      "fkge_mean_kl_divergence_mean": 0.7392658342768523,
+      "fkge_mean_kl_divergence_std": 0.09859429835971022,
+      "fkge_n_parameters_mean": 5017.6,
+      "fkge_n_parameters_std": 78.38367176906169,
+      "fkge_embedding_memory_bytes_mean": 40140.8,
+      "fkge_embedding_memory_bytes_std": 627.0693741524935,
+      "fisa_sequential_avg_time_per_query_ms_fold_std": 0.20431927199373837,
+      "fisa_sequential_avg_time_per_query_ms_ci95_low": 2.950597416859531,
+      "fisa_sequential_avg_time_per_query_ms_ci95_high": 3.2670739738584964,
+      "fisa_sequential_auc_roc_fold_std": 0.06419978579443392,
+      "fisa_sequential_auc_roc_ci95_low": 0.7368942309820984,
+      "fisa_sequential_auc_roc_ci95_high": 0.8361603271905373,
+      "fisa_lookup_avg_time_per_query_ms_fold_std": 0.0005226070897067112,
+      "fisa_lookup_avg_time_per_query_ms_ci95_low": 0.045763760705996734,
+      "fisa_lookup_avg_time_per_query_ms_ci95_high": 0.04658541894082502,
+      "fisa_lookup_auc_roc_fold_std": 0.06419978579443392,
+      "fisa_lookup_auc_roc_ci95_low": 0.7368942309820984,
+      "fisa_lookup_auc_roc_ci95_high": 0.8361603271905373,
+      "fkge_avg_time_per_query_ms_fold_std": 0.0009087043185577696,
+      "fkge_avg_time_per_query_ms_ci95_low": 0.15010891611434213,
+      "fkge_avg_time_per_query_ms_ci95_high": 0.151506552528008,
+      "fkge_auc_roc_fold_std": 0.017096532693350697,
+      "fkge_auc_roc_ci95_low": 0.9178513931888546,
+      "fkge_auc_roc_ci95_high": 0.9455696534391365,
+      "observations": {
+        "fisa_sequential": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 3.1643839907055056,
+            "auc_roc": 0.8606981981981981
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 3.2422995764361926,
+            "auc_roc": 0.8013924946896389
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 2.9249240544216693,
+            "auc_roc": 0.8290063724333254
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 3.343193362857296,
+            "auc_roc": 0.7829185520361991
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 2.8693774923744044,
+            "auc_roc": 0.6908487434803224
+          }
+        ],
+        "fisa_lookup": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 0.04642265887299845,
+            "auc_roc": 0.8606981981981981
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 0.04680491676015302,
+            "auc_roc": 0.8013924946896389
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 0.04537933128924409,
+            "auc_roc": 0.8290063724333254
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 0.04625419363441309,
+            "auc_roc": 0.7829185520361991
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 0.046258150789252946,
+            "auc_roc": 0.6908487434803224
+          }
+        ],
+        "fkge": [
+          {
+            "fold": 1,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.15110909060405736,
+            "auc_roc": 0.9466216216216217
+          },
+          {
+            "fold": 1,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.15069917367515345,
+            "auc_roc": 0.9328828828828829
+          },
+          {
+            "fold": 1,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.15355041268626074,
+            "auc_roc": 0.9421171171171171
+          },
+          {
+            "fold": 1,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.14786818172986627,
+            "auc_roc": 0.9441441441441442
+          },
+          {
+            "fold": 1,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.14985702589850813,
+            "auc_roc": 0.9362612612612613
+          },
+          {
+            "fold": 2,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.15255165304882792,
+            "auc_roc": 0.953976870427189
+          },
+          {
+            "fold": 2,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1505334717981625,
+            "auc_roc": 0.9509086617890017
+          },
+          {
+            "fold": 2,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.15235950408815138,
+            "auc_roc": 0.9553929667217371
+          },
+          {
+            "fold": 2,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.15456611586422928,
+            "auc_roc": 0.9575171111635591
+          },
+          {
+            "fold": 2,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.15092933777053957,
+            "auc_roc": 0.9487845173471796
+          },
+          {
+            "fold": 3,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.14927851222359292,
+            "auc_roc": 0.9328534340335143
+          },
+          {
+            "fold": 3,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1505326442030828,
+            "auc_roc": 0.9302572574935095
+          },
+          {
+            "fold": 3,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.14903966875261943,
+            "auc_roc": 0.9356856266226103
+          },
+          {
+            "fold": 3,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.15010578493628082,
+            "auc_roc": 0.9297852253953269
+          },
+          {
+            "fold": 3,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.15064090918961237,
+            "auc_roc": 0.9385178192117064
+          },
+          {
+            "fold": 4,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.15210954308668267,
+            "auc_roc": 0.9211538461538461
+          },
+          {
+            "fold": 4,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.15132157638025592,
+            "auc_roc": 0.9351809954751131
+          },
+          {
+            "fold": 4,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.15055145183143387,
+            "auc_roc": 0.9340497737556561
+          },
+          {
+            "fold": 4,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.1483871373280311,
+            "auc_roc": 0.9220588235294118
+          },
+          {
+            "fold": 4,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.15225186703689936,
+            "auc_roc": 0.9272624434389141
+          },
+          {
+            "fold": 5,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.1500004143367185,
+            "auc_roc": 0.9101469890943575
+          },
+          {
+            "fold": 5,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1492232357922756,
+            "auc_roc": 0.9063537221431959
+          },
+          {
+            "fold": 5,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.1488510371090195,
+            "auc_roc": 0.9096728307254623
+          },
+          {
+            "fold": 5,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.1507821573520319,
+            "auc_roc": 0.9070649596965387
+          },
+          {
+            "fold": 5,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.15136514523711936,
+            "auc_roc": 0.9016121384542437
+          }
+        ]
+      },
+      "validation_folds": 5,
+      "n_seeds": 5
+    },
+    {
+      "ratio": 0.8,
+      "n_rules_mean": 844.0,
+      "n_rules_per_fold": [
+        852,
+        888,
+        808,
+        888,
+        784
+      ],
+      "fisa_sequential_accuracy_mean": 0.6018689345358527,
+      "fisa_sequential_accuracy_std": 0.1783226281071633,
+      "fisa_sequential_balanced_accuracy_mean": 0.7270997899831425,
+      "fisa_sequential_balanced_accuracy_std": 0.06212238585774086,
+      "fisa_sequential_f1_mean": 0.2828543647711679,
+      "fisa_sequential_f1_std": 0.07894217685281538,
+      "fisa_sequential_f1_macro_mean": 0.496581526066685,
+      "fisa_sequential_f1_macro_std": 0.11994086567543412,
+      "fisa_sequential_auc_roc_mean": 0.8162638376808017,
+      "fisa_sequential_auc_roc_std": 0.07401107558369542,
+      "fisa_sequential_auc_pr_mean": 0.3495777811034707,
+      "fisa_sequential_auc_pr_std": 0.09773912165433006,
+      "fisa_sequential_sensitivity_mean": 0.8763157894736843,
+      "fisa_sequential_sensitivity_std": 0.0909704527233874,
+      "fisa_sequential_specificity_mean": 0.5778837904926009,
+      "fisa_sequential_specificity_std": 0.2015827212771653,
+      "fisa_sequential_avg_time_per_query_ms_mean": 4.143117179816971,
+      "fisa_sequential_avg_time_per_query_ms_std": 0.2634809335336709,
+      "fisa_sequential_total_time_s_mean": 1.000994873046875,
+      "fisa_sequential_total_time_s_std": 0.06397006717717199,
+      "fisa_lookup_accuracy_mean": 0.6018689345358527,
+      "fisa_lookup_accuracy_std": 0.1783226281071633,
+      "fisa_lookup_balanced_accuracy_mean": 0.7270997899831425,
+      "fisa_lookup_balanced_accuracy_std": 0.06212238585774086,
+      "fisa_lookup_f1_mean": 0.2828543647711679,
+      "fisa_lookup_f1_std": 0.07894217685281538,
+      "fisa_lookup_f1_macro_mean": 0.496581526066685,
+      "fisa_lookup_f1_macro_std": 0.11994086567543412,
+      "fisa_lookup_auc_roc_mean": 0.8162638376808017,
+      "fisa_lookup_auc_roc_std": 0.07401107558369542,
+      "fisa_lookup_auc_pr_mean": 0.3495777811034707,
+      "fisa_lookup_auc_pr_std": 0.09773912165433006,
+      "fisa_lookup_sensitivity_mean": 0.8763157894736843,
+      "fisa_lookup_sensitivity_std": 0.0909704527233874,
+      "fisa_lookup_specificity_mean": 0.5778837904926009,
+      "fisa_lookup_specificity_std": 0.2015827212771653,
+      "fisa_lookup_avg_time_per_query_ms_mean": 0.0462672596037304,
+      "fisa_lookup_avg_time_per_query_ms_std": 0.0002646477617061418,
+      "fisa_lookup_total_time_s_mean": 0.011178064346313476,
+      "fisa_lookup_total_time_s_std": 4.2151703548208444e-05,
+      "fkge_accuracy_mean": 0.8909186927745962,
+      "fkge_accuracy_std": 0.02823061502344686,
+      "fkge_balanced_accuracy_mean": 0.8520446103621908,
+      "fkge_balanced_accuracy_std": 0.04318740841453121,
+      "fkge_f1_mean": 0.5476383230524384,
+      "fkge_f1_std": 0.05358067998892304,
+      "fkge_f1_macro_mean": 0.7426844260549313,
+      "fkge_f1_macro_std": 0.03452892164253995,
+      "fkge_auc_roc_mean": 0.9332998016593512,
+      "fkge_auc_roc_std": 0.01879270128804146,
+      "fkge_auc_pr_mean": 0.6169705302707422,
+      "fkge_auc_pr_std": 0.06927171035170489,
+      "fkge_sensitivity_mean": 0.8055789473684211,
+      "fkge_sensitivity_std": 0.10610224776417043,
+      "fkge_specificity_mean": 0.8985102733559606,
+      "fkge_specificity_std": 0.036031454839560384,
+      "fkge_avg_time_per_query_ms_mean": 0.15637818391162647,
+      "fkge_avg_time_per_query_ms_std": 0.002507891599707328,
+      "fkge_total_time_s_mean": 0.037781116025289524,
+      "fkge_total_time_s_std": 0.0006202571891043303,
+      "fkge_train_time_s_mean": 9.332756967544556,
+      "fkge_train_time_s_std": 0.44937034461076486,
+      "fkge_representation_build_time_s_mean": 0.00024695599859114736,
+      "fkge_representation_build_time_s_std": 5.3547508528536616e-05,
+      "fkge_agreement_mean": 0.6649531909056617,
+      "fkge_agreement_std": 0.15808851601226165,
+      "fkge_fidelity_balanced_accuracy_mean": 0.6611676750576477,
+      "fkge_fidelity_balanced_accuracy_std": 0.06865394007097358,
+      "fkge_cohen_kappa_mean": 0.3296505716039295,
+      "fkge_cohen_kappa_std": 0.18694314992279398,
+      "fkge_fidelity_bound_coverage_mean": 0.0036411645691162855,
+      "fkge_fidelity_bound_coverage_std": 0.0038358150382835354,
+      "fkge_fidelity_bound_violations_mean": 0.0,
+      "fkge_fidelity_bound_violations_std": 0.0,
+      "fkge_mean_kl_divergence_mean": 0.769478203152691,
+      "fkge_mean_kl_divergence_std": 0.10580778797515832,
+      "fkge_n_parameters_mean": 5017.6,
+      "fkge_n_parameters_std": 78.38367176906169,
+      "fkge_embedding_memory_bytes_mean": 40140.8,
+      "fkge_embedding_memory_bytes_std": 627.0693741524935,
+      "fisa_sequential_avg_time_per_query_ms_fold_std": 0.2634809335336709,
+      "fisa_sequential_avg_time_per_query_ms_ci95_low": 3.930430381877984,
+      "fisa_sequential_avg_time_per_query_ms_ci95_high": 4.34355051370892,
+      "fisa_sequential_auc_roc_fold_std": 0.07401107558369542,
+      "fisa_sequential_auc_roc_ci95_low": 0.7547693192066985,
+      "fisa_sequential_auc_roc_ci95_high": 0.8687545104846409,
+      "fisa_lookup_avg_time_per_query_ms_fold_std": 0.0002646477617061418,
+      "fisa_lookup_avg_time_per_query_ms_ci95_low": 0.04606424284375403,
+      "fisa_lookup_avg_time_per_query_ms_ci95_high": 0.046471625393765814,
+      "fisa_lookup_auc_roc_fold_std": 0.07401107558369542,
+      "fisa_lookup_auc_roc_ci95_low": 0.7547693192066985,
+      "fisa_lookup_auc_roc_ci95_high": 0.8687545104846409,
+      "fkge_avg_time_per_query_ms_fold_std": 0.0015064369676557729,
+      "fkge_avg_time_per_query_ms_ci95_low": 0.15521890047628376,
+      "fkge_avg_time_per_query_ms_ci95_high": 0.15753746734696922,
+      "fkge_auc_roc_fold_std": 0.02016187461825011,
+      "fkge_auc_roc_ci95_low": 0.916856287103965,
+      "fkge_auc_roc_ci95_high": 0.949571069535431,
+      "observations": {
+        "fisa_sequential": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 4.245264471069841,
+            "auc_roc": 0.8798423423423424
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 4.331905979755496,
+            "auc_roc": 0.8292423884824168
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 3.9409931040992423,
+            "auc_roc": 0.8782157186688695
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 4.4043380689818825,
+            "auc_roc": 0.7932126696832579
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 3.7930842751783946,
+            "auc_roc": 0.7008060692271219
+          }
+        ],
+        "fisa_lookup": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 0.04622660392572072,
+            "auc_roc": 0.8798423423423424
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 0.04601577096734165,
+            "auc_roc": 0.8292423884824168
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 0.04603153417918308,
+            "auc_roc": 0.8782157186688695
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 0.04643028702478686,
+            "auc_roc": 0.7932126696832579
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 0.04663210192161971,
+            "auc_roc": 0.7008060692271219
+          }
+        ],
+        "fkge": [
+          {
+            "fold": 1,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.15973305851144115,
+            "auc_roc": 0.9421171171171171
+          },
+          {
+            "fold": 1,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.15705867842694143,
+            "auc_roc": 0.9490990990990991
+          },
+          {
+            "fold": 1,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.15558264495358487,
+            "auc_roc": 0.9490990990990991
+          },
+          {
+            "fold": 1,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.15538057856202078,
+            "auc_roc": 0.9407657657657658
+          },
+          {
+            "fold": 1,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.15607190150998473,
+            "auc_roc": 0.9376126126126126
+          },
+          {
+            "fold": 2,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.15580495859136465,
+            "auc_roc": 0.9648336086853906
+          },
+          {
+            "fold": 2,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1601516530721079,
+            "auc_roc": 0.9629454802926599
+          },
+          {
+            "fold": 2,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.1589863639626044,
+            "auc_roc": 0.9556289827708284
+          },
+          {
+            "fold": 2,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.15795619870643787,
+            "auc_roc": 0.9542128864762804
+          },
+          {
+            "fold": 2,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.1582177688414808,
+            "auc_roc": 0.953976870427189
+          },
+          {
+            "fold": 3,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.1562731406672604,
+            "auc_roc": 0.9304932735426009
+          },
+          {
+            "fold": 3,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.15179297445661363,
+            "auc_roc": 0.9293131932971442
+          },
+          {
+            "fold": 3,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.1551991730638826,
+            "auc_roc": 0.9312013216898749
+          },
+          {
+            "fold": 3,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.15217603336055646,
+            "auc_roc": 0.9330894500826056
+          },
+          {
+            "fold": 3,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.15895743800225198,
+            "auc_roc": 0.933325466131697
+          },
+          {
+            "fold": 4,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.16024398393552225,
+            "auc_roc": 0.9259049773755657
+          },
+          {
+            "fold": 4,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1558925308836856,
+            "auc_roc": 0.9324660633484163
+          },
+          {
+            "fold": 4,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.15594937772919032,
+            "auc_roc": 0.9313348416289593
+          },
+          {
+            "fold": 4,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.15686099676906104,
+            "auc_roc": 0.9263574660633485
+          },
+          {
+            "fold": 4,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.15724107836367354,
+            "auc_roc": 0.9297511312217195
+          },
+          {
+            "fold": 5,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.15823485449785404,
+            "auc_roc": 0.9087245139876718
+          },
+          {
+            "fold": 5,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1540414938153467,
+            "auc_roc": 0.904457088667615
+          },
+          {
+            "fold": 5,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.15228838129432803,
+            "auc_roc": 0.9039829302987198
+          },
+          {
+            "fold": 5,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.15748879664308965,
+            "auc_roc": 0.8961593172119487
+          },
+          {
+            "fold": 5,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.15187053917037685,
+            "auc_roc": 0.905642484589853
+          }
+        ]
+      },
+      "validation_folds": 5,
+      "n_seeds": 5
+    },
+    {
+      "ratio": 1.0,
+      "n_rules_mean": 1054.6,
+      "n_rules_per_fold": [
+        1064,
+        1109,
+        1010,
+        1110,
+        980
+      ],
+      "fisa_sequential_accuracy_mean": 0.6376427420184493,
+      "fisa_sequential_accuracy_std": 0.1751258709719374,
+      "fisa_sequential_balanced_accuracy_mean": 0.7140977822544274,
+      "fisa_sequential_balanced_accuracy_std": 0.0717857755520493,
+      "fisa_sequential_f1_mean": 0.2845230720846873,
+      "fisa_sequential_f1_std": 0.08754258039846863,
+      "fisa_sequential_f1_macro_mean": 0.5142810821172291,
+      "fisa_sequential_f1_macro_std": 0.1149566594857149,
+      "fisa_sequential_auc_roc_mean": 0.8231363338948132,
+      "fisa_sequential_auc_roc_std": 0.0790581063761328,
+      "fisa_sequential_auc_pr_mean": 0.3563683810039552,
+      "fisa_sequential_auc_pr_std": 0.10207640603131768,
+      "fisa_sequential_sensitivity_mean": 0.8047368421052632,
+      "fisa_sequential_sensitivity_std": 0.20014191640833537,
+      "fisa_sequential_specificity_mean": 0.6234587224035918,
+      "fisa_sequential_specificity_std": 0.202684957428456,
+      "fisa_sequential_avg_time_per_query_ms_mean": 4.903038089067119,
+      "fisa_sequential_avg_time_per_query_ms_std": 0.24796784023750965,
+      "fisa_sequential_total_time_s_mean": 1.1845868110656739,
+      "fisa_sequential_total_time_s_std": 0.060224929119440426,
+      "fisa_lookup_accuracy_mean": 0.6376427420184493,
+      "fisa_lookup_accuracy_std": 0.1751258709719374,
+      "fisa_lookup_balanced_accuracy_mean": 0.7140977822544274,
+      "fisa_lookup_balanced_accuracy_std": 0.0717857755520493,
+      "fisa_lookup_f1_mean": 0.2845230720846873,
+      "fisa_lookup_f1_std": 0.08754258039846863,
+      "fisa_lookup_f1_macro_mean": 0.5142810821172291,
+      "fisa_lookup_f1_macro_std": 0.1149566594857149,
+      "fisa_lookup_auc_roc_mean": 0.8231363338948132,
+      "fisa_lookup_auc_roc_std": 0.0790581063761328,
+      "fisa_lookup_auc_pr_mean": 0.3563683810039552,
+      "fisa_lookup_auc_pr_std": 0.10207640603131768,
+      "fisa_lookup_sensitivity_mean": 0.8047368421052632,
+      "fisa_lookup_sensitivity_std": 0.20014191640833537,
+      "fisa_lookup_specificity_mean": 0.6234587224035918,
+      "fisa_lookup_specificity_std": 0.202684957428456,
+      "fisa_lookup_avg_time_per_query_ms_mean": 0.04515363038442642,
+      "fisa_lookup_avg_time_per_query_ms_std": 0.0004919020259490487,
+      "fisa_lookup_total_time_s_mean": 0.010908985137939453,
+      "fisa_lookup_total_time_s_std": 0.00010562771835704691,
+      "fkge_accuracy_mean": 0.8743883954596893,
+      "fkge_accuracy_std": 0.03840458058799975,
+      "fkge_balanced_accuracy_mean": 0.8410861661969966,
+      "fkge_balanced_accuracy_std": 0.04084593854743648,
+      "fkge_f1_mean": 0.5142139924176287,
+      "fkge_f1_std": 0.05603742234794931,
+      "fkge_f1_macro_mean": 0.7207882200621256,
+      "fkge_f1_macro_std": 0.039186426654725146,
+      "fkge_auc_roc_mean": 0.9305354479008979,
+      "fkge_auc_roc_std": 0.017033897760552908,
+      "fkge_auc_pr_mean": 0.608527170074836,
+      "fkge_auc_pr_std": 0.054556083231850704,
+      "fkge_sensitivity_mean": 0.8012631578947369,
+      "fkge_sensitivity_std": 0.11528528586762836,
+      "fkge_specificity_mean": 0.8809091744992563,
+      "fkge_specificity_std": 0.04932324396742216,
+      "fkge_avg_time_per_query_ms_mean": 0.1627657081253494,
+      "fkge_avg_time_per_query_ms_std": 0.006765256270846487,
+      "fkge_total_time_s_mean": 0.039324832021957266,
+      "fkge_total_time_s_std": 0.001654346600750792,
+      "fkge_train_time_s_mean": 9.780588722229004,
+      "fkge_train_time_s_std": 0.5333559147836239,
+      "fkge_representation_build_time_s_mean": 0.0002762559987604618,
+      "fkge_representation_build_time_s_std": 1.65207972487318e-05,
+      "fkge_agreement_mean": 0.703342820890916,
+      "fkge_agreement_std": 0.1402033418873,
+      "fkge_fidelity_balanced_accuracy_mean": 0.6684804603270068,
+      "fkge_fidelity_balanced_accuracy_std": 0.0686383663952872,
+      "fkge_cohen_kappa_mean": 0.3497580274354059,
+      "fkge_cohen_kappa_std": 0.16785404023580072,
+      "fkge_fidelity_bound_coverage_mean": 0.004634957648914646,
+      "fkge_fidelity_bound_coverage_std": 0.004358204258471479,
+      "fkge_fidelity_bound_violations_mean": 0.0,
+      "fkge_fidelity_bound_violations_std": 0.0,
+      "fkge_mean_kl_divergence_mean": 0.7205666881945569,
+      "fkge_mean_kl_divergence_std": 0.07639029352507641,
+      "fkge_n_parameters_mean": 5017.6,
+      "fkge_n_parameters_std": 78.38367176906169,
+      "fkge_embedding_memory_bytes_mean": 40140.8,
+      "fkge_embedding_memory_bytes_std": 627.0693741524935,
+      "fisa_sequential_avg_time_per_query_ms_fold_std": 0.24796784023750965,
+      "fisa_sequential_avg_time_per_query_ms_ci95_low": 4.710039809253709,
+      "fisa_sequential_avg_time_per_query_ms_ci95_high": 5.09389788970131,
+      "fisa_sequential_auc_roc_fold_std": 0.0790581063761328,
+      "fisa_sequential_auc_roc_ci95_low": 0.7567790449324969,
+      "fisa_sequential_auc_roc_ci95_high": 0.8804820999900066,
+      "fisa_lookup_avg_time_per_query_ms_fold_std": 0.0004919020259490487,
+      "fisa_lookup_avg_time_per_query_ms_ci95_low": 0.04477067427201705,
+      "fisa_lookup_avg_time_per_query_ms_ci95_high": 0.04552962550173113,
+      "fisa_lookup_auc_roc_fold_std": 0.0790581063761328,
+      "fisa_lookup_auc_roc_ci95_low": 0.7567790449324969,
+      "fisa_lookup_auc_roc_ci95_high": 0.8804820999900066,
+      "fkge_avg_time_per_query_ms_fold_std": 0.0036806118693926484,
+      "fkge_avg_time_per_query_ms_ci95_low": 0.15981980731358897,
+      "fkge_avg_time_per_query_ms_ci95_high": 0.16543325075362328,
+      "fkge_auc_roc_fold_std": 0.01800197031466544,
+      "fkge_auc_roc_ci95_low": 0.9148721896461834,
+      "fkge_auc_roc_ci95_high": 0.943712840540174,
+      "observations": {
+        "fisa_sequential": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 4.998775553112187,
+            "auc_roc": 0.917454954954955
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 5.08526337048239,
+            "auc_roc": 0.834198725513335
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 4.689119078896262,
+            "auc_roc": 0.866650932263394
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 5.1500935772147916,
+            "auc_roc": 0.7874434389140271
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 4.591938865629964,
+            "auc_roc": 0.7099336178283546
+          }
+        ],
+        "fisa_lookup": [
+          {
+            "fold": 1,
+            "avg_time_per_query_ms": 0.04452614744832693,
+            "auc_roc": 0.917454954954955
+          },
+          {
+            "fold": 2,
+            "avg_time_per_query_ms": 0.04472909880078529,
+            "auc_roc": 0.834198725513335
+          },
+          {
+            "fold": 3,
+            "avg_time_per_query_ms": 0.045545830214319155,
+            "auc_roc": 0.866650932263394
+          },
+          {
+            "fold": 4,
+            "avg_time_per_query_ms": 0.04537768383738411,
+            "auc_roc": 0.7874434389140271
+          },
+          {
+            "fold": 5,
+            "avg_time_per_query_ms": 0.04558939162131662,
+            "auc_roc": 0.7099336178283546
+          }
+        ],
+        "fkge": [
+          {
+            "fold": 1,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.16274545469209706,
+            "auc_roc": 0.9380630630630631
+          },
+          {
+            "fold": 1,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1626690079492694,
+            "auc_roc": 0.9396396396396396
+          },
+          {
+            "fold": 1,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.1618673558676931,
+            "auc_roc": 0.943018018018018
+          },
+          {
+            "fold": 1,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.1690475210501266,
+            "auc_roc": 0.9407657657657658
+          },
+          {
+            "fold": 1,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.16260247953930745,
+            "auc_roc": 0.9391891891891891
+          },
+          {
+            "fold": 2,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.16254710715672016,
+            "auc_roc": 0.9572810951144678
+          },
+          {
+            "fold": 2,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1595636366357573,
+            "auc_roc": 0.949728581543545
+          },
+          {
+            "fold": 2,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.16126322300483142,
+            "auc_roc": 0.9395798914326174
+          },
+          {
+            "fold": 2,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.1628404961969157,
+            "auc_roc": 0.9535048383290063
+          },
+          {
+            "fold": 2,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.19250206668786166,
+            "auc_roc": 0.9499645975926363
+          },
+          {
+            "fold": 3,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.15984917341439006,
+            "auc_roc": 0.9330894500826056
+          },
+          {
+            "fold": 3,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.16040371948360535,
+            "auc_roc": 0.9283691291007788
+          },
+          {
+            "fold": 3,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.15876983483139165,
+            "auc_roc": 0.934741562426245
+          },
+          {
+            "fold": 3,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.16205702510985645,
+            "auc_roc": 0.9352135945244276
+          },
+          {
+            "fold": 3,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.158680992081669,
+            "auc_roc": 0.9295492093462355
+          },
+          {
+            "fold": 4,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.1620178426571453,
+            "auc_roc": 0.926131221719457
+          },
+          {
+            "fold": 4,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.16366680476600035,
+            "auc_roc": 0.9333710407239819
+          },
+          {
+            "fold": 4,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.1653190869456389,
+            "auc_roc": 0.9274886877828055
+          },
+          {
+            "fold": 4,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.16506556015755378,
+            "auc_roc": 0.9281674208144797
+          },
+          {
+            "fold": 4,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.16366390066261935,
+            "auc_roc": 0.9268099547511313
+          },
+          {
+            "fold": 5,
+            "seed": 42,
+            "avg_time_per_query_ms": 0.15843194986440443,
+            "auc_roc": 0.9122807017543859
+          },
+          {
+            "fold": 5,
+            "seed": 43,
+            "avg_time_per_query_ms": 0.1578551860327187,
+            "auc_roc": 0.9054054054054054
+          },
+          {
+            "fold": 5,
+            "seed": 44,
+            "avg_time_per_query_ms": 0.16002448121592003,
+            "auc_roc": 0.8961593172119487
+          },
+          {
+            "fold": 5,
+            "seed": 45,
+            "avg_time_per_query_ms": 0.15863651440902013,
+            "auc_roc": 0.9023233760075865
+          },
+          {
+            "fold": 5,
+            "seed": 46,
+            "avg_time_per_query_ms": 0.15705228272122157,
+            "auc_roc": 0.8935514461830252
+          }
+        ]
+      },
+      "validation_folds": 5,
+      "n_seeds": 5
+    }
+  ],
+  "log_log_slopes": {
+    "fisa_sequential": 0.945310697082665,
+    "fisa_lookup": 0.001711262372125007,
+    "fkge": 0.06615722098678349
+  },
+  "timing_repeats": 5,
+  "ci_method": "fold_bootstrap_percentile_95_seed_mean_within_fold_10000_resamples"
+}
