@@ -98,6 +98,19 @@ class ProtocolTests(unittest.TestCase):
         expected /= expected.sum()
         np.testing.assert_allclose(probability, expected)
 
+    def test_linear_rule_pooling_matches_per_rule_reference(self):
+        import numpy as np
+
+        records = generate_synthetic_prefuzzified_records(n_patients=20, seed=8)
+        fkg, _ = PrefuzzifiedRulePipeline().fit_and_mine(records)
+        for pooling in ("mean", "weighted"):
+            model = FKGE(fkg, d=8, pooling=pooling, seed=19)
+            expected = np.stack([
+                model._pool(ids, model.Es) for ids in model.rule_token_ids
+            ])
+            np.testing.assert_allclose(model.rule_embeddings(), expected,
+                                       rtol=0, atol=1e-15)
+
     def test_fidelity_reports_teacher_balance_and_bound(self):
         reference = [{"class-0": .9, "class-1": .1},
                      {"class-0": .2, "class-1": .8}]

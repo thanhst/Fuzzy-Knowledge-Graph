@@ -18,6 +18,7 @@ import numpy as np
 import time
 import random
 from collections import defaultdict
+from scipy.sparse import csr_matrix
 
 
 def sigmoid(x):
@@ -72,6 +73,7 @@ class FKGE:
         self.Ec = rng.normal(0, 0.1, size=(self.V, d))   # ngữ cảnh
 
         self._build_corpus()
+        self._build_pooling_matrix()
         self._build_edges()
         self._build_rule_class_dist()
         self.rule_class_indices = np.asarray([
@@ -105,6 +107,29 @@ class FKGE:
                     if c != t:
                         pairs.append((ids[t], ids[c]))
         self.sg_pairs = pairs
+
+    def _build_pooling_matrix(self):
+        """Fixed linear rule pooling for mean/weighted modes."""
+        self.pooling_matrix = None
+        if self.pooling == "max":
+            return
+        rows, cols, weights = [], [], []
+        for rule_index, ids in enumerate(self.rule_token_ids):
+            if not ids:
+                continue
+            if self.pooling == "mean":
+                rule_weights = [1.0 / len(ids)] * len(ids)
+            elif self.pooling == "weighted":
+                rule_weights = ([1.0] if len(ids) == 1 else
+                                [self.alpha_pool / (len(ids) - 1)] * (len(ids) - 1)
+                                + [1.0 - self.alpha_pool])
+            else:
+                raise ValueError(f"Không hỗ trợ pooling={self.pooling}")
+            rows.extend([rule_index] * len(ids))
+            cols.extend(ids)
+            weights.extend(rule_weights)
+        self.pooling_matrix = csr_matrix(
+            (weights, (rows, cols)), shape=(len(self.rule_token_ids), self.V))
 
     def _build_edges(self):
         self.edge_list = []
@@ -143,6 +168,8 @@ class FKGE:
 
     def rule_embeddings(self, table=None):
         table = self.Es if table is None else table
+        if self.pooling_matrix is not None:
+            return self.pooling_matrix @ table
         return np.stack([self._pool(ids, table) for ids in self.rule_token_ids])
 
     def query_embedding(self, membership, table=None):
@@ -196,23 +223,29 @@ class FKGE:
         # số) bất kể embedding hay siêu tham số.
         n_sgns = max(1, len(batch_pairs) * (1 + self.K_neg))
         sgns_scale = self.beta_rule / n_sgns
-        for (i, j) in batch_pairs:
-            zi, zj = self.Es[i], self.Ec[j]
-            dot = zi @ zj
-            sig = sigmoid(dot)
-            total_loss += sgns_scale * (-np.log(sig + 1e-12))
-            g = sgns_scale * (sig - 1.0)   # d(-log sigmoid(dot))/d(dot), đã chuẩn hóa
-            gEs[i] += g * zj
-            gEc[j] += g * zi
-            negs = np.random.choice(self.V, size=self.K_neg, p=self.neg_dist)
-            for n in negs:
-                zn = self.Ec[n]
-                dotn = zi @ zn
-                sign = sigmoid(dotn)
-                total_loss += sgns_scale * (-np.log(1 - sign + 1e-12))
-                gn = sgns_scale * sign     # d(-log sigmoid(-dotn))/d(dotn) = sign, đã chuẩn hóa
-                gEs[i] += gn * zn
-                gEc[n] += gn * zi
+        if self.beta_rule and batch_pairs:
+            pair_ids = np.asarray(batch_pairs, dtype=np.int64)
+            source_ids, context_ids = pair_ids[:, 0], pair_ids[:, 1]
+            source_vectors = self.Es[source_ids]
+            context_vectors = self.Ec[context_ids]
+            positive = sigmoid(np.sum(source_vectors * context_vectors, axis=1))
+            positive_gradient = sgns_scale * (positive - 1.0)
+            total_loss += float(-sgns_scale * np.log(positive + 1e-12).sum())
+            np.add.at(gEs, source_ids, positive_gradient[:, None] * context_vectors)
+            np.add.at(gEc, context_ids, positive_gradient[:, None] * source_vectors)
+            if self.K_neg:
+                negative_ids = np.random.choice(
+                    self.V, size=(len(batch_pairs), self.K_neg), p=self.neg_dist)
+                negative_vectors = self.Ec[negative_ids]
+                negative = sigmoid(np.sum(
+                    source_vectors[:, None, :] * negative_vectors, axis=2))
+                negative_gradient = sgns_scale * negative
+                total_loss += float(-sgns_scale * np.log(1 - negative + 1e-12).sum())
+                np.add.at(gEs, source_ids, np.sum(
+                    negative_gradient[:, :, None] * negative_vectors, axis=1))
+                np.add.at(gEc, negative_ids.ravel(),
+                          (negative_gradient[:, :, None] *
+                           source_vectors[:, None, :]).reshape(-1, self.d))
 
         # ---- 2) Node Loss (shifted cosine vs mu_ij), Công thức (3.91)-(3.94) ----
         # Cũng chuẩn hóa theo số cạnh trong batch, cùng lý do với SGNS ở trên.
@@ -291,27 +324,22 @@ class FKGE:
                     gEs[idx] += wgt * dq_x
 
         # Lan truyền gradient của rule_emb (pooling) về Es
-        if len(samples_for_this_step) > 0:
-            for k, ids in enumerate(self.rule_token_ids):
-                g = d_rule_emb[k]
-                if np.allclose(g, 0) or not ids:
-                    continue
-                if self.pooling == "mean":
-                    for i in ids:
-                        gEs[i] += g / len(ids)
-                elif self.pooling == "max":
+        if samples_for_this_step:
+            # np.allclose(g, 0) uses atol=1e-8; compute its mask once.
+            active_rules = ~np.all(np.abs(d_rule_emb) <= 1e-8, axis=1)
+            if self.pooling_matrix is not None:
+                d_rule_emb[~active_rules] = 0.0
+                gEs += self.pooling_matrix.T @ d_rule_emb
+            else:
+                for k in np.flatnonzero(active_rules):
+                    ids = self.rule_token_ids[k]
+                    if not ids:
+                        continue
+                    g = d_rule_emb[k]
                     vecs = self.Es[ids]
                     amax = np.argmax(vecs, axis=0)
                     for dim, local_i in enumerate(amax):
                         gEs[ids[local_i]][dim] += g[dim]
-                elif self.pooling == "weighted":
-                    if len(ids) == 1:
-                        gEs[ids[0]] += g
-                    else:
-                        ante_ids, cons_id = ids[:-1], ids[-1]
-                        for i in ante_ids:
-                            gEs[i] += self.alpha_pool * g / len(ante_ids)
-                        gEs[cons_id] += (1 - self.alpha_pool) * g
 
         # ---- Cập nhật (SGD + weight decay), Công thức (3.98) tổng hợp ----
         gEs += self.weight_decay * self.Es
