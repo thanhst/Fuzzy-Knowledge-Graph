@@ -1,0 +1,59 @@
+{
+  "run_id": "tan_20260929_brset_fusion_tradeoff_kfold100_retry",
+  "status": "completed",
+  "started_at": "2026-09-29T15:49:21.761804+00:00",
+  "quick": false,
+  "requested_experiments": [
+    "fidelity_tradeoff"
+  ],
+  "argv": [
+    "fkge_v2\\run_fidelity_tradeoff.py",
+    "--kb1-run-id",
+    "tan_20260929_brset_fusion_kfold100_full",
+    "--run-id",
+    "tan_20260929_brset_fusion_tradeoff_kfold100_retry",
+    "--epochs",
+    "100"
+  ],
+  "source_revision": "7a57fb282ae513509192c2c93f439b51cae84c0c",
+  "source_dirty": false,
+  "environment": {
+    "python": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+    "numpy": "2.4.1",
+    "scikit_learn": "1.8.0",
+    "xgboost": null,
+    "pykeen": null
+  },
+  "configuration": {
+    "epochs": 100,
+    "n_seeds": 5,
+    "k_fold": 5,
+    "embedding_dimension": 32,
+    "window": null,
+    "negative_samples": 5,
+    "lambda_node": 1.0,
+    "lambda_sgns": 1.0,
+    "lambda_inf": 2.0,
+    "lambda_pred": 20.0,
+    "weight_decay": 1e-05,
+    "aggregation": "class_max",
+    "max_pairs_per_epoch": 2000,
+    "brset_primary_modality": "fusion",
+    "lambda_I_grid": [
+      0.0,
+      2.0,
+      20.0,
+      100.0
+    ]
+  },
+  "data_sources": {
+    "brset_frb_package": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\Source_code\\data\\exports\\frb_patient_id_20260923",
+    "diabetes_raw": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\fkge_v2\\data_real\\diabetes_kaggle_raw.json",
+    "healthcare_diabetes_raw": "D:\\Study\\InternAIRC\\source_code_Tan\\source_code_Tan\\fkge_v2\\data_real\\healthcare_diabetes_raw.json"
+  },
+  "reused_kb1_run": "tan_20260929_brset_fusion_kfold100_full",
+  "finished_at": "2026-09-29T16:05:26.761286+00:00",
+  "elapsed_seconds": 964.7366011142731
+}
