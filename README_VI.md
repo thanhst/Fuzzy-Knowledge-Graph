@@ -1,3 +1,5 @@
+> **BRSET đầy đủ: 16.266 ảnh / 8.524 bệnh nhân, 5 fold theo patient ID (seed 42).** Xem [CSV chuẩn và hướng dẫn chạy](BRSET_DATA.md). Kết quả cũ trong nhánh vẫn thuộc lần chạy cũ.
+
 # FKG-MM chạy đầy đủ
 
 Nhánh `MM` chạy lại toàn bộ chuỗi thực nghiệm FKG-MM từ bảng đặc trưng liên tục:
