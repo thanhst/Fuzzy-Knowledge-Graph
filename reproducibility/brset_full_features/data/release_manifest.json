@@ -1,0 +1,150 @@
+{
+  "scope": "Full cached per-image feature coverage and patient ID partitioning; no model training or raw-image re-extraction.",
+  "method": "StratifiedGroupKFold",
+  "fold_count": 5,
+  "seed": 42,
+  "feature_counts": {
+    "image": 10,
+    "table": 13,
+    "fusion": 23
+  },
+  "label_semantics": {
+    "0": "no diabetic retinopathy",
+    "1": "diabetic retinopathy"
+  },
+  "label_counts": {
+    "0": 15196,
+    "1": 1070
+  },
+  "filtering": {
+    "input_rows": 16266,
+    "removed_missing_ids": 0,
+    "removed_duplicate_image_ids": 0,
+    "removed_invalid_binary_labels": 0,
+    "retained_images": 16266,
+    "retained_patients": 8524
+  },
+  "checks": {
+    "each_image_held_out_once": true,
+    "each_patient_in_one_held_out_fold": true,
+    "patient_overlap_count": 0,
+    "folds": [
+      {
+        "fold": 1,
+        "train_images": 13006,
+        "test_images": 3260,
+        "train_patients": 6819,
+        "test_patients": 1705,
+        "test_positives": 198,
+        "patient_overlap_count": 0
+      },
+      {
+        "fold": 2,
+        "train_images": 13014,
+        "test_images": 3252,
+        "train_patients": 6819,
+        "test_patients": 1705,
+        "test_positives": 219,
+        "patient_overlap_count": 0
+      },
+      {
+        "fold": 3,
+        "train_images": 13018,
+        "test_images": 3248,
+        "train_patients": 6818,
+        "test_patients": 1706,
+        "test_positives": 239,
+        "patient_overlap_count": 0
+      },
+      {
+        "fold": 4,
+        "train_images": 13011,
+        "test_images": 3255,
+        "train_patients": 6821,
+        "test_patients": 1703,
+        "test_positives": 204,
+        "patient_overlap_count": 0
+      },
+      {
+        "fold": 5,
+        "train_images": 13015,
+        "test_images": 3251,
+        "train_patients": 6819,
+        "test_patients": 1705,
+        "test_positives": 210,
+        "patient_overlap_count": 0
+      }
+    ]
+  },
+  "clinical_missing_values_preserved": {
+    "patient_age": 5446,
+    "patient_sex": 0,
+    "diabetes_time_y": 14402,
+    "insuline": 14552,
+    "diabetes": 0,
+    "exam_eye": 0,
+    "optic_disc": 1,
+    "vessels": 0,
+    "macula": 0,
+    "focus": 0,
+    "Illuminaton": 0,
+    "image_field": 0,
+    "quality": 0
+  },
+  "fixed_category_maps": {
+    "insuline": {
+      "yes": 2,
+      "no": 1
+    },
+    "diabetes": {
+      "yes": 2,
+      "no": 1
+    },
+    "quality": {
+      "adequate": 2,
+      "inadequate": 1
+    }
+  },
+  "learned_processing_performed": false,
+  "smote_performed": false,
+  "image_source": {
+    "path": "Source_code/data/Dataset_diabetic/Fusion_feature/images_ft.csv",
+    "sha256": "65eb0dc0fbff82a911f0edc1d76dea2067ddd1aefc890e953e47cfd6f6bd3c08",
+    "git_blob": "e963ddf854c6149da8ff7856a72b43fdc91300d4",
+    "last_change_commit": "9786ba5162919fa42c3cc0f34db52092163040fb"
+  },
+  "label_source": {
+    "path": "ROOT_DATA/labels_brset.csv",
+    "sha256": "357354fbe543fd30901406f44c939bb52d457f3c8b701ba70a72735338826b20"
+  },
+  "code_sha256": {
+    "builder": "103738647659d71a92ebaff7500235d5d8e0338d009b44d4f6e31720d5c2060d",
+    "fold_runner": "568cae9141c3f04c1044acd818851297d43907c642b8bb5526414031a81c59a3",
+    "splitter_source": "2d560d913a6a53114be8141918a68111f9a34654254904f195864dd63420fda2",
+    "historical_extractor": "325f0d213004611fc367a5fa6cb16f4ca6ff4f6c032a19f61988f78d5d8226b2"
+  },
+  "base_commit": "4a0e40651d197ec9a56addd6a9fc4902c9749542",
+  "environment": {
+    "python": "3.13.7",
+    "system": "Windows",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.7.2"
+  },
+  "files_sha256": {
+    "fold_01/test_ids.csv": "be5b237a38d406ce1bdb69d8706c3533d6a6e0f909f46c5fb7b8647da812a9aa",
+    "fold_01/train_ids.csv": "fe1a34de45ecd7e6a378fb8b0cf4489eb146eded3627d82246279e5002b31efe",
+    "fold_02/test_ids.csv": "926dfabcabcd13d015476137cf1e8af6a45485c8ca24be4de2a4830b7513ae82",
+    "fold_02/train_ids.csv": "868769bdac4bad5099cfc51a29facb34427d4c591eaf6dee19ccc217bd52a5d8",
+    "fold_03/test_ids.csv": "63082abebe6010d8be50b753cd0ff1f07d4bf1852857f2e4c1cbbd068bb865fc",
+    "fold_03/train_ids.csv": "115ae93b2b942c3e7f51a3a8bc93d7492e0a1f4da971bec630f3fe4ebeb1a115",
+    "fold_04/test_ids.csv": "b628521bd92b63565f15f9fa5d4355f8cf0823d7aea2664a475dacc89e002f02",
+    "fold_04/train_ids.csv": "56c1ad132cbef5500eaf9be00834e67940ca7967fc24b0d1130285c7c0a6c840",
+    "fold_05/test_ids.csv": "e287166d2cea5c9335b8f34765709efe42e49892e06d2185755abf42c54a833e",
+    "fold_05/train_ids.csv": "73f8db95458cdef197255070a4ec11575aafbcd689c17a03dbd4cc23fe2aa682",
+    "fold_assignments.csv": "b84b16415543907a4017756644dcdd8025e3970957827849f8d89402b9bbc16a",
+    "fusion_features.csv": "1d8ecce93c4dd38a03d493e55902965efb1fdb55fdd09847dc95bfbac5a716c6",
+    "image_features.csv": "abb3e54560721b99b26bfe9f4a670864917ac17d191dda0877c0981c65fd0bda",
+    "table_features.csv": "fd793e019e4732d6b3966bc9f36c68ac2840a4a3fc0530176164b04a7e163841"
+  }
+}
