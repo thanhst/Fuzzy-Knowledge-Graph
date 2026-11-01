@@ -1,0 +1,3 @@
+summarize.py text eol=lf
+results/statistics/** text eol=lf
+results/statistics/**/*.png binary

@@ -18,6 +18,33 @@ split from preprocessed/SMOTE data and its rules/labels remain in the learned
 graph. Every figure identifies its source and scope. Neither package establishes
 full-BRSET model performance; these experiments cover the 1,208-image subset.
 
+## Numerical statistics in the FKG-E report layout
+
+Read the [complete numerical report](results/statistics/report.md). It follows
+the supplied FKG-E report sections and the table layout already used by
+`fkge_v2/report/render_brset_quick_table.py`; no metrics from that different
+implementation are mixed into these results.
+
+![Numerical summary of the new tuned replay](results/statistics/new_zip/result_summary.png)
+
+The report includes all seven classification metrics, paired differences and
+fold wins, selected configurations, split counts, thresholds, teacher
+temperatures, stopping diagnostics and timing. All 70 classification values
+(seven metrics, two models, five folds) are checked against the new zip.
+
+The older package is summarized separately as KB1–KB6, ablation and baseline,
+with [a six-table image](results/statistics/old_zip/result_summary.png) and full
+CSV tables. Each SD uses five fold-level values, after averaging seeds within
+folds. Original within-seed SDs are not pooled as independent observations.
+Missing metrics stay missing. In particular, old F1 macro and new F1 for the
+positive class are labeled separately.
+
+CI/p-value formulas from the new package are reproduced only in a clearly
+marked reference appendix. The original NB denominator counts training rows
+after SMOTE; these values are not presented as evidence of significance.
+The new zip does not contain JSON outputs for KB1–KB6, ablation or baseline;
+the report does not present the older outputs as new experiments.
+
 ## New zip: main gallery
 
 Actual selected-configuration replay:
@@ -82,6 +109,8 @@ establishes model superiority.
 ## Files and provenance
 
 - `render.py`: reads both zip archives and creates all PNGs and aggregate JSON.
+- `summarize.py`: rebuilds the numerical report, 16 CSV tables and two table
+  images, without training models.
 - `replay_selected.py`: exports the new package's folds and replays its selected
   models using a fresh cache, with Windows-compatible process spawning.
 - `requirements-replay.txt`: original numerical/plotting package versions.
@@ -141,3 +170,13 @@ reproducibility/fkge_result_figures/.venv/Scripts/python.exe -B -X utf8 reproduc
 Omit `--replay` to render only the archived metrics. This produces 11 PNGs; a
 completed replay adds the PR, replay summary and learning-curve PNGs, for 14 total.
 Linux uses `.venv/bin/python` with the same script arguments.
+
+Rebuild the numerical statistics using the same completed replay:
+
+```powershell
+reproducibility/fkge_result_figures/.venv/Scripts/python.exe -B -X utf8 reproducibility/fkge_result_figures/summarize.py --old-zip FKGMM_BRSET3-20261025T102157Z-1-001.zip --new-zip fkge_tuned_repro_with_data_PRIVATE.zip --replay reproducibility/fkge_result_figures/private/replay_local --output reproducibility/fkge_result_figures/results/statistics
+```
+
+The numerical report has its own `statistics_manifest.json`, recording source
+member hashes, script hashes and all generated report/CSV/PNG hashes. The two
+numerical-table PNGs are additional to the 14 figures produced by `render.py`.
