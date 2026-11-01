@@ -1,0 +1,26 @@
+# Numerical/plotting versions in the new zip; Python/OS are recorded per run.
+# CPU replay: the original Linux-only nvidia-nccl dependency is unnecessary.
+autograd==1.9.1
+cloudpickle==3.1.2
+contourpy==1.4.0
+cycler==0.12.1
+fonttools==4.68.0
+iniconfig==2.3.1
+joblib==1.6.0
+kiwisolver==1.5.1
+narwhals==2.28.0
+numpy==2.5.4
+packaging==26.3
+pillow==13.0.0
+pluggy==1.7.0
+Pygments==2.21.0
+pyparsing==3.3.3
+pytest==9.2.0
+python-dateutil==2.9.0.post0
+scipy==1.18.1
+scikit-learn==1.9.1
+pandas==3.1.0
+matplotlib==3.11.2
+six==1.17.0
+threadpoolctl==3.7.0
+tzdata==2026.6
