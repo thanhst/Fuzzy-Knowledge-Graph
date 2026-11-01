@@ -1,0 +1,439 @@
+{
+  "scope": "All locally available commits reachable from local and fetched remote branches; remote heads refreshed on 2026-11-01.",
+  "commits_scanned": 168,
+  "historical_csv_versions_scanned": 1837,
+  "csv_versions_with_at_least_15000_rows": 201,
+  "remote_thanh_dev_exists": false,
+  "branches_with_selected_cached_image_features": [
+    "DuyHoang",
+    "codex/fkge-kfold-std-results",
+    "codex/verified-brset-patient-folds",
+    "main",
+    "thanh/FKG-E",
+    "thanh/FKG_kfoldcross",
+    "thanh/GPU_version"
+  ],
+  "selected_image_features": {
+    "path": "Source_code/data/Dataset_diabetic/Fusion_feature/images_ft.csv",
+    "git_blob": "e963ddf854c6149da8ff7856a72b43fdc91300d4",
+    "last_change_commit": "9786ba5162919fa42c3cc0f34db52092163040fb",
+    "rows": 16266,
+    "unique_image_ids": 16266,
+    "matched_label_ids": 16266,
+    "patients_after_label_join": 8524,
+    "feature_columns": 10,
+    "all_image_features_finite": true
+  },
+  "full_id_csv_versions": [
+    {
+      "oid": "81b667424aab6928b100ec60bf1b31d8e90c857a",
+      "path": "ROOT_DATA/labels_brset.csv",
+      "type": "blob",
+      "bytes": 1706396,
+      "rows": 16266,
+      "columns": 34,
+      "header": [
+        "image_id",
+        "patient_id",
+        "camera",
+        "patient_age",
+        "comorbidities",
+        "diabetes_time_y",
+        "insuline",
+        "patient_sex",
+        "exam_eye",
+        "diabetes",
+        "nationality",
+        "optic_disc",
+        "vessels",
+        "macula",
+        "DR_SDRG",
+        "DR_ICDR",
+        "focus",
+        "Illuminaton",
+        "image_field",
+        "artifacts",
+        "diabetic_retinopathy",
+        "macular_edema",
+        "scar",
+        "nevus",
+        "amd",
+        "vascular_occlusion",
+        "hypertensive_retinopathy",
+        "drusens",
+        "hemorrhage",
+        "retinal_detachment",
+        "myopic_fundus",
+        "increased_cup_disc",
+        "other",
+        "quality"
+      ],
+      "row_widths": [
+        34
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": 8524
+    },
+    {
+      "oid": "b82ecb015cbf24df95bc63bd53ca75d0a437f537",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature/data_process_tabular.csv",
+      "type": "blob",
+      "bytes": 943518,
+      "rows": 16266,
+      "columns": 15,
+      "header": [
+        "image_id",
+        "patient_age",
+        "patient_sex",
+        "diabetes_time_y",
+        "insuline",
+        "diabetes",
+        "exam_eye",
+        "optic_disc",
+        "vessels",
+        "macula",
+        "focus",
+        "Illuminaton",
+        "image_field",
+        "quality",
+        "diabetic_retinopathy"
+      ],
+      "row_widths": [
+        15
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "e963ddf854c6149da8ff7856a72b43fdc91300d4",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature/images_ft.csv",
+      "type": "blob",
+      "bytes": 3193843,
+      "rows": 16266,
+      "columns": 11,
+      "header": [
+        "image_id",
+        "Contrast Feature",
+        "Dissimilarity Feature",
+        "Homogeneity Feature",
+        "Energy Feature",
+        "Correlation Feature",
+        "ASM Feature",
+        "Mean Feature",
+        "Variance Feature",
+        "Standard Deviation Feature",
+        "RMS Feature"
+      ],
+      "row_widths": [
+        11
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "a20d70d7927928fac6a7ab7812b15ae7b82c6f4d",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature_FT_selection/image_fts_norm.csv",
+      "type": "blob",
+      "bytes": 3346437,
+      "rows": 16266,
+      "columns": 11,
+      "header": [
+        "image_id",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "row_widths": [
+        11
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "e5e0ec994e69af963e520065003aa15e96dcbd66",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature_FT_selection/images_ft.csv",
+      "type": "blob",
+      "bytes": 2112997,
+      "rows": 16266,
+      "columns": 12,
+      "header": [
+        "image_id",
+        "Contrast Feature",
+        "Dissimilarity Feature",
+        "Homogeneity Feature",
+        "Energy Feature",
+        "Correlation Feature",
+        "ASM Feature",
+        "Mean Feature",
+        "Variance Feature",
+        "Standard Deviation Feature",
+        "RMS Feature",
+        "diabetic_retinopathy"
+      ],
+      "row_widths": [
+        12
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "0e5a29e53cc9d843ce57946d9ef4ba43c5f07584",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature_FT_selection/table_fts.csv",
+      "type": "blob",
+      "bytes": 1166578,
+      "rows": 16266,
+      "columns": 11,
+      "header": [
+        "image_id",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "0"
+      ],
+      "row_widths": [
+        11
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "e5d97e9bf07aa5fbca3892e873de7fa8349a1189",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature_PCA/images_ft_pca.csv",
+      "type": "blob",
+      "bytes": 2533895,
+      "rows": 16266,
+      "columns": 8,
+      "header": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "image_id"
+      ],
+      "row_widths": [
+        8
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "16f1aa50da2c2f9631af333a9c54dc37dea05ade",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature_filter/table_fts.csv",
+      "type": "blob",
+      "bytes": 1459498,
+      "rows": 16266,
+      "columns": 15,
+      "header": [
+        "image_id",
+        "patient_age",
+        "diabetes_time_y",
+        "insuline",
+        "patient_sex",
+        "exam_eye",
+        "diabetes",
+        "optic_disc",
+        "vessels",
+        "macula",
+        "focus",
+        "Illuminaton",
+        "image_field",
+        "quality",
+        "diabetic_retinopathy"
+      ],
+      "row_widths": [
+        15
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "50463e9e4e874d0e84d792144da67546097c9e47",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature_with_glcm/images_ft.csv",
+      "type": "blob",
+      "bytes": 2002089,
+      "rows": 16266,
+      "columns": 7,
+      "header": [
+        "image_id",
+        "Contrast Feature",
+        "Dissimilarity Feature",
+        "Homogeneity Feature",
+        "Energy Feature",
+        "Correlation Feature",
+        "ASM Feature"
+      ],
+      "row_widths": [
+        7
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "32e09f990031d18d988bcea477beb0f853c7ae0e",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature_wrapper/image_fts_norm.csv",
+      "type": "blob",
+      "bytes": 3411503,
+      "rows": 16266,
+      "columns": 12,
+      "header": [
+        "image_id",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "0"
+      ],
+      "row_widths": [
+        12
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "a0f5ecf75a433d12f2361f62b21c84e0c53a830e",
+      "path": "Source_code/data/Dataset_diabetic/data_process.csv",
+      "type": "blob",
+      "bytes": 732996,
+      "rows": 16266,
+      "columns": 15,
+      "header": [
+        "image_id",
+        "patient_age",
+        "diabetes_time_y",
+        "insuline",
+        "patient_sex",
+        "exam_eye",
+        "diabetes",
+        "optic_disc",
+        "vessels",
+        "macula",
+        "focus",
+        "Illuminaton",
+        "image_field",
+        "quality",
+        "diabetic_retinopathy"
+      ],
+      "row_widths": [
+        15
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    },
+    {
+      "oid": "6f55e8468a4da0a67e4816f35021ae20a6ef3187",
+      "path": "Source_code/data/Dataset_diabetic/labels_brset.csv",
+      "type": "blob",
+      "bytes": 1706396,
+      "rows": 16266,
+      "columns": 34,
+      "header": [
+        "image_id",
+        "patient_id",
+        "camera",
+        "patient_age",
+        "comorbidities",
+        "diabetes_time_y",
+        "insuline",
+        "patient_sex",
+        "exam_eye",
+        "diabetes",
+        "nationality",
+        "optic_disc",
+        "vessels",
+        "macula",
+        "DR_SDRG",
+        "DR_ICDR",
+        "focus",
+        "Illuminaton",
+        "image_field",
+        "artifacts",
+        "diabetic_retinopathy",
+        "macular_edema",
+        "scar",
+        "nevus",
+        "amd",
+        "vascular_occlusion",
+        "hypertensive_retinopathy",
+        "drusens",
+        "hemorrhage",
+        "retinal_detachment",
+        "myopic_fundus",
+        "increased_cup_disc",
+        "other",
+        "quality"
+      ],
+      "row_widths": [
+        34
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": 8524
+    },
+    {
+      "oid": "c79a322cd07e2e683a46116f3bdd4ac6051f1ba5",
+      "path": "Source_code/data/Dataset_diabetic/Fusion_feature/images_ft.csv",
+      "type": "blob",
+      "bytes": 3414427,
+      "rows": 16266,
+      "columns": 11,
+      "header": [
+        "image_id",
+        "Contrast Feature",
+        "Dissimilarity Feature",
+        "Homogeneity Feature",
+        "Energy Feature",
+        "Correlation Feature",
+        "ASM Feature",
+        "Mean Feature",
+        "Variance Feature",
+        "Standard Deviation Feature",
+        "RMS Feature"
+      ],
+      "row_widths": [
+        11
+      ],
+      "unique_image_ids": 16266,
+      "brset_image_id_matches": 16266,
+      "unique_patients": null
+    }
+  ],
+  "selection_notes": [
+    "Selected images_ft.csv stores raw per-image features before global scaling in the historical extractor.",
+    "Historical data_process.csv contains globally imputed/scaled data and encodes DR as 1/2; it is not used as the source of the new folds.",
+    "Historical 30392-row files contain resampled data; row count is not the number of original images.",
+    "Clinical features in the new export come from raw labels, with fixed categorical maps and missing values preserved."
+  ]
+}
