@@ -1,0 +1,6 @@
+/outputs/
+/private/
+__pycache__/
+.venv*/
+!/data/
+!/data/**
