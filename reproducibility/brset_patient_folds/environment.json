@@ -1,0 +1,29 @@
+{
+  "validation_date": "2026-11-01",
+  "python": "3.13.7",
+  "os": {
+    "caption": "Microsoft Windows 11 Home Single Language",
+    "version": "10.0.26200",
+    "architecture": "64-bit"
+  },
+  "cpu": {
+    "name": "AMD Ryzen 5 5600H with Radeon Graphics",
+    "physical_cores": 6,
+    "logical_processors": 12
+  },
+  "usable_physical_memory_gib": 7.35,
+  "gpu_used": false,
+  "scope": "Fold ID generation and validation only; no training timing claims.",
+  "packages": {
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.7.2",
+    "scipy": "1.16.2",
+    "joblib": "1.5.2",
+    "threadpoolctl": "3.6.0",
+    "python-dateutil": "2.9.0.post0",
+    "pytz": "2025.2",
+    "tzdata": "2025.2",
+    "six": "1.17.0"
+  }
+}

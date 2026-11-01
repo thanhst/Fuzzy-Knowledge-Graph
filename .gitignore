@@ -50,6 +50,10 @@ llvm-mingw.7z
 mingw64.7z
 Source_code/module/module.zip
 
+# Private BRSET archives supplied for local review
+/FKGMM_BRSET3-20261025T102157Z-1-001.zip
+/fkge_tuned_repro_with_data_PRIVATE.zip
+
 # Generated outputs
 data/FKG/
 Data

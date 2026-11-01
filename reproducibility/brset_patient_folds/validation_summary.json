@@ -1,0 +1,309 @@
+{
+  "validation_date": "2026-11-01",
+  "scope": "ID partitioning and filtering only. No image availability check, preprocessing fitting, SMOTE or model training.",
+  "base_commit_for_original_source": "72d670819e6c09ba6fbe6808de66759a00b0ce28",
+  "automated_tests": {
+    "command": "python -B -X utf8 -m unittest discover -s reproducibility/brset_patient_folds/tests -v",
+    "tests_passed": 4
+  },
+  "separate_original_function_recheck": {
+    "input_images": 1208,
+    "patients": 729,
+    "seed": 42,
+    "custom_image_fold_matches": 1208,
+    "external_manifest_image_fold_matches": 1208,
+    "custom_repeat_identical": true,
+    "sgkf_repeat_identical": true,
+    "sgkf_image_fold_matches": 237,
+    "sgkf_best_matches_after_relabeling_fold_numbers": 282,
+    "scope": "Earlier direct calls to original repository functions on the same root train CSV."
+  },
+  "cases": [
+    {
+      "case": "subset_custom",
+      "method": "custom",
+      "implementation": "assign_train_folds: custom patient-balanced allocation",
+      "fold_count": 5,
+      "seed": 42,
+      "label_column": "retinopathy",
+      "input_sha256": "1142142ab2752715b709de46ad5b4a2b74ea8b4b0bbc957f3e65bd770df343cd",
+      "source": "Source_code/main/diabetic_retinopathy/create_root_data_image_train_test_split.py",
+      "source_sha256": "e63781fae4fdec88293494fa852bdb7820b190062c689ab76db7461efb30b96d",
+      "filtering": {
+        "input_rows": 1208,
+        "removed_missing_ids": 0,
+        "removed_duplicate_image_ids": 0,
+        "removed_invalid_binary_labels": 0,
+        "retained_images": 1208,
+        "retained_patients": 729
+      },
+      "checks": {
+        "each_image_held_out_once": true,
+        "each_patient_in_one_held_out_fold": true,
+        "patient_overlap_count": 0,
+        "folds": [
+          {
+            "fold": 1,
+            "train_images": 966,
+            "test_images": 242,
+            "train_patients": 583,
+            "test_patients": 146,
+            "test_positives": 20,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 2,
+            "train_images": 966,
+            "test_images": 242,
+            "train_patients": 583,
+            "test_patients": 146,
+            "test_positives": 19,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 3,
+            "train_images": 966,
+            "test_images": 242,
+            "train_patients": 583,
+            "test_patients": 146,
+            "test_positives": 19,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 4,
+            "train_images": 967,
+            "test_images": 241,
+            "train_patients": 583,
+            "test_patients": 146,
+            "test_positives": 20,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 5,
+            "train_images": 967,
+            "test_images": 241,
+            "train_patients": 584,
+            "test_patients": 145,
+            "test_positives": 19,
+            "patient_overlap_count": 0
+          }
+        ]
+      },
+      "reference_comparison": {
+        "all_test_image_sets_match": true,
+        "reference_covers_retained_images": true,
+        "folds": [
+          {
+            "fold": 1,
+            "missing_test_images": 0,
+            "unexpected_test_images": 0,
+            "matches": true
+          },
+          {
+            "fold": 2,
+            "missing_test_images": 0,
+            "unexpected_test_images": 0,
+            "matches": true
+          },
+          {
+            "fold": 3,
+            "missing_test_images": 0,
+            "unexpected_test_images": 0,
+            "matches": true
+          },
+          {
+            "fold": 4,
+            "missing_test_images": 0,
+            "unexpected_test_images": 0,
+            "matches": true
+          },
+          {
+            "fold": 5,
+            "missing_test_images": 0,
+            "unexpected_test_images": 0,
+            "matches": true
+          }
+        ]
+      }
+    },
+    {
+      "case": "subset_sgkf",
+      "method": "stratified-group",
+      "implementation": "StratifiedGroupKFold",
+      "fold_count": 5,
+      "seed": 42,
+      "label_column": "retinopathy",
+      "input_sha256": "1142142ab2752715b709de46ad5b4a2b74ea8b4b0bbc957f3e65bd770df343cd",
+      "source": "Source_code/main/diabetic_retinopathy/Preprocess_kfold_feature_selection.py",
+      "source_sha256": "2d560d913a6a53114be8141918a68111f9a34654254904f195864dd63420fda2",
+      "filtering": {
+        "input_rows": 1208,
+        "removed_missing_ids": 0,
+        "removed_duplicate_image_ids": 0,
+        "removed_invalid_binary_labels": 0,
+        "retained_images": 1208,
+        "retained_patients": 729
+      },
+      "checks": {
+        "each_image_held_out_once": true,
+        "each_patient_in_one_held_out_fold": true,
+        "patient_overlap_count": 0,
+        "folds": [
+          {
+            "fold": 1,
+            "train_images": 968,
+            "test_images": 240,
+            "train_patients": 583,
+            "test_patients": 146,
+            "test_positives": 21,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 2,
+            "train_images": 975,
+            "test_images": 233,
+            "train_patients": 584,
+            "test_patients": 145,
+            "test_positives": 15,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 3,
+            "train_images": 964,
+            "test_images": 244,
+            "train_patients": 584,
+            "test_patients": 145,
+            "test_positives": 24,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 4,
+            "train_images": 959,
+            "test_images": 249,
+            "train_patients": 583,
+            "test_patients": 146,
+            "test_positives": 23,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 5,
+            "train_images": 966,
+            "test_images": 242,
+            "train_patients": 582,
+            "test_patients": 147,
+            "test_positives": 14,
+            "patient_overlap_count": 0
+          }
+        ]
+      },
+      "reference_comparison": {
+        "all_test_image_sets_match": false,
+        "reference_covers_retained_images": true,
+        "folds": [
+          {
+            "fold": 1,
+            "missing_test_images": 199,
+            "unexpected_test_images": 197,
+            "matches": false
+          },
+          {
+            "fold": 2,
+            "missing_test_images": 194,
+            "unexpected_test_images": 185,
+            "matches": false
+          },
+          {
+            "fold": 3,
+            "missing_test_images": 194,
+            "unexpected_test_images": 196,
+            "matches": false
+          },
+          {
+            "fold": 4,
+            "missing_test_images": 189,
+            "unexpected_test_images": 197,
+            "matches": false
+          },
+          {
+            "fold": 5,
+            "missing_test_images": 195,
+            "unexpected_test_images": 196,
+            "matches": false
+          }
+        ]
+      }
+    },
+    {
+      "case": "full_labels_sgkf",
+      "method": "stratified-group",
+      "implementation": "StratifiedGroupKFold",
+      "fold_count": 5,
+      "seed": 42,
+      "label_column": "diabetic_retinopathy",
+      "input_sha256": "357354fbe543fd30901406f44c939bb52d457f3c8b701ba70a72735338826b20",
+      "source": "Source_code/main/diabetic_retinopathy/Preprocess_kfold_feature_selection.py",
+      "source_sha256": "2d560d913a6a53114be8141918a68111f9a34654254904f195864dd63420fda2",
+      "filtering": {
+        "input_rows": 16266,
+        "removed_missing_ids": 0,
+        "removed_duplicate_image_ids": 0,
+        "removed_invalid_binary_labels": 0,
+        "retained_images": 16266,
+        "retained_patients": 8524
+      },
+      "checks": {
+        "each_image_held_out_once": true,
+        "each_patient_in_one_held_out_fold": true,
+        "patient_overlap_count": 0,
+        "folds": [
+          {
+            "fold": 1,
+            "train_images": 13006,
+            "test_images": 3260,
+            "train_patients": 6819,
+            "test_patients": 1705,
+            "test_positives": 198,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 2,
+            "train_images": 13014,
+            "test_images": 3252,
+            "train_patients": 6819,
+            "test_patients": 1705,
+            "test_positives": 219,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 3,
+            "train_images": 13018,
+            "test_images": 3248,
+            "train_patients": 6818,
+            "test_patients": 1706,
+            "test_positives": 239,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 4,
+            "train_images": 13011,
+            "test_images": 3255,
+            "train_patients": 6821,
+            "test_patients": 1703,
+            "test_positives": 204,
+            "patient_overlap_count": 0
+          },
+          {
+            "fold": 5,
+            "train_images": 13015,
+            "test_images": 3251,
+            "train_patients": 6819,
+            "test_patients": 1705,
+            "test_positives": 210,
+            "patient_overlap_count": 0
+          }
+        ]
+      },
+      "reference_comparison": null
+    }
+  ]
+}
