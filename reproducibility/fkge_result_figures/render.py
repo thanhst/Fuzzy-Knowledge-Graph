@@ -1,4 +1,4 @@
-"""Export traceable FKG-E figures from the two supplied zip archives and a replay.
+"""Export traceable FKG-E figures from the current package and a replay.
 
 Only aggregate metrics and images are written publicly. Patient scores remain
 in the private replay directory. Archived and newly replayed results are labeled.
@@ -23,8 +23,8 @@ from sklearn.metrics import average_precision_score, precision_recall_curve, roc
 
 BLUE, ORANGE, GREY = "#2367ad", "#da6b35", "#79838e"
 OLD_FOOTER = "ZIP cũ — số liệu đã lưu; trung bình ± SD qua 5 fold.\nKB1–KB6 có phép chia 60/40 theo ảnh; kết quả lịch sử để tham khảo."
-NEW_FOOTER = "ZIP mới — số liệu expected/; trung bình ± SD qua 5 fold, 1 seed.\nValidation trong gói nguồn còn hạn chế; subset 1.208 ảnh."
-REPLAY_FOOTER = "ZIP mới — chạy lại 5 cấu hình đã chọn, seed 42; không chạy lại lưới.\nValidation theo gói nguồn còn hạn chế; subset 1.208 ảnh, không phải toàn BRSET."
+NEW_FOOTER = "Số liệu nguồn; trung bình ± SD qua 5 fold, 1 seed.\nValidation trong gói nguồn còn hạn chế; subset 1.208 ảnh."
+REPLAY_FOOTER = "Chạy lại 5 cấu hình đã chọn, seed 42; không chạy lại lưới.\nValidation theo gói nguồn còn hạn chế; subset 1.208 ảnh, không phải toàn BRSET."
 
 
 class Archive:
@@ -216,7 +216,7 @@ def render_new(new, directory):
     for ax, key, title in zip(axes, ["auc", "pr_auc"], ["ROC-AUC", "Average Precision (PR-AUC)"]):
         summary_panel(ax, [[row["fisa"][key] for row in folds],
                            [row["selected"][key + "_mean"] for row in folds]], ["FISA", "FKG-E tuned"], title)
-    finish(fig, directory / "tuned_summary_expected.png", "Zip mới — kết quả tuned được tác giả cung cấp", NEW_FOOTER)
+    finish(fig, directory / "tuned_summary_expected.png", "FKG-E trên BRSET — kết quả nguồn", NEW_FOOTER)
     columns = ["Fold", "α", "d", "λ_I", "λ_P", "Loss validation", "ROC-AUC", "AP"]
     cells = [[row["fold"].replace("fold_0", ""), f"{row['selected']['alpha']:g}",
               str(row["selected"]["d_e"]), f"{row['selected']['lam_I']:g}", f"{row['selected']['lam_P']:g}",
@@ -231,7 +231,7 @@ def render_new(new, directory):
     for (i, _), cell in table.get_celld().items():
         cell.set_edgecolor("#d7dde5")
         cell.set_facecolor("#e6eef8" if i == 0 else ("#f7f9fc" if i % 2 else "white"))
-    finish(fig, directory / "selected_configurations.png", "Zip mới — cấu hình có validation loss nhỏ nhất", NEW_FOOTER)
+    finish(fig, directory / "selected_configurations.png", "FKG-E — cấu hình có validation loss nhỏ nhất", NEW_FOOTER)
     fig, axes = plt.subplots(2, 3, figsize=(14, 8))
     for ax, fold in zip(axes.flat, folds):
         rows = fold["candidates"]
@@ -245,7 +245,7 @@ def render_new(new, directory):
     axes.flat[-1].axis("off")
     axes.flat[-1].text(0.05, 0.7, "108 cấu hình / fold\nMàu: α = 0.3 → 0.9\n★ Cấu hình được chọn bằng loss validation\n\nĐiểm AP không tham gia hàm chọn.",
                        fontsize=11, va="top")
-    finish(fig, directory / "validation_selection_grid.png", "Zip mới — toàn bộ lưới cấu hình đã lưu", NEW_FOOTER)
+    finish(fig, directory / "validation_selection_grid.png", "FKG-E — lưới cấu hình đã lưu", NEW_FOOTER)
 
 
 def read_predictions(directory, fold):
@@ -295,11 +295,11 @@ def render_replay(directory, destination):
     for ax in axes:
         ax.legend(fontsize=9)
         ax.grid(alpha=0.2)
-    finish(fig, destination / "pr_replayed.png", "Zip mới — đường PR từ điểm dự đoán chạy lại", REPLAY_FOOTER)
+    finish(fig, destination / "pr_replayed.png", "FKG-E trên BRSET — đường Precision–Recall", REPLAY_FOOTER)
     fig, axes = plt.subplots(1, 2, figsize=(12, 5.6))
     summary_panel(axes[0], [roc["FISA"], roc["FKG-E"]], ["FISA", "FKG-E"], "ROC-AUC")
     summary_panel(axes[1], [average_precision["FISA"], average_precision["FKG-E"]], ["FISA", "FKG-E"], "Average Precision")
-    finish(fig, destination / "tuned_summary_replayed.png", "Zip mới — kết quả chạy lại 5 cấu hình được chọn", REPLAY_FOOTER)
+    finish(fig, destination / "tuned_summary_replayed.png", "FKG-E trên BRSET — kết quả chạy lại", REPLAY_FOOTER)
     fig, axes = plt.subplots(1, 2, figsize=(12, 5.8))
     for fold in obj["folds"]:
         for ax, metric in zip(axes, ["loss", "val_pred"]):
@@ -310,51 +310,35 @@ def render_replay(directory, destination):
     for ax in axes:
         ax.legend(fontsize=8)
         ax.grid(alpha=0.2)
-    finish(fig, destination / "learning_curves_replayed.png", "Zip mới — đường học của lần chạy lại", REPLAY_FOOTER)
+    finish(fig, destination / "learning_curves_replayed.png", "FKG-E trên BRSET — đường học", REPLAY_FOOTER)
     # Publish aggregate metrics/history only, never the predictions or IDs.
     return {"manifest": obj["manifest"], "folds": obj["folds"],
             "recomputed_from_scores": {"ap": average_precision, "roc_auc": roc,
                                        "prevalence": prevalence, "private_score_sha256": score_hashes}}
 
 
-def comparison(old, new, path):
-    old_metrics = old["main_kfold"]["summary"]
-    original_roc = old_metrics["FKGE"]["auc"]
-    new_roc = stats([row["selected"]["auc_mean"] for row in new["folds"]])
-    new_ap = stats([row["selected"]["pr_auc_mean"] for row in new["folds"]])
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5.8))
-    axes[0].bar([0, 1], [original_roc["mean"], new_roc["mean"]],
-                yerr=[original_roc["sd"], new_roc["sd"]], capsize=5, color=[GREY, BLUE])
-    axes[0].set(xticks=[0, 1], xticklabels=["ZIP cũ: kfold-only", "ZIP mới: tuned"], ylim=(0, 1.04), title="FKG-E ROC-AUC được cung cấp")
-    axes[1].bar([1], [new_ap["mean"]], yerr=[new_ap["sd"]], capsize=5, color=BLUE)
-    axes[1].text(0, 0.25, "Không có AP\nFKG-E trong zip cũ", ha="center", color=GREY)
-    axes[1].set(xticks=[0, 1], xticklabels=["ZIP cũ", "ZIP mới: tuned"], xlim=(-0.6, 1.6), ylim=(0, 1.04), title="FKG-E Average Precision được cung cấp")
-    for ax in axes:
-        ax.grid(axis="y", alpha=0.2)
-        ax.set_axisbelow(True)
-    finish(fig, path, "Đối chiếu hai zip — khác giao thức đánh giá",
-           "Số liệu đã lưu trong hai gói; không phải một phép so sánh mô hình cùng giao thức.\nKhông suy ra ưu thế hoặc ý nghĩa thống kê từ biểu đồ này.")
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--old-zip", type=Path, required=True)
-    parser.add_argument("--new-zip", type=Path, required=True)
+    parser.add_argument("--old-zip", type=Path, help="Optional archived scenario export.")
+    parser.add_argument("--package-zip", "--new-zip", dest="package_zip", type=Path, required=True)
     parser.add_argument("--replay", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10,
                          "axes.spines.top": False, "axes.spines.right": False})
-    old_archive, new_archive = Archive(args.old_zip), Archive(args.new_zip)
-    old, new = collect_old(old_archive), collect_new(new_archive)
-    render_old(old, args.output / "old_zip")
+    new_archive = Archive(args.package_zip)
+    new = collect_new(new_archive)
+    archives = [new_archive]
+    if args.old_zip:
+        old_archive = Archive(args.old_zip)
+        render_old(collect_old(old_archive), args.output / "old_zip")
+        archives.append(old_archive)
     render_new(new, args.output / "new_zip")
-    comparison(old, new, args.output / "archive_comparison.png")
     replay = render_replay(args.replay, args.output / "new_zip") if args.replay else None
-    aggregate = {"old": old, "new": new, "replay": replay}
+    aggregate = {"current": new, "replay": replay}
     (args.output / "aggregate_results.json").write_text(json.dumps(aggregate, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     provenance = {"purpose": "Figure export, with archived and selected-configuration replay clearly separated.",
-                  "archives": [old_archive.provenance(), new_archive.provenance()],
+                  "archives": [archive.provenance() for archive in archives],
                   "python": platform.python_version(),
                   "packages": {name: importlib.metadata.version(name) for name in ["numpy", "matplotlib", "scikit-learn"]},
                   "renderer_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -363,7 +347,7 @@ def main():
                       "private_results_sha256": hashlib.sha256((args.replay / "replay_results.json").read_bytes()).hexdigest(),
                   } if args.replay else None,
                   "images": {path.relative_to(args.output).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-                             for path in sorted(args.output.rglob("*.png"))}}
+                             for path in sorted((args.output / "new_zip").glob("*.png"))}}
     (args.output / "figure_manifest.json").write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Exported {len(provenance['images'])} PNG figures to {args.output}")
 

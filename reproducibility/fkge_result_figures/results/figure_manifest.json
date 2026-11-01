@@ -2,43 +2,6 @@
   "purpose": "Figure export, with archived and selected-configuration replay clearly separated.",
   "archives": [
     {
-      "archive": "FKGMM_BRSET3-20261025T102157Z-1-001.zip",
-      "sha256": "e27390b65198ef30f252248f186b1d191e880cacb24a9e3c6a6e853e8d794a55",
-      "read_members_sha256": {
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_01/kb1_results.json": "d62c3dd0b7411d857b95facaa5cff6cde9409825470fb9b29c9ab6ccff9bf9a6",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_02/kb1_results.json": "c79907bd20b344e05accd3b95ccf3be30a8f420a5e6c015b91b8b56aa848362e",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_03/kb1_results.json": "39b9e70a7c61d1d5b5228b946f308325560e7b0ec886f674a7da8398e9f58c68",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_04/kb1_results.json": "4132a43105ed88bedd0faf083bb0b3e053b235d5aae526bbd77d9786f27b95c3",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_05/kb1_results.json": "1a2acda672ede6d9e5a947fe86dfdcae955c2becd1dfbf26bbe58451af646b2a",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_01/kb2_results.json": "ab1c26aca610fc27d34dd07c9ba445155b737c0958a7dd8c5d4de2884d62e0e9",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_02/kb2_results.json": "27bb5a96f18bd4cebb849fda2e29d47171514300e1348d2bd146ce07ced0a920",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_03/kb2_results.json": "1e9b7d33cd88caf80a6705950349cd3a5a6eddb52d845471abd34a5da5ccb752",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_04/kb2_results.json": "9901df9bbcde1fbe86781315eed66c32b2582b1a6b3e7ec9ca18bfc7a93a4fdf",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_05/kb2_results.json": "f16eb2cf105c34f1fa9a123f9fa6a2f74bca9cb28a08e0ab7df1c0bb465870ff",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_01/kb3_results.json": "732c30ffeb1491b2ddb122f04673317a505f74b72e2c24806a950d0dc5bfd1b2",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_02/kb3_results.json": "9af39d1d3582666278e44596b3b0a1910deadfb114a60861a3f292ebd9cb350e",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_03/kb3_results.json": "9a9526d558f735b75607136c756761e7d5c6a11f73e3027b1890ea15f76b4ee1",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_04/kb3_results.json": "d57e018e5146fce1b535c49b998a93894e5d212fd36e438e9fd7db46df3856e3",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_05/kb3_results.json": "943ea879497d1cda37b662f70048c846a58db7baecc8d244461c385da99bd61c",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_01/kb4_results.json": "ad858be7a17aadecc38025b5e23b49b30130f40bf84961e94ad039de2c0a4533",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_02/kb4_results.json": "ede51efb28d26efb63a9091e195d8306e5767c000e4e684538518bc6a4332d07",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_03/kb4_results.json": "887cab49c499bf37109f302d230c6d03a3cc1940a658caaddbc4f6e326ddf7b7",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_04/kb4_results.json": "9bc9ffcda10711a485ba7a69cbb1684726948ef236cd8cb9e3bee2ca979492f3",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_05/kb4_results.json": "8bc705675f08af1f7a4bc2d6626477d2b2191eb963a939a76ff0ca92000b1ef2",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_01/kb5_results.json": "ed7e13f8eb52182d72fce47b8a3e87ab7d24ca89e5420eb4489a62a426129d47",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_02/kb5_results.json": "1bb57ac18c31cb4614c778470533c5bc32707b1cbab70eaa738e53d9e2bb4f9c",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_03/kb5_results.json": "b77422249c3b8b2909921b041f0fdc9834eb18e861db6d056833413c9dfe62c9",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_04/kb5_results.json": "be3bceb4ddd23792c65463cbc86f503791eaaea4b3746a37e165f0384b24133a",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_05/kb5_results.json": "fbbaed9cb04e51c1511aa7ac851039aa1104d7de3966e0931cc35ebf56220adc",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_01/kb6_results.json": "48990226d086569398045d8656a0411a3b4ceae61391fc59b37a7534049e2ef3",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_02/kb6_results.json": "49be350e5c3fe4616ab2373fbb8e3568dff802171fb88618e9ecc3eaca3bac79",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_03/kb6_results.json": "ca9307b30522c59065b456f203fe1152d12fd129de9615a43fbb90cfcbd93d2c",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_04/kb6_results.json": "c1fa26b205d6b57474006b43d1f2332e78c2fcb310ef06e3c531fcb6fc0f3970",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/fold_05/kb6_results.json": "bb818e00c41940fe7aa22a1255cf1fc0aa85da12baf46e1bfa33dd1ca205c94a",
-        "FKGMM_BRSET3/ket_qua_geomean/fkge/kfold/brset_kfold.json": "53303dccb7ff75564dd63f652ab1d6895fca9f41bee867feae318b625afa3493"
-      }
-    },
-    {
       "archive": "fkge_tuned_repro_with_data_PRIVATE.zip",
       "sha256": "292d84931a1655c7ddd8962d3e337fe9fa1c08035d0dbb868b750e7a712dcc38",
       "read_members_sha256": {
@@ -57,25 +20,17 @@
     "matplotlib": "3.11.2",
     "scikit-learn": "1.9.1"
   },
-  "renderer_sha256": "c71bbddc87a51ceda50af2f7cb3b0cb68f37e78e191d3487586fc9e11050b0df",
+  "renderer_sha256": "b7d5dd10e2a639230e8d7385817cbe696eaec71a4d63b1d9a5e4aa2473824f81",
   "replay_provenance": {
     "runner_sha256": "7b2eaf0d471153cf5b82a74dafce4393626381f6a7623760d33e8a320ba9992e",
     "private_results_sha256": "9feb720fd6aa8496d933c18c3b17a890cf04643449d913c5f96ff356f11682f5"
   },
   "images": {
-    "archive_comparison.png": "6ab704f2f70bf857af6a5322c740b9dabddf79c884fd6e787dc841e00aa8e806",
-    "new_zip/learning_curves_replayed.png": "ef63ff51dd12e92ce53ed3b9185e3a4588b70e07cecabbfd5b2d44d68e9d89ac",
-    "new_zip/pr_replayed.png": "baa3780bb14523cd28d0f4a3129d39a6576d564da72ff7ee60fea57f0aca8e4c",
-    "new_zip/selected_configurations.png": "9746dae5a4cf7cbd4ce698f5fb6ab4c15072a861d55e0231610973a97a928a68",
-    "new_zip/tuned_summary_expected.png": "9728a29be74f83ba8b75758e3919b8e9c8c1a0c4396dcf2ccba519bf8393f712",
-    "new_zip/tuned_summary_replayed.png": "f323ed7b50afe3c987be3fa8e5f69886ce6f8230b2ca0d5c0111debd1423f725",
-    "new_zip/validation_selection_grid.png": "719aece8f9ea5bdaf851c4f250a2c504d7f06d273f696ec4f4ba9d815ad48176",
-    "old_zip/kb1.png": "1a6717fb71a4ee72e09d497c0f2ef55c60a8e7703d1e1dd8bdb4118c66beb289",
-    "old_zip/kb1_kb6_summary.png": "cb9e9a669eb98748b269a8df32d1e59f6b23b994f5141405bb065e79297f9c96",
-    "old_zip/kb2.png": "0378487ee3ff0ad2cc04a130c8cde92a952d041c5371c511d9ed213e184c7531",
-    "old_zip/kb3.png": "1c2ad001f42e971eeb40390fe3d4ff4fdcd951ecdd171283247a462e116ca7d4",
-    "old_zip/kb4.png": "925a363fc0c8a0f95699829c02b8af25b902b49980767279722ef480fe88864a",
-    "old_zip/kb5.png": "2ee52bd67ee8884d4c7bd315e3cb4a3631f0f3195e1cae2115a9efce9ab776d6",
-    "old_zip/kb6.png": "c0cdf3ef5b7b33d3ab453386281d7681a7a88acf9e966843c7bc97ef581787d4"
+    "new_zip/learning_curves_replayed.png": "fd0bdc9cb5b7a381dfc0d546d64f772fd22d589625e862e8f5f6bdba2787a4db",
+    "new_zip/pr_replayed.png": "f5d96d8a1c3110e36df2410ea5221a901ab3856816c4d611c3235e23363c9602",
+    "new_zip/selected_configurations.png": "7c3aa532c1512ce434706e1ae1381e38f6ea49059f9c791eeff526730c001284",
+    "new_zip/tuned_summary_expected.png": "e1656cd1f18daba5d7ddfcdf47c7556634d8e19cdaa02d3e805852cfc3557faf",
+    "new_zip/tuned_summary_replayed.png": "e530a85fa36dd39f046b9a6a287a3c335378b90d83c8077258899b627c218f21",
+    "new_zip/validation_selection_grid.png": "c6e8d49eac176445c987c45b8389f5372b6356527f48dc5358cf13a6f31e62f2"
   }
 }

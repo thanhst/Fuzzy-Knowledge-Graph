@@ -1,4 +1,4 @@
-"""Rebuild FKG-E numerical reports from the supplied archives and selected replay.
+"""Rebuild the current FKG-E numerical report and explain patient counts.
 
 No training is performed. Fold-level seed means are the descriptive units;
 within-fold seed SDs are not pooled as independent observations.
@@ -268,14 +268,94 @@ def old_figure(old, output):
     plt.close(fig)
 
 
-def report(main, inference, selected, split, auxiliary, old, differences, output):
-    lines = ["# Thống kê kết quả FKG-E theo cấu trúc báo cáo trong code", "",
-             "Zip mới là kết quả chính. Bảng dưới dùng lần chạy lại 5 cấu hình đã được chọn trong zip; "
+def load_population(path, split):
+    population = json.loads(path.read_text(encoding="utf-8"))
+    train = population["root_train"]
+    root_test = population["root_test"]
+    exported = population["image_export"]
+    for key in ("images", "patients"):
+        if train[key] + root_test[key] != exported[key]:
+            raise ValueError(f"Root population does not add up: {key}")
+    evidence = {f"fold_{row['fold']:02}": row for row in population["folds"]}
+    for row in split:
+        source = evidence[row["fold"]]
+        actual = (row["n_train_before_smote"], row["n_test"], row["n_patients"])
+        if actual != (source["train_images"], source["test_images"], source["train_patients"]):
+            raise ValueError(f"Population evidence differs from replay: {row['fold']}")
+        if row["n_train_before_smote"] + row["n_test"] != train["images"]:
+            raise ValueError("Fold image counts differ from the input population")
+        if row["n_patients"] + source["test_patients"] != train["patients"]:
+            raise ValueError("Fold patient counts differ from the input population")
+        row["n_train_patients"] = row["n_patients"]
+        row["n_test_patients"] = source["test_patients"]
+    return population
+
+
+def population_rows(population):
+    return [{"stage": label, "images": population[key]["images"], "patients": population[key]["patients"]}
+            for key, label in [("full_labels", "Bảng nhãn BRSET đầy đủ"),
+                               ("image_export", "Ảnh khớp nhãn trong lần xuất dữ liệu"),
+                               ("root_test", "Tập test giữ riêng từ đầu"),
+                               ("root_train", "Phần dữ liệu được chia 5 fold")]]
+
+
+def patient_figure(population, split, output):
+    fig, axes = plt.subplots(2, 1, figsize=(13, 10), gridspec_kw={"height_ratios": [5, 6]})
+    draw_table(axes[0], "Phạm vi đầu vào của thực nghiệm",
+               ["Phạm vi", "Số ảnh", "Số bệnh nhân"],
+               [[r["stage"], f"{r['images']:,}", f"{r['patients']:,}"] for r in population_rows(population)],
+               [0.60, 0.20, 0.20], 11)
+    draw_table(axes[1], "5 fold trên 1.208 ảnh của 729 bệnh nhân",
+               ["Fold", "Ảnh train gốc", "Bệnh nhân train", "Ảnh giữ lại", "Bệnh nhân giữ lại"],
+               [[r["fold"], r["n_train_before_smote"], r["n_train_patients"], r["n_test"], r["n_test_patients"]]
+                for r in split], [0.14, 0.20, 0.23, 0.20, 0.23], 11)
+    fig.suptitle("Vì sao mỗi fold có 583–584 bệnh nhân train?", fontsize=17, fontweight="bold", y=0.98)
+    fig.text(0.5, 0.025, "Fold 1: 583 train + 146 giữ lại = 729 bệnh nhân.\n"
+             "966 ảnh train + 812 mẫu SMOTE = 1.778 dòng/luật; số bệnh nhân train vẫn là 583.",
+             ha="center", fontsize=10, color="#59636f")
+    fig.tight_layout(rect=(0.02, 0.10, 0.98, 0.92), h_pad=3)
+    fig.savefig(output, dpi=170, facecolor="white")
+    plt.close(fig)
+
+
+def report(main, inference, selected, split, auxiliary, population, differences, output):
+    lines = ["# Kết quả FKG-E trên BRSET", "",
+             "Báo cáo sử dụng bản FKG-E hiện tại. Kết quả được tái lập từ 5 cấu hình đã chọn; "
              "không chạy lại quá trình chọn 108 cấu hình/fold. Seed 42, tối đa 200 vòng, early stopping theo nguồn.", "",
-             "Mỗi ô là trung bình ± SD mẫu qua **5 fold** (`ddof=1`). Với zip cũ, gộp seed trong từng fold trước; "
-             "không coi fold × seed hay 50 lần đo thời gian là 50 mẫu độc lập. Các fold dùng chung một phần dữ liệu huấn luyện, "
+             "## 1. Vì sao mỗi fold chỉ có 583–584 bệnh nhân train?", "",
+             "**Cột bệnh nhân là số bệnh nhân trong tập train của từng fold. Toàn bộ phần dữ liệu được chia fold "
+             "ở thực nghiệm này gồm 1.208 ảnh của 729 bệnh nhân.**", "",
+             table(["Phạm vi", "Số ảnh", "Số bệnh nhân"],
+                   [[r["stage"], r["images"], r["patients"]] for r in population_rows(population)]), "",
+             "Code xuất dữ liệu quét các file ảnh trong thư mục đầu vào rồi ghép với bảng nhãn. "
+             "Ở lần xuất này, thư mục có 1.529 ảnh khớp nhãn của 897 bệnh nhân. "
+             "Mặc dù bảng nhãn chứa 16.266 ảnh của 8.524 bệnh nhân, số ảnh đầu vào thực sự chỉ là một subset. "
+             "Sự thu hẹp phạm vi đã xảy ra ở bước lấy ảnh đầu vào, trước khi chia 5 fold.", "",
+             "Trong 897 bệnh nhân đó, 168 bệnh nhân với 321 ảnh được giữ riêng làm root test. "
+             "Phần còn lại có **729 bệnh nhân với 1.208 ảnh** và mới được chia thành 5 fold. "
+             "Tập root test giữ riêng không được đánh giá trong bảng kết quả 5 fold này.", "",
+             table(["Fold", "Ảnh train trước SMOTE", "Bệnh nhân train", "Ảnh giữ lại", "Bệnh nhân giữ lại"],
+                   [[r["fold"], r["n_train_before_smote"], r["n_train_patients"], r["n_test"], r["n_test_patients"]]
+                    for r in split]), "",
+             "Ví dụ fold 1: **583 + 146 = 729 bệnh nhân**, tương ứng **966 + 242 = 1.208 ảnh**. "
+             "Mỗi lượt dùng bốn phần để train, nên số bệnh nhân train xấp xỉ `729 × 4/5 = 583,2`; "
+             "bốn fold có 583 bệnh nhân train và một fold có 584. Một bệnh nhân có thể có nhiều ảnh, "
+             "nên số ảnh không bằng số bệnh nhân. Không cộng số bệnh nhân train của năm lượt: "
+             "mỗi bệnh nhân được dùng để train ở bốn lượt.", "",
+             "Sau SMOTE, fold 1 có **966 + 812 = 1.778 dòng huấn luyện/luật**. "
+             "812 dòng bổ sung là mẫu tổng hợp; số bệnh nhân train thực vẫn là **583**.", "",
+             "Nếu chia 5 fold trực tiếp trên toàn bộ 8.524 bệnh nhân thì mỗi lượt train sẽ khoảng 6.800 bệnh nhân. "
+             "Kết quả hiện tại cần được ghi là thực nghiệm trên subset BRSET. "
+             "Để báo cáo trên toàn bộ BRSET, cần đưa đủ ảnh vào pipeline, tạo lại manifest/fold, "
+             "đặc trưng, mờ hóa, cân bằng, luật và chạy lại mô hình. "
+             "Nạp lại các file fold/đặc trưng đã xuất sẵn trên Colab vẫn giữ nguyên quy mô subset.", "",
+             "![Số bệnh nhân theo fold](new_zip/patient_counts.png)", "",
+             "[CSV phạm vi dữ liệu](new_zip/table_population.csv) · [CSV chi tiết từng fold](new_zip/table_split.csv) · "
+             "[Bằng chứng số lượng](../../population.json)", "",
+             "## 2. Kết quả chính FISA và FKG-E tuned", "",
+             "Mỗi ô là trung bình ± SD mẫu qua **5 fold** (`ddof=1`), với một seed. "
+             "Không coi 50 lần đo thời gian là 50 mẫu độc lập. Các fold dùng chung một phần dữ liệu huấn luyện, "
              "nên SD này chỉ mô tả độ biến thiên, không khẳng định ý nghĩa thống kê.", "",
-             "## 1. Zip mới — kết quả chính FISA và FKG-E tuned", "",
              table(["Độ đo", "FISA", "FKG-E", "Δ (FKG-E − FISA)", "Fold FKG-E hơn"],
                    [[r["label"], f"{r['fisa_mean']:.4f} ± {r['fisa_sd']:.4f}",
                      f"{r['fkge_mean']:.4f} ± {r['fkge_sd']:.4f}", f"{r['delta_mean']:+.4f}",
@@ -283,19 +363,19 @@ def report(main, inference, selected, split, auxiliary, old, differences, output
              "PR-AUC là Average Precision theo code nguồn. F1 ở bảng này là **F1 lớp dương**. "
              "Các chỉ số dùng ngưỡng của mô hình nguồn; AUC/AP dùng điểm liên tục. "
              "AUC/AP tốt hơn không đồng nghĩa mọi chỉ số phân loại tốt hơn.", "",
-             "![Bảng thống kê zip mới](new_zip/result_summary.png)", "",
-             "[CSV kết quả chính](new_zip/table_main.csv) · [70 phép đối chiếu với zip](new_zip/table_replay_checks.csv)", "",
-             f"Chênh lệch lớn nhất so với 7 chỉ số × 2 mô hình × 5 fold trong zip: "
+             "![Bảng kết quả FKG-E](new_zip/result_summary.png)", "",
+             "[CSV kết quả chính](new_zip/table_main.csv) · [Kiểm tra tái lập 70 chỉ số](new_zip/table_replay_checks.csv)", "",
+             f"Chênh lệch lớn nhất khi tái lập 7 chỉ số × 2 mô hình × 5 fold so với kết quả nguồn: "
              f"`{max(abs(r['delta']) for r in differences):.3g}`. "
              "Các con số phản ánh subset **1.208 ảnh / 729 bệnh nhân**. Inner validation vẫn dùng dữ liệu đã tiền xử lý/SMOTE "
              "và đồ thị nguồn; bảng này không chứng nhận đã khắc phục yêu cầu validation của phản biện.", "",
-             "## 2. Zip mới — cấu hình và từng fold", "",
+             "## 3. Cấu hình và từng fold", "",
              table(["Fold", "α", "d", "λ_I", "λ_P", "Loss val", "AUC val", "AP val", "AUC test", "AP test", "Vòng"],
                    [[r[k] for k in ["fold", "alpha", "d_e", "lam_I", "lam_P", "val_pred_loss", "val_auc", "val_pr_auc",
                                     "test_auc", "test_ap", "epochs"]] for r in selected]), "",
              "[CSV cấu hình](new_zip/table_selected_folds.csv) · [Chỉ số từng fold và mô hình](new_zip/table_fold_metrics.csv) · "
              "[Toàn bộ lưới đã lưu](new_zip/table_archived_grid.csv)", "",
-             "## 3. Zip mới — chia dữ liệu và thông số chạy", "",
+             "## 4. Chia dữ liệu và thông số chạy", "",
              table(["Fold", "Train trước SMOTE", "Train sau SMOTE / luật", "Bệnh nhân train", "SMOTE", "Học / val", "Test (dương)"],
                    [[r["fold"], r["n_train_before_smote"], r["n_train"], r["n_patients"], r["n_synthetic"],
                      f"{r['n_fkge_train']} / {r['n_fkge_val']}", f"{r['n_test']} ({r['test_pos']})"] for r in split]), "",
@@ -310,7 +390,7 @@ def report(main, inference, selected, split, auxiliary, old, differences, output
              "Thời gian phụ thuộc máy và tải khi chạy hai worker; không gộp thời gian tác giả với replay để tính speedup. "
              "Số luật là số dòng sau SMOTE, không phải số bệnh nhân. "
              "[CSV chia dữ liệu](new_zip/table_split.csv) · [Ngưỡng, T, gradient, dừng và thời gian](new_zip/table_auxiliary.csv)", "",
-             "## 4. Đối chiếu CI/p-value do code gốc tính", "",
+             "## 5. CI/p-value theo công thức trong code nguồn (tham khảo)", "",
              "Mục này chỉ tái hiện công thức trong `fkge_branch/report/report_nested.py`: CI t có 4 bậc tự do; "
              "p NB dùng tỉ lệ test/train **sau SMOTE**. Tỉ lệ đó khác số ảnh train gốc "
              "(test/train trước SMOTE = 0,25). CI có thể vượt [0;1]. Không dùng các cột này để khẳng định ý nghĩa thống kê "
@@ -318,57 +398,33 @@ def report(main, inference, selected, split, auxiliary, old, differences, output
              table(["Độ đo", "CI95 FKG-E theo code gốc", "p NB theo code gốc"],
                    [[r["metric"], f"[{r['fkge_ci95_low_original_formula']:.4f}; {r['fkge_ci95_high_original_formula']:.4f}]",
                      f"{r['p_nb_original_formula']:.3f}"] for r in inference]), "",
-             "[CSV công thức gốc để đối chiếu](new_zip/table_reference_inference.csv)", "",
-             "## 5. Zip cũ — KB1–KB6, ablation và baseline", "",
-             "Đây là số liệu lịch sử của giao thức 60/40 theo ảnh, có trùng bệnh nhân giữa hai phần. "
-             "F1 ở KB1/KB2 và ablation là **F1 macro**, không đánh đồng với F1 lớp dương của zip mới. "
-             "Các chỉ số không có trong JSON gốc được để thiếu; không suy ra AP từ ROC-AUC.", "",
-             "![Bảng KB1–KB6 zip cũ](old_zip/result_summary.png)", ""]
-    # Complete scenario tables are kept compact by reporting only useful source fields;
-    # CSVs retain every finite numeric metric except within-fold seed SD columns.
-    fields = {
-        "KB1": ["n_rules", "fisa_accuracy", "fisa_bacc", "fisa_auc", "fisa_f1", "fkge_accuracy_mean", "fkge_bacc_mean", "fkge_auc_mean", "fkge_f1_mean", "fkge_avg_ms_mean"],
-        "KB2": ["n_rules", "fisa_accuracy", "fisa_bacc", "fisa_auc", "fkge_accuracy_mean", "fkge_bacc_mean", "fkge_auc_mean", "fkge_avg_ms_mean", "speedup"],
-        "KB3": ["accuracy_mean", "avg_ms_mean", "train_time_s_mean"],
-        "KB4": ["accuracy_mean", "agreement_mean", "dev_mean"],
-        "KB5": ["accuracy_mean"],
-        "KB6": ["n_rules", "fisa_seq_avg_ms", "fisa_avg_ms", "fkge_avg_ms_mean", "fisa_bacc", "fkge_accuracy_mean"],
-        "ablation": ["accuracy_mean", "balanced_accuracy_mean", "auc_mean", "f1_macro_mean", "log_loss_mean", "agreement_fisa_mean", "dev_rule_mean"],
-        "baseline": ["accuracy", "f1", "train_time_s", "avg_ms_per_query"],
-    }
-    for name, sections in old.items():
-        lines += [f"### {name}", "", table(["Cấu hình"] + fields[name],
-                  [[", ".join(f"{k}={v}" for k, v in row["configuration"].items())]
-                   + [old_cell(row, field) for field in fields[name]] for row in sections]), "",
-                  f"[CSV đầy đủ {name}](old_zip/table_{name}.csv)", ""]
-    lines += ["## 6. Phần kết quả thực sự có trong từng gói", "",
-              table(["Nhóm", "Zip mới", "Zip cũ"], [
-                  ["FKG-E tuned (α, d, λ_I, λ_P)", "5 fold đã chọn + 108 cấu hình/fold đã lưu; replay 5 cấu hình", "Không có lưới tương ứng"],
-                  ["KB1–KB6, ablation, baseline", "Không có JSON kết quả tương ứng; không lấy số cũ gắn nhãn mới", "Đủ JSON từng fold, được thống kê lại ở trên"],
-                  ["Default FKG-E trong report_nested.md", "Chỉ có bảng Markdown được lưu; chưa replay trong lần này", "Giao thức khác"],
-              ]), "",
-              "Không trộn kết quả của module `fkge_v2` với mô hình trong hai zip: chỉ tham khảo cách trình bày "
-              "bảng của `fkge_v2/report/render_brset_quick_table.py`. Không chọn cấu hình theo chỉ số test cao nhất. "
-              "Xem `statistics_manifest.json` để đối chiếu SHA256 nguồn, script và các file được xuất.", ""]
+             "[CSV công thức nguồn](new_zip/table_reference_inference.csv)", "",
+             "## 6. Phạm vi kết quả", "",
+             "Báo cáo này trình bày kết quả tuned của năm cấu hình đã chọn trên validation. "
+             "Các thí nghiệm KB2–KB6, ablation và baseline khác cần được chạy với pipeline hiện tại "
+             "trước khi có thể báo cáo như kết quả của phiên bản này. "
+             "Không chọn cấu hình theo chỉ số test cao nhất. "
+             "Xem `statistics_manifest.json` để đối chiếu SHA256 nguồn, script và các file được xuất.", ""]
     (output / "report.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--old-zip", type=Path, required=True)
-    parser.add_argument("--new-zip", type=Path, required=True)
+    parser.add_argument("--old-zip", type=Path, help="Optional archived scenario export, outside the main report.")
+    parser.add_argument("--package-zip", "--new-zip", dest="package_zip", type=Path, required=True)
+    parser.add_argument("--population", type=Path, default=Path(__file__).with_name("population.json"))
     parser.add_argument("--replay", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10})
-    old_archive, new_archive = Archive(args.old_zip), Archive(args.new_zip)
-    old, raw = collect_old(old_archive)
+    new_archive = Archive(args.package_zip)
+    archives = [new_archive]
     archived, replay, differences, replay_manifest = collect_new(new_archive, args.replay)
     main_rows, inference, selected, split, auxiliary = summarize_new(archived, replay)
+    population = load_population(args.population, split)
     new_dir, old_dir = args.output / "new_zip", args.output / "old_zip"
     new_dir.mkdir(exist_ok=True)
-    old_dir.mkdir(exist_ok=True)
     for name, rows in [("main", main_rows), ("reference_inference", inference), ("selected_folds", selected),
                        ("split", split), ("auxiliary", auxiliary), ("replay_checks", differences)]:
         write_csv(new_dir / f"table_{name}.csv", rows)
@@ -377,24 +433,31 @@ def main():
         for fold in replay for model in ["fisa", "fkge"]])
     write_csv(new_dir / "table_archived_grid.csv", [
         {"fold": fold["fold"], **row} for fold in archived for row in fold["rows"]])
-    for name, section in old.items():
-        write_csv(old_dir / f"table_{name}.csv", old_csv_rows(section))
+    write_csv(new_dir / "table_population.csv", population_rows(population))
+    if args.old_zip:
+        old_archive = Archive(args.old_zip)
+        old, _ = collect_old(old_archive)
+        archives.append(old_archive)
+        for name, section in old.items():
+            write_csv(old_dir / f"table_{name}.csv", old_csv_rows(section))
+        old_figure(old, old_dir / "result_summary.png")
     new_figure(main_rows, selected, new_dir / "result_summary.png")
-    old_figure(old, old_dir / "result_summary.png")
-    report(main_rows, inference, selected, split, auxiliary, old, differences, args.output)
+    patient_figure(population, split, new_dir / "patient_counts.png")
+    report(main_rows, inference, selected, split, auxiliary, population, differences, args.output)
     metadata = {
-        "archives": [old_archive.provenance(), new_archive.provenance()],
+        "archives": [archive.provenance() for archive in archives],
         "script_sha256": sha(Path(__file__)), "shared_renderer_sha256": sha(Path(__file__).with_name("render.py")),
         "replay_results_sha256": sha(args.replay / "replay_results.json"),
         "environment": replay_manifest["environment"], "seed": replay_manifest["seed"],
-        "n_descriptive_fold_units": 5, "old_raw_scenario_rows": len(raw),
-        "new_archived_grid_rows": sum(len(f["rows"]) for f in archived),
-        "new_replay_metric_checks": len(differences),
+        "population_sha256": sha(args.population),
+        "n_descriptive_fold_units": 5,
+        "archived_grid_rows": sum(len(f["rows"]) for f in archived),
+        "replay_metric_checks": len(differences),
         "maximum_absolute_replay_metric_delta": max(abs(r["delta"]) for r in differences),
-        "old_within_seed_sd_columns_pooled": False,
+        "within_seed_sd_columns_pooled": False,
         "inference_formulas_are_reference_only": True,
-        "files_sha256": {p.relative_to(args.output).as_posix(): sha(p) for p in sorted(args.output.rglob("*"))
-                         if p.is_file() and p.name != "statistics_manifest.json"},
+        "files_sha256": {p.relative_to(args.output).as_posix(): sha(p)
+                         for p in sorted([*new_dir.iterdir(), args.output / "report.md"]) if p.is_file()},
     }
     (args.output / "statistics_manifest.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"Wrote {len(metadata['files_sha256'])} report/CSV/PNG files to {args.output}")

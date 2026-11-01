@@ -1,0 +1,78 @@
+{
+  "full_labels": {
+    "images": 16266,
+    "patients": 8524,
+    "labels_sha256": "357354fbe543fd30901406f44c939bb52d457f3c8b701ba70a72735338826b20"
+  },
+  "image_export": {
+    "images": 1529,
+    "patients": 897,
+    "image_directory": "ROOT_DATA/fundus_photos_224"
+  },
+  "root_train": {
+    "images": 1208,
+    "patients": 729,
+    "retinopathy_counts": {
+      "0": 1111,
+      "1": 97
+    }
+  },
+  "root_test": {
+    "images": 321,
+    "patients": 168,
+    "retinopathy_counts": {
+      "0": 296,
+      "1": 25
+    }
+  },
+  "folds": [
+    {
+      "fold": 1,
+      "train_images": 966,
+      "test_images": 242,
+      "train_patients": 583,
+      "test_patients": 146,
+      "test_positives": 20,
+      "patient_overlap_count": 0
+    },
+    {
+      "fold": 2,
+      "train_images": 966,
+      "test_images": 242,
+      "train_patients": 583,
+      "test_patients": 146,
+      "test_positives": 19,
+      "patient_overlap_count": 0
+    },
+    {
+      "fold": 3,
+      "train_images": 966,
+      "test_images": 242,
+      "train_patients": 583,
+      "test_patients": 146,
+      "test_positives": 19,
+      "patient_overlap_count": 0
+    },
+    {
+      "fold": 4,
+      "train_images": 967,
+      "test_images": 241,
+      "train_patients": 583,
+      "test_patients": 146,
+      "test_positives": 20,
+      "patient_overlap_count": 0
+    },
+    {
+      "fold": 5,
+      "train_images": 967,
+      "test_images": 241,
+      "train_patients": 584,
+      "test_patients": 145,
+      "test_positives": 19,
+      "patient_overlap_count": 0
+    }
+  ],
+  "source_summary_sha256": "24aefaf74baf4d730f4f6fe0825c71f9be9ad54bb369a76d94dbc2333928c7ef",
+  "split_evidence_sha256": "4374fbdb6e34623bf1f146faa209de89ad5a1f6ac79122cc7620a5d69fdf87a3",
+  "scope": "Aggregate counts of the input population and verified folds; no patient/image identifiers. Full-label partition checks are not full-dataset model training."
+}
