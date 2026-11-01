@@ -26,6 +26,9 @@ that distinguishes the two designs.
 | Automated tests | 4 tests pass: grouping and per-image labels, dirty-record filtering, reference mismatch, output preservation. |
 
 Aggregate evidence is in [validation_summary.json](validation_summary.json).
+Full cached image features covering all 16,266 images have since been found
+in Git. The [full feature CSV release](../brset_full_features/README.md) publishes
+ID-joined image/clinical/fusion inputs and the corresponding five patient folds.
 The complete label-table check verifies **ID partitioning**. It does not check
 that all image files are available or establish full-BRSET model performance.
 No FKG-E training, hyperparameter selection, SMOTE, feature fitting or PR-AUC

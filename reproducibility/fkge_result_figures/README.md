@@ -45,6 +45,12 @@ vẫn nạp các file fold/đặc trưng đã xuất sẵn sẽ giữ nguyên qu
 Tập root test 321 ảnh/168 bệnh nhân giữ riêng chưa được đánh giá trong kết quả
 5 fold dưới đây.
 
+Đã tìm thấy thêm **cache đặc trưng đầy đủ 16.266 ảnh / 8.524 bệnh nhân** trong
+Git. [Thư mục CSV đầy đủ và 5 fold mới](../brset_full_features/README.md) dùng
+cache đặc trưng ảnh và bảng nhãn gốc, nên không cần tải lại ảnh để chạy phần
+mô hình trên các đặc trưng đã lưu. Các kết quả FKG-E trên trang này vẫn thuộc
+lần chạy 1.208 ảnh; chưa được thay bằng kết quả huấn luyện toàn bộ dữ liệu.
+
 ## Kết quả chính
 
 ![Bảng kết quả FKG-E](results/statistics/new_zip/result_summary.png)
