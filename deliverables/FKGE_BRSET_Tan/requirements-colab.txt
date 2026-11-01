@@ -1,0 +1,2 @@
+# Keep Colab's installed PyTorch/CUDA combination; its exact version is recorded.
+-r requirements-common.txt
