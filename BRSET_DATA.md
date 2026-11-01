@@ -1,5 +1,10 @@
 # Dữ liệu BRSET đầy đủ dùng cho các lần chạy mới
 
+**Gói riêng chạy FKG-E:** [tải ZIP](https://raw.githubusercontent.com/thanhst/Fuzzy-Knowledge-Graph/main/deliverables/FKGE_BRSET_Tan.zip)
+· [hướng dẫn](deliverables/FKGE_BRSET_Tan/README.md)
+· [mở Colab](https://colab.research.google.com/github/thanhst/Fuzzy-Knowledge-Graph/blob/main/deliverables/FKGE_BRSET_Tan/CHAY_TREN_COLAB.ipynb).
+Gói có code, dữ liệu, môi trường và lệnh huấn luyện/xuất bảng, chọn tham số bằng validation theo bệnh nhân.
+
 Dùng [reproducibility/brset_full_features/data](reproducibility/brset_full_features/data):
 **16.266 ảnh duy nhất / 8.524 bệnh nhân**, gồm 15.196 ảnh không DR và 1.070 ảnh có DR.
 Đây là đặc trưng đã lưu từ ảnh và bảng lâm sàng; thư mục không chứa ảnh gốc.
