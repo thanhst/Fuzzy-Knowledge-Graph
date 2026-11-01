@@ -1,0 +1,10 @@
+{
+  "source_zip": "fkge_tuned_repro_with_data_PRIVATE.zip",
+  "zip_sha256": "292d84931a1655c7ddd8962d3e337fe9fa1c08035d0dbb868b750e7a712dcc38",
+  "reference_files": {
+    "fkge.py": "27f7b4f9e78ca8e0d622b0626d01ed44113f393207ef0d8b9cd9f25429f395ac",
+    "fisa.py": "491ffb3df54afa89fe535cbecee8c484f1a8adcdfdf44a91591e684a7ec2f95e"
+  },
+  "data_source_commit": "fe16ae53de668fedd54d0f067f91729dcd4bad36",
+  "note": "Reference model files copied unchanged for numerical comparison; no private source datasets or historical results included."
+}
