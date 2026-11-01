@@ -1,13 +1,12 @@
 # Đặc trưng đầy đủ BRSET và 5 fold theo bệnh nhân
 
 Đã tìm thấy dữ liệu đặc trưng của **16.266 ảnh / 8.524 bệnh nhân** trong Git.
-Nguồn ảnh là [Fusion_feature/images_ft.csv](../../Source_code/data/Dataset_diabetic/Fusion_feature/images_ft.csv):
+Nguồn đặc trưng ảnh là [Fusion_feature/images_ft.csv tại bản nguồn](https://github.com/thanhst/Fuzzy-Knowledge-Graph/blob/5961fdfe40ae85df50cae8c15ef3ae960c2f1edd/Source_code/data/Dataset_diabetic/Fusion_feature/images_ft.csv):
 16.266 mã ảnh duy nhất, mỗi ảnh có 10 đặc trưng số hữu hạn, khớp đủ bảng nhãn.
 File này được cập nhật lần cuối tại commit
 [`9786ba5`](https://github.com/thanhst/Fuzzy-Knowledge-Graph/commit/9786ba5162919fa42c3cc0f34db52092163040fb)
-và hiện có trên `main`, `thanh/FKG-E`, `thanh/FKG_kfoldcross`,
-`thanh/GPU_version`, `DuyHoang` cùng các nhánh tái lập.
-Remote hiện không có nhánh `thanh/dev`.
+Gói CSV đầy đủ trong thư mục này được đồng bộ lên tất cả các nhánh hiện có
+trên `origin`. Có thể dùng gói này độc lập với cấu trúc code huấn luyện của từng nhánh.
 
 Đợt kiểm tra đọc 1.837 phiên bản CSV trong 168 commit; 13 phiên bản CSV có
 đủ 16.266 mã ảnh BRSET duy nhất. Xem [history_audit.json](history_audit.json).
@@ -38,9 +37,11 @@ huấn luyện FKG-E trên toàn bộ BRSET. Kết quả FKG-E 1.208 ảnh đã 
 
 ## Kết quả chia fold
 
-Dùng đúng helper `StratifiedGroupKFold` trong repository với
+Dùng `StratifiedGroupKFold` của scikit-learn với
 `n_splits=5`, `shuffle=True`, `random_state=42`, `groups=patient_id` và
-nhãn DR của từng ảnh để phân tầng. Runner từ chối fallback sang `GroupKFold`.
+nhãn DR của từng ảnh để phân tầng. Không fallback sang `GroupKFold`.
+Helper chạy độc lập được đối chiếu với bản phát hành: tạo lại đúng từng byte
+của cả 14 file CSV, bao gồm các fold đã công bố.
 
 | Fold | Ảnh train | Ảnh test | Bệnh nhân train | Bệnh nhân test | Ảnh DR dương ở test |
 |---|---:|---:|---:|---:|---:|
@@ -79,7 +80,7 @@ Các CSV trong thư mục này chưa thực hiện các bước học đó.
 
 ## Dùng trên Colab
 
-Sau khi clone repository và chọn nhánh `codex/verified-brset-patient-folds`,
+Sau khi clone repository và chọn nhánh cần dùng,
 đọc CSV trực tiếp; không cần tải ảnh để sử dụng các đặc trưng đã lưu:
 
 ```python
@@ -107,15 +108,29 @@ X_test, y_test = test[feature_columns], test.diabetic_retinopathy
 ## Tái lập việc xuất CSV và kiểm tra
 
 Chạy từ thư mục gốc repository, dùng Python 3.13.7 và
-[requirements-lock.txt](../brset_patient_folds/requirements-lock.txt).
+[requirements-lock.txt](requirements-lock.txt).
 Output phải mới/rỗng; script không ghi đè dữ liệu có sẵn.
+Các lệnh này dùng CSV đi kèm, không cần thư mục ảnh gốc, bảng nhãn bên ngoài
+hoặc helper từ nhánh khác. Việc chia fold chỉ dùng CPU.
 
-```powershell
+```bash
+python -m pip install -r reproducibility/brset_full_features/requirements-lock.txt
+python -B -X utf8 reproducibility/brset_full_features/build.py --verify-only
 python -B -X utf8 reproducibility/brset_full_features/build.py --output reproducibility/brset_full_features/private/rebuild --folds 5 --seed 42
 python -B -X utf8 -m unittest discover -s reproducibility/brset_full_features/tests -v
 ```
 
 [release_manifest.json](data/release_manifest.json) ghi seed, môi trường,
 hash dữ liệu và code, Git blob/commit nguồn, số thiếu, các kiểm tra phân chia
-và SHA256 của 14 file CSV. Builder gọi lại các hàm tạo/kiểm tra fold từ
-`reproducibility/brset_patient_folds/run.py`, không sao chép thuật toán chia.
+và SHA256 của 14 file CSV. Giữ nguyên manifest của đợt xuất dữ liệu gốc;
+hash code trong manifest đó tương ứng với [builder tại commit 5961fdf](https://github.com/thanhst/Fuzzy-Knowledge-Graph/blob/5961fdfe40ae85df50cae8c15ef3ae960c2f1edd/reproducibility/brset_full_features/build.py).
+Builder hiện tại dùng `portable_folds.py` trong cùng thư mục, gọi trực tiếp
+scikit-learn. Mỗi lần tạo lại sẽ ghi manifest mới với hash code đang chạy,
+hash CSV đầu vào và phiên bản môi trường; 14 CSV giữ nguyên với seed 42
+và môi trường đã khóa. Lưu thêm `git rev-parse HEAD` khi chạy thí nghiệm.
+
+Nếu cần ghép lại từ hai file nguồn, tại checkout có đủ nguồn gốc:
+
+```bash
+python -B -X utf8 reproducibility/brset_full_features/build.py --image-source Source_code/data/Dataset_diabetic/Fusion_feature/images_ft.csv --labels ROOT_DATA/labels_brset.csv --output reproducibility/brset_full_features/private/from_sources --folds 5 --seed 42
+```

@@ -1,5 +1,8 @@
 """Protect ID alignment and missing-value semantics in the full-data export."""
 import importlib.util
+import contextlib
+import io
+import json
 import sys
 import tempfile
 import unittest
@@ -62,6 +65,30 @@ class PrepareTests(unittest.TestCase):
         images.iloc[:1].to_csv(self.images, index=False)
         with self.assertRaisesRegex(ValueError, "complete retained label population"):
             builder.prepare(self.images, self.labels)
+
+
+class PublishedReleaseTests(unittest.TestCase):
+    def test_rebuild_from_bundled_features_preserves_all_fourteen_csvs(self):
+        private = ROOT / "private"
+        private.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="rebuild_", dir=private) as temporary:
+            output = Path(temporary) / "data"
+            with contextlib.redirect_stdout(io.StringIO()):
+                report = builder.run(None, None, output, source=ROOT / "data/fusion_features.csv")
+            original = json.loads((ROOT / "data/release_manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(report["files_sha256"]), 14)
+            self.assertEqual(report["files_sha256"], original["files_sha256"])
+            checked = builder.verify_release(output)
+            self.assertEqual((checked["images"], checked["patients"]), (16266, 8524))
+            with self.assertRaisesRegex(ValueError, "new/empty"):
+                builder.run(None, None, output, source=ROOT / "data/fusion_features.csv")
+
+    def test_patient_crossing_held_out_folds_is_rejected(self):
+        tools = builder.load_fold_tools()
+        invalid = pd.DataFrame({"image_id": ["a", "b", "c"], "patient_id": ["p", "p", "q"],
+                                builder.TARGET: [0, 1, 0], "fold": [1, 2, 1]})
+        with self.assertRaisesRegex(AssertionError, "cross held-out folds"):
+            tools.verify_assignments(invalid, builder.TARGET, 2)
 
 
 if __name__ == "__main__":

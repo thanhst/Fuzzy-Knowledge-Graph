@@ -10,7 +10,6 @@ import hashlib
 import importlib.util
 import json
 import platform
-import subprocess
 import sys
 from pathlib import Path
 
@@ -19,10 +18,8 @@ import pandas as pd
 import sklearn
 
 REPO = Path(__file__).resolve().parents[2]
-IMAGE_SOURCE = REPO / "Source_code/data/Dataset_diabetic/Fusion_feature/images_ft.csv"
-LABEL_SOURCE = REPO / "ROOT_DATA/labels_brset.csv"
-FOLD_RUNNER = REPO / "reproducibility/brset_patient_folds/run.py"
-EXTRACTOR = REPO / "Source_code/module/Processing_Data/Diabetic_fusion_processing.py"
+BUNDLE = Path(__file__).resolve().parent
+FOLD_RUNNER = BUNDLE / "portable_folds.py"
 TARGET = "diabetic_retinopathy"
 IDS = ["image_id", "patient_id", TARGET]
 IMAGE_COLUMNS = ["Contrast Feature", "Dissimilarity Feature", "Homogeneity Feature", "Energy Feature",
@@ -36,10 +33,6 @@ CATEGORY_MAPS = {"insuline": {"yes": 2, "no": 1}, "diabetes": {"yes": 2, "no": 1
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def git(*args):
-    return subprocess.check_output(["git", "-C", str(REPO), *args], text=True).strip()
 
 
 def read_csv(path):
@@ -94,10 +87,36 @@ def write_csv(path, frame):
     frame.to_csv(path, index=False, lineterminator="\n", float_format="%.17g")
 
 
-def run(image_path, label_path, output, folds=5, seed=42):
+def prepare_cached(path):
+    data = read_csv(path)
+    expected = [*IDS, *TABLE_COLUMNS, *IMAGE_COLUMNS]
+    if set(data.columns) != set(expected):
+        raise ValueError("Cached fusion CSV must contain exactly the IDs, target and 23 feature columns")
+    tools = load_fold_tools()
+    clean, filtering = tools.clean_records(data, TARGET)
+    if len(clean) != len(data):
+        raise ValueError("Cached fusion CSV contains invalid IDs/labels")
+    data = data[expected].copy()
+    data[IDS] = clean
+    for column in [*TABLE_COLUMNS, *IMAGE_COLUMNS]:
+        data[column] = pd.to_numeric(data[column], errors="raise")
+    if not np.isfinite(data[IMAGE_COLUMNS].to_numpy(dtype=float)).all():
+        raise ValueError("Cached image features contain missing/nonfinite values")
+    if np.isinf(data[TABLE_COLUMNS].to_numpy(dtype=float)).any():
+        raise ValueError("Clinical features contain infinite values")
+    return data, filtering, tools
+
+
+def source_info(path):
+    path = path.resolve()
+    return {"path": path.relative_to(REPO).as_posix() if path.is_relative_to(REPO) else str(path),
+            "sha256": digest(path)}
+
+
+def run(image_path, label_path, output, folds=5, seed=42, source=None):
     if output.exists() and (not output.is_dir() or any(output.iterdir())):
         raise ValueError("Use a new/empty output directory; existing release data will not be overwritten")
-    data, filtering, tools = prepare(image_path, label_path)
+    data, filtering, tools = prepare_cached(source) if source else prepare(image_path, label_path)
     assigned, implementation = tools.create_assignments(data[IDS].copy(), TARGET, "stratified-group", folds, seed)
     checks = tools.verify_assignments(assigned, TARGET, folds)
     data = data.merge(assigned[["image_id", "fold"]], on="image_id", validate="one_to_one")
@@ -113,7 +132,6 @@ def run(image_path, label_path, output, folds=5, seed=42):
         directory = output / f"fold_{fold:02}"
         write_csv(directory / "train_ids.csv", assigned.loc[assigned["fold"] != fold, IDS])
         write_csv(directory / "test_ids.csv", assigned.loc[assigned["fold"] == fold, IDS])
-    split_source = tools.LEGACY / tools.SOURCE_FILES["stratified-group"]
     report = {
         "scope": "Full cached per-image feature coverage and patient ID partitioning; no model training or raw-image re-extraction.",
         "method": implementation, "fold_count": folds, "seed": seed,
@@ -125,13 +143,9 @@ def run(image_path, label_path, output, folds=5, seed=42):
         "clinical_missing_values_preserved": {key: int(value) for key, value in data[TABLE_COLUMNS].isna().sum().items()},
         "fixed_category_maps": CATEGORY_MAPS,
         "learned_processing_performed": False, "smote_performed": False,
-        "image_source": {"path": image_path.relative_to(REPO).as_posix(), "sha256": digest(image_path),
-                         "git_blob": git("rev-parse", "HEAD:" + image_path.relative_to(REPO).as_posix()),
-                         "last_change_commit": git("log", "-1", "--format=%H", "--", image_path.relative_to(REPO).as_posix())},
-        "label_source": {"path": label_path.relative_to(REPO).as_posix(), "sha256": digest(label_path)},
-        "code_sha256": {"builder": digest(Path(__file__)), "fold_runner": digest(FOLD_RUNNER),
-                        "splitter_source": digest(split_source), "historical_extractor": digest(EXTRACTOR)},
-        "base_commit": git("rev-parse", "HEAD"),
+        "sources": {"cached_fusion": source_info(source)} if source else {
+            "images": source_info(image_path), "labels": source_info(label_path)},
+        "code_sha256": {"builder": digest(Path(__file__)), "fold_runner": digest(FOLD_RUNNER)},
         "environment": {"python": platform.python_version(), "system": platform.system(),
                         "numpy": np.__version__, "pandas": pd.__version__, "scikit-learn": sklearn.__version__},
         "files_sha256": {p.relative_to(output).as_posix(): digest(p) for p in sorted(output.rglob("*.csv"))},
@@ -143,15 +157,52 @@ def run(image_path, label_path, output, folds=5, seed=42):
     return report
 
 
+def verify_release(directory):
+    """Check published bytes and reproduce its splits with the installed sklearn."""
+    manifest = json.loads((directory / "release_manifest.json").read_text(encoding="utf-8"))
+    actual_files = {p.relative_to(directory).as_posix() for p in directory.rglob("*.csv")}
+    if actual_files != set(manifest["files_sha256"]):
+        raise AssertionError("Release CSV file list differs from manifest")
+    for name, expected_hash in manifest["files_sha256"].items():
+        if digest(directory / name) != expected_hash:
+            raise AssertionError(f"CSV hash mismatch: {name}")
+    data, audit, tools = prepare_cached(directory / "fusion_features.csv")
+    for key in ("retained_images", "retained_patients"):
+        if audit[key] != manifest["filtering"][key]:
+            raise AssertionError(f"Population mismatch: {key}")
+    assigned = read_csv(directory / "fold_assignments.csv")
+    checks = tools.verify_assignments(assigned, TARGET, manifest["fold_count"])
+    rebuilt, _ = tools.create_assignments(data[IDS], TARGET, folds=manifest["fold_count"], seed=manifest["seed"])
+    pd.testing.assert_frame_equal(rebuilt, assigned)
+    for fold in range(1, manifest["fold_count"] + 1):
+        for name, mask in (("train", assigned.fold != fold), ("test", assigned.fold == fold)):
+            stored = read_csv(directory / f"fold_{fold:02}" / f"{name}_ids.csv")
+            pd.testing.assert_frame_equal(stored, assigned.loc[mask, IDS].reset_index(drop=True))
+    return {"images": len(data), "patients": audit["retained_patients"],
+            "csv_files_verified": len(actual_files), **checks}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--image-source", type=Path, default=IMAGE_SOURCE)
-    parser.add_argument("--labels", type=Path, default=LABEL_SOURCE)
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--source", type=Path, help="Fusion CSV; defaults to the bundled full dataset")
+    parser.add_argument("--image-source", type=Path, help="Optional original raw image-feature CSV; requires --labels")
+    parser.add_argument("--labels", type=Path, help="Original label CSV; requires --image-source")
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--verify-only", action="store_true", help="Verify all bundled CSV hashes and regenerate splits in memory")
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
-    run(args.image_source.resolve(), args.labels.resolve(), args.output.resolve(), args.folds, args.seed)
+    if args.verify_only:
+        if args.source or args.image_source or args.labels or args.output:
+            parser.error("--verify-only validates the bundled release and cannot be combined with source/output arguments")
+        print(json.dumps(verify_release(BUNDLE / "data"), ensure_ascii=False, indent=2))
+        return
+    if args.output is None:
+        parser.error("--output is required when rebuilding")
+    if bool(args.image_source) != bool(args.labels) or (args.source and args.image_source):
+        parser.error("Use either --source or the pair --image-source and --labels")
+    source = (args.source or BUNDLE / "data/fusion_features.csv").resolve() if not args.image_source else None
+    run(args.image_source, args.labels, args.output.resolve(), args.folds, args.seed, source=source)
 
 
 if __name__ == "__main__":
