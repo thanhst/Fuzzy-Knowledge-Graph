@@ -214,10 +214,10 @@ def new_figure(main, selected, output):
     rows = [[r["fold"], f"{r['alpha']:g}", r["d_e"], f"{r['lam_I']:g}", f"{r['lam_P']:g}",
              f"{r['val_pred_loss']:.4f}", f"{r['test_auc']:.4f}", f"{r['test_ap']:.4f}", r["epochs"]]
             for r in selected]
-    draw_table(axes[1], "Cấu hình đã chọn trong zip mới — đối chiếu bằng lần chạy lại",
+    draw_table(axes[1], "Cấu hình FKG-E theo từng fold",
                ["Fold", "α", "d", "λ_I", "λ_P", "Loss val", "ROC-AUC", "AP", "Vòng"], rows,
                [0.14, 0.07, 0.07, 0.07, 0.07, 0.16, 0.14, 0.14, 0.14])
-    fig.suptitle("FKG-E trên BRSET — bảng thống kê zip mới", fontsize=18, fontweight="bold", y=0.98)
+    fig.suptitle("Kết quả FKG-E trên BRSET", fontsize=18, fontweight="bold", y=0.98)
     fig.text(0.5, 0.025, "Chạy lại 5 cấu hình đã chọn; seed 42; subset 1.208 ảnh / 729 bệnh nhân.\n"
              "Chưa chạy lại lưới chọn tham số; validation theo gói nguồn còn hạn chế.", ha="center", fontsize=10, color="#59636f")
     fig.tight_layout(rect=(0.02, 0.10, 0.98, 0.92), h_pad=3)

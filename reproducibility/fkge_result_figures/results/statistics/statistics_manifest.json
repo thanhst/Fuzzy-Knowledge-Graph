@@ -61,7 +61,7 @@
       }
     }
   ],
-  "script_sha256": "678bd6436ac24eae3a506f0069428dd18ae6fcee4224106e33c5a2c0c21bd6f9",
+  "script_sha256": "cf2e7c6611b25c476c05679b0419ffa46ab00b8ed56bb6475c2ce23c90ff2ded",
   "shared_renderer_sha256": "c71bbddc87a51ceda50af2f7cb3b0cb68f37e78e191d3487586fc9e11050b0df",
   "replay_results_sha256": "9feb720fd6aa8496d933c18c3b17a890cf04643449d913c5f96ff356f11682f5",
   "environment": {
@@ -88,7 +88,7 @@
   "old_within_seed_sd_columns_pooled": false,
   "inference_formulas_are_reference_only": true,
   "files_sha256": {
-    "new_zip/result_summary.png": "822a627609375e8f1c4c2811237e109d33ab6238837b2aaf8ef5528a8e60b6bf",
+    "new_zip/result_summary.png": "70fac7b0f697e4a53b5ba73b9d638aac2d2c13840e2ef2e11d72a939120a1447",
     "new_zip/table_archived_grid.csv": "2c65b7ad24eda25c9254c44898e1bbda1e122cb7891a03ff0e51936a683c9c44",
     "new_zip/table_auxiliary.csv": "43747f8a89d6ba9d71a64a5e1b5fa68536a6b34f7988a9a577bc3a52a8e0b851",
     "new_zip/table_fold_metrics.csv": "2766297deb5e642cc5af77ffa72e5ef7fe04068874da2fd1b3d3dc0573ed62d2",
