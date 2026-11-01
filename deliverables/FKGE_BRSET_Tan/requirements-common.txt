@@ -1,0 +1,8 @@
+numpy==2.2.6
+pandas==2.3.3
+scipy==1.16.2
+scikit-learn==1.7.2
+imbalanced-learn==0.14.2
+matplotlib==3.10.8
+autograd==1.9.1
+psutil==7.1.3
