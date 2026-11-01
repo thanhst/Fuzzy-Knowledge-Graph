@@ -1,3 +1,5 @@
+> **BRSET đầy đủ: 16.266 ảnh / 8.524 bệnh nhân, 5 fold theo patient ID (seed 42).** Xem [CSV chuẩn và hướng dẫn chạy](BRSET_DATA.md). Kết quả cũ trong nhánh vẫn thuộc lần chạy cũ.
+
 BCC -> 1<br>
 SCC -> 2<br>
 ACK -> 3<br>
